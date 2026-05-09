@@ -27,11 +27,12 @@ export const registerUser = async ({ name, email, password, role }) => {
   const hashedPassword = await bcrypt.hash(password, salt);
 
   const user = new User({
-    name: name || email.split("@")[0], // Default name to email prefix if not provided
+    name: name || email.split("@")[0],
     email,
     password: hashedPassword,
     role,
     isVerified: true,
+    approvalStatus: role === "instructor" ? "unverified" : "approved",
   });
 
   await user.save();
@@ -52,14 +53,13 @@ export const requestOtpService = async (email) => {
 
   const otp = generateOTP();
 
-  // Upsert OTP record
+  await sendEmail(email, "Your OTP Code", `Your OTP is ${otp}`);
+
   await Otp.findOneAndUpdate(
     { email },
     { otp, isVerified: false, expirydate: new Date() },
     { upsert: true, new: true }
   );
-
-  await sendEmail(email, "Your OTP Code", `Your OTP is ${otp}`);
 
   return { message: "OTP sent successfully" };
 };
@@ -69,7 +69,9 @@ export const loginUser = async ({ email, password }) => {
   const user = await User.findOne({ email });
 
   if (!user || !user.password) {
-    throw new Error("Invalid email or password");
+    const error = new Error("Invalid email or password");
+    error.statusCode = 401;
+    throw error;
   }
 
   if (!user.isVerified) {
@@ -81,7 +83,9 @@ export const loginUser = async ({ email, password }) => {
   const isMatch = await bcrypt.compare(password, user.password);
 
   if (!isMatch) {
-    throw new Error("Invalid email or password");
+    const error = new Error("Invalid email or password");
+    error.statusCode = 401;
+    throw error;
   }
 
   return user;
@@ -112,6 +116,11 @@ export const verifyOtpService = async ({ email, otp }) => {
   }
 
   // 3 minute expiry check
+  if (!otpRecord.expirydate) {
+    await Otp.findOneAndDelete({ email });
+    throw new Error("OTP configuration error. Please request a new code.");
+  }
+
   const currentTime = Date.now();
   const timeDifference = currentTime - otpRecord.expirydate.getTime();
 

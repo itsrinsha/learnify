@@ -24,7 +24,7 @@ import {
 import {
   getInstructorCourses,
   publishCourse,
-} from "../controllers/instructoreController.js";
+} from "../controllers/instructorController.js";
 import {
   createLiveSession,
   endLiveSession,
@@ -36,7 +36,7 @@ import {
   getEnrolledCourses,
   getUserProfile,
 } from "../controllers/userController.js";
-import { otpController, otpverifyController } from "../controllers/otpController.js";
+import { otpController, otpverifyController, resendOtpController } from "../controllers/otpController.js";
 
 const router = express.Router();
 
@@ -91,8 +91,7 @@ router.post("/user/enroll", asyncHandler(enrollCourse));
 router.get("/user/enrollments", asyncHandler(getEnrolledCourses));
 
 
-// router.post("/resend-otp", asyncHandler(resendOtp));
-router.post("/otp-sender", asyncHandler(otpController));
-router.post("/verify-otp", asyncHandler(otpverifyController));
-router.post("/varify-otp", asyncHandler(otpverifyController));
+router.post("/resend-otp", resendOtpController);
+router.post("/otp-sender", otpController);
+router.post("/verify-otp", otpverifyController);
 export default router;

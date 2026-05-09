@@ -1,5 +1,5 @@
 import { asyncHandler } from "../middleware/trycatchmiddleware.js";
-import { createLiveSessionService, endLiveSessionService, getLiveSessionsService, startLiveSessionService } from "../services/liveServices.js";
+import { createLiveSessionService, endLiveSessionService, getLiveSessionsService, startLiveSessionService, getMyLiveSessionsService } from "../services/liveServices.js";
 
 
 // ✅ Create
@@ -20,6 +20,16 @@ export const getLiveSessions = async (req, res, next) => {
     const sessions = await getLiveSessionsService(req.params.courseId);
     res.json(sessions);
   next()
+};
+
+// ✅ Get My Live Sessions
+export const getMyLiveSessions = async (req, res, next) => {
+  try {
+    const sessions = await getMyLiveSessionsService(req.user.id);
+    res.json(sessions);
+  } catch (error) {
+    next(error);
+  }
 };
 
 // ✅ Start

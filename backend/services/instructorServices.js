@@ -1,4 +1,4 @@
-import { Course } from "../models/Course.js";
+import Course from "../models/Course.js";
 
 // get instructor courses
 export const getInstructorCoursesService = async (instructorId) => {

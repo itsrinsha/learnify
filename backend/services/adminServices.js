@@ -1,7 +1,5 @@
 import User from "../models/User.js";
-
-import { getAllUsers,deleteUser,getAllCoursesAdmin, deleteCourseAdmin} from "../controllers/adminController.js";
-import { Course } from "../models/Course.js";
+import Course from "../models/Course.js";
 
 // get all users
 export const getAllUsersService = async () => {
@@ -38,53 +36,24 @@ export const deleteCourseAdminService = async (courseId) => {
 
   return true;
 };
-// resend OTP
-export const resendOtpService = async (email) => {
-  const user = await User.findOne({ email });
 
-  if (!user) {
-    throw new Error("User not found");
-  }
-
-  // ✅ PUT IT HERE
-  if (user.isVerified) {
-    throw new Error("User already verified");
-  }
-
-  const otp = generateOTP();
-
-  user.otp = otp;
-  user.otpExpiry = getOtpExpiry();
-
-  await user.save();
-
-  await sendEmail(email, "New OTP", `Your OTP is ${otp}`);
+// ✅ Get instructor requests (pending verification)
+export const getInstructorRequestsService = async () => {
+  return await User.find({ 
+    role: "instructor", 
+    approvalStatus: "pending" 
+  }).select("-password");
 };
-// verify OTP
-export const verifyOtpService = async ({ email, otp }) => {
-  const user = await User.findOne({ email });
 
-  if (!user) {
-    throw new Error("User not found");
+// ✅ Update instructor approval status
+export const updateInstructorStatusService = async (userId, status) => {
+  const user = await User.findById(userId);
+
+  if (!user || user.role !== "instructor") {
+    throw new Error("Instructor not found");
   }
 
-  // ✅ PUT IT HERE ALSO
-  if (user.isVerified) {
-    throw new Error("User already verified");
-  }
-
-  if (user.otp !== otp) {
-    throw new Error("Invalid OTP");
-  }
-
-  if (user.otpExpiry < new Date()) {
-    throw new Error("OTP expired");
-  }
-
-  user.isVerified = true;
-  user.otp = null;
-  user.otpExpiry = null;
-
+  user.approvalStatus = status;
   await user.save();
 
   return user;

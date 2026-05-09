@@ -6,6 +6,7 @@ import {
   updateCourse,
   deleteCourse,
 } from "../controllers/courseController.js";
+import { optionalAuthMiddleware } from "../middleware/optionalAuthMiddleware.js";
 
 
 
@@ -18,7 +19,7 @@ router.post("/", createCourse);
 router.get("/", getCourses);
 
 // get single course
-router.get("/:id", getCourseById);
+router.get("/:id", optionalAuthMiddleware, getCourseById);
 
 // update course
 router.put("/:id", updateCourse);

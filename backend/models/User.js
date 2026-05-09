@@ -30,12 +30,44 @@ const userSchema = new mongoose.Schema(
             type:Boolean,
             default:false,
         },
-        enrolledCourses:[
-            {
-                type:mongoose.Schema.Types.ObjectId,
-                ref:"Course",
-            },
-        ],
+    profileImage: {
+      type: String,
+      default: "",
+    },
+    phone: {
+      type: String,
+      default: "",
+    },
+    bio: {
+      type: String,
+      default: "",
+    },
+    location: {
+      type: String,
+      default: "",
+    },
+    approvalStatus: {
+      type: String,
+      enum: ["unverified", "pending", "approved", "rejected"],
+      default: "approved", 
+    },
+    verificationDetails: {
+      age: { type: Number },
+      education: { type: String },
+      college: { type: String },
+      degree: { type: String },
+      graduationYear: { type: String },
+      experience: { type: String },
+      expertise: { type: String },
+      certifications: [{ type: String }],
+      documents: [{ type: String }],
+    },
+    enrolledCourses: [
+      {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: "Course",
+      },
+    ],
     },
     {timestamps:true}
 );

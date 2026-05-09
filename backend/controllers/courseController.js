@@ -1,54 +1,80 @@
 import { asyncHandler } from "../middleware/trycatchmiddleware.js";
-import { createCourseService, deleteCourseService, getCourseByIdService, getCoursesService, updateCourseService } from "../services/courseServices.js";
+
+import {
+  createCourseService,
+  deleteCourseService,
+  getCourseByIdService,
+  getCoursesService,
+  updateCourseService,
+} from "../services/courseServices.js";
 
 
 // ✅ Create Course
-export const createCourse = async (req, res, next) => {
-  
-    const course = await createCourseService({
-      ...req.body,
-      instructor: req.user.id,
-      
-    });
+export const createCourse = async (req, res) => {
 
-    res.status(201).json(course);
-  next()
+  const course = await createCourseService({
+    ...req.body,
+    instructor: req.user.id,
+  });
+
+  res.status(201).json({
+    success: true,
+    course,
+  });
 };
+
 
 // ✅ Get all courses
-export const getCourses = async (req, res, next) => {
-  
-    const courses = await getCoursesService();
-    res.json(courses);
-  
-  next()
+export const getCourses = async (req, res) => {
+
+  const courses = await getCoursesService();
+
+  res.status(200).json({
+    success: true,
+    courses,
+  });
 };
+
 
 // ✅ Get single course
-export const getCourseById = async (req, res, next) => {
- 
-    const course = await getCourseByIdService(req.params.id);
-    res.json(course);
-  next()
+export const getCourseById = async (req, res) => {
+  const userId = req.user ? req.user.id : null;
+  const userRole = req.user ? req.user.role : null;
+
+  const course = await getCourseByIdService(req.params.id, userId, userRole);
+
+  res.status(200).json({
+    success: true,
+    course,
+  });
 };
 
-// ✅ Update course
-export const updateCourse = async (req, res, next) => {
-  
-    const updated = await updateCourseService({
-      courseId: req.params.id,
-      userId: req.user.id,
-      updates: req.body,
-    });
 
-    res.json(updated);
- next()
+// ✅ Update Course
+export const updateCourse = async (req, res) => {
+
+  const updated = await updateCourseService({
+    courseId: req.params.id,
+    userId: req.user.id,
+    updates: req.body,
+  });
+
+  res.status(200).json({
+    success: true,
+    updated,
+  });
 };
 
-// ✅ Delete course
-export const deleteCourse = async (req, res, next) => {
- 
-    await deleteCourseService(req.params.id);
-    res.json({ message: "Course deleted" });
- next()
+
+// ✅ Delete Course
+export const deleteCourse = async (req, res) => {
+
+  await deleteCourseService(req.params.id);
+
+  res.status(200).json({
+    success: true,
+    message: "Course deleted successfully",
+  });
 };
+
+

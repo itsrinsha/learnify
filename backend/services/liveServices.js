@@ -1,4 +1,5 @@
 import { LiveSession } from "../models/LiveSetion.js";
+import Enrollment from "../models/Enrollment.js";
 
 
 // create
@@ -22,6 +23,16 @@ export const createLiveSessionService = async ({
 export const getLiveSessionsService = async (courseId) => {
   return await LiveSession.find({ course: courseId })
     .populate("instructor", "name");
+};
+
+// get my sessions (for student)
+export const getMyLiveSessionsService = async (userId) => {
+  const enrollments = await Enrollment.find({ user: userId });
+  const courseIds = enrollments.map((e) => e.course);
+  
+  return await LiveSession.find({ course: { $in: courseIds } })
+    .populate("course", "title")
+    .populate("instructor", "name profileImage");
 };
 
 // start session

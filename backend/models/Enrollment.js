@@ -12,6 +12,11 @@ const enrollmentSchema = new mongoose.Schema(
       ref: "Course",
     },
 
+    instructor: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "User",
+    },
+
     progress: {
       type: Number,
       default: 0,
