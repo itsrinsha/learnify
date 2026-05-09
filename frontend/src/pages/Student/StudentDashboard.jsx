@@ -1,5 +1,6 @@
 import React, { useEffect } from "react";
 import { useDispatch, useSelector } from "react-redux";
+import { useNavigate } from "react-router-dom";
 import { fetchStudentDashboard } from "../../features/student/studentThunk";
 import {
   CheckCircle2,
@@ -8,12 +9,12 @@ import {
   FileText,
   Award,
   ChevronRight,
-  ArrowRight,
   Loader2,
 } from "lucide-react";
 
 const StudentDashboard = () => {
   const dispatch = useDispatch();
+  const navigate = useNavigate();
   const { dashboardData, loading, error } = useSelector((state) => state.student);
 
   // Fetch Dashboard Data

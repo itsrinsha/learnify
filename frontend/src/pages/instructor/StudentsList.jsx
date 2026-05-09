@@ -4,9 +4,6 @@ import {
   Filter, 
   MessageSquare, 
   ChevronRight, 
-  MoreVertical, 
-  CheckCircle2, 
-  Clock, 
   Video,
   BookOpen,
   Calendar,
@@ -14,10 +11,24 @@ import {
 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 
+const students = [
+  {
+    id: 1,
+    name: 'Alice Johnson',
+    email: 'alice@example.com',
+    avatar: 'https://i.pravatar.cc/160?u=alice',
+    courseName: 'Advanced React 19 Patterns',
+    purchaseDate: 'May 01, 2026',
+    progress: 80,
+    completedLessons: 12,
+    totalLessons: 15,
+    liveAttendance: '92%',
+    reviewStatus: 'Pending'
+  }
+];
+
 const StudentsList = () => {
   const navigate = useNavigate();
-  const [students, setStudents] = React.useState([]);
-  const [loading, setLoading] = React.useState(false);
 
   return (
     <div className="space-y-10 pb-20">
@@ -79,92 +90,7 @@ const StudentsList = () => {
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-50">
-              {students.length > 0 ? students.map((student) => (
-                <tr 
-                  key={student.id} 
-                  className="hover:bg-slate-50/80 transition-colors group cursor-pointer"
-                  onClick={() => navigate('/instructor/student-details')}
-                >
-                  <td className="px-8 py-6">
-                    <div className="flex items-center gap-4">
-                      <img src={student.avatar} alt={student.name} className="w-12 h-12 rounded-2xl object-cover border-2 border-white shadow-sm" />
-                      <div className="min-w-0">
-                        <p className="font-bold text-slate-900 truncate group-hover:text-blue-600 transition-colors">{student.name}</p>
-                        <p className="text-[10px] text-slate-400 font-bold truncate uppercase tracking-widest">{student.email}</p>
-                      </div>
-                    </div>
-                  </td>
-                  <td className="px-8 py-6">
-                    <div className="space-y-1">
-                      <p className="text-sm font-bold text-slate-700 leading-tight">{student.courseName}</p>
-                      <p className="text-[10px] text-slate-400 font-bold flex items-center gap-1">
-                        <Calendar size={12} /> Bought: {student.purchaseDate}
-                      </p>
-                    </div>
-                  </td>
-                  <td className="px-8 py-6">
-                    <div className="w-40 space-y-2">
-                      <div className="flex justify-between text-[10px] font-black">
-                        <span className="text-blue-600">{student.progress}%</span>
-                        <span className="text-slate-400">{student.completedLessons}/{student.totalLessons}</span>
-                      </div>
-                      <div className="h-1.5 bg-slate-100 rounded-full overflow-hidden">
-                        <div className="h-full bg-blue-600 rounded-full" style={{ width: `${student.progress}%` }}></div>
-                      </div>
-                    </div>
-                  </td>
-                  <td className="px-8 py-6">
-                    <div className="flex items-center gap-4 text-slate-500">
-                      <div className="flex flex-col items-center">
-                        <Video size={16} className={student.liveAttendance === '100%' ? 'text-green-500' : 'text-slate-400'} />
-                        <span className="text-[9px] font-black mt-1">{student.liveAttendance}</span>
-                      </div>
-                      <div className="flex flex-col items-center">
-                        <BookOpen size={16} className="text-slate-400" />
-                        <span className="text-[9px] font-black mt-1">L:{student.completedLessons}</span>
-                      </div>
-                    </div>
-                  </td>
-                  <td className="px-8 py-6">
-                    <span className={`px-2.5 py-1 rounded-lg text-[9px] font-black uppercase tracking-widest ${
-                      student.reviewStatus === 'Pending' ? 'bg-yellow-50 text-yellow-600' : 
-                      student.reviewStatus === 'Passed' ? 'bg-green-50 text-green-600' : 'bg-slate-50 text-slate-400'
-                    }`}>
-                      {student.reviewStatus}
-                    </span>
-                  </td>
-                  <td className="px-8 py-6">
-                    <div className="flex items-center gap-2">
-                      <button 
-                        className="p-2.5 bg-blue-50 text-blue-600 rounded-xl hover:bg-blue-600 hover:text-white transition-all shadow-sm"
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          navigate('/instructor/messages');
-                        }}
-                      >
-                        <MessageSquare size={18} />
-                      </button>
-                      <button className="p-2.5 text-slate-400 hover:bg-slate-100 rounded-xl border border-transparent hover:border-slate-100 transition-all">
-                        <ChevronRight size={18} />
-                      </button>
-                    </div>
-                  </td>
-                </tr>
-              )) : (
-                <tr>
-                  <td colSpan="6" className="px-8 py-20 text-center">
-                    <div className="flex flex-col items-center gap-4">
-                      <div className="w-16 h-16 bg-slate-50 rounded-2xl flex items-center justify-center text-slate-300">
-                        <Users size={32} />
-                      </div>
-                      <div>
-                        <p className="text-slate-900 font-bold">No students found</p>
-                        <p className="text-slate-500 text-sm">Once students enroll in your courses, they will appear here.</p>
-                      </div>
-                    </div>
-                  </td>
-                </tr>
-              )}
+             
             </tbody>
           </table>
         </div>

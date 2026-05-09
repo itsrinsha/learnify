@@ -13,13 +13,7 @@ import {
 } from 'lucide-react';
 import StatusBadge from '../../components/admin/StatusBadge';
 
-const studentsData = [
-  { id: 1, name: 'Alex Johnson', email: 'alex@example.com', phone: '+1 234 567 890', joined: '2024-03-15', courses: 4, spent: '$120', status: 'Active' },
-  { id: 2, name: 'Maria Garcia', email: 'maria@example.com', phone: '+1 234 567 891', joined: '2024-03-10', courses: 2, spent: '$45', status: 'Active' },
-  { id: 3, name: 'David Lee', email: 'david@example.com', phone: '+1 234 567 892', joined: '2024-02-28', courses: 1, spent: '$15', status: 'Blocked' },
-  { id: 4, name: 'Emma Wilson', email: 'emma@example.com', phone: '+1 234 567 893', joined: '2024-02-15', courses: 7, spent: '$250', status: 'Active' },
-  { id: 5, name: 'James Brown', email: 'james@example.com', phone: '+1 234 567 894', joined: '2024-01-20', courses: 0, spent: '$0', status: 'Active' },
-];
+
 
 const AdminStudents = () => {
   const [searchTerm, setSearchTerm] = useState('');
@@ -84,69 +78,7 @@ const AdminStudents = () => {
                 <th className="px-6 py-4 text-xs font-bold text-slate-500 uppercase tracking-wider text-right">Actions</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-slate-100">
-              {studentsData.map((student) => (
-                <tr key={student.id} className="hover:bg-slate-50/80 transition-colors group">
-                  <td className="px-6 py-4">
-                    <div className="flex items-center gap-3">
-                      <div className="w-10 h-10 rounded-full bg-blue-100 flex items-center justify-center text-blue-600 font-bold text-sm">
-                        {student.name.split(' ').map(n => n[0]).join('')}
-                      </div>
-                      <div>
-                        <p className="text-sm font-bold text-slate-900 group-hover:text-blue-600 transition-colors">{student.name}</p>
-                        <p className="text-xs text-slate-500">ID: #STU-00{student.id}</p>
-                      </div>
-                    </div>
-                  </td>
-                  <td className="px-6 py-4">
-                    <div className="space-y-1">
-                      <div className="flex items-center gap-2 text-xs text-slate-600">
-                        <Mail className="w-3 h-3" /> {student.email}
-                      </div>
-                      <div className="flex items-center gap-2 text-xs text-slate-600">
-                        <Phone className="w-3 h-3" /> {student.phone}
-                      </div>
-                    </div>
-                  </td>
-                  <td className="px-6 py-4">
-                    <div className="flex items-center gap-2 text-sm text-slate-600">
-                      <Calendar className="w-4 h-4 text-slate-400" />
-                      {student.joined}
-                    </div>
-                  </td>
-                  <td className="px-6 py-4 text-center">
-                    <span className="inline-flex items-center justify-center w-8 h-8 rounded-lg bg-slate-100 text-sm font-bold text-slate-700">
-                      {student.courses}
-                    </span>
-                  </td>
-                  <td className="px-6 py-4 text-sm font-bold text-slate-900">
-                    {student.spent}
-                  </td>
-                  <td className="px-6 py-4">
-                    <StatusBadge status={student.status} />
-                  </td>
-                  <td className="px-6 py-4 text-right">
-                    <div className="flex items-center justify-end gap-2">
-                      <button className="p-2 hover:bg-blue-50 hover:text-blue-600 rounded-lg transition-colors text-slate-400" title="View Details">
-                        <Eye className="w-5 h-5" />
-                      </button>
-                      {student.status === 'Blocked' ? (
-                        <button className="p-2 hover:bg-green-50 hover:text-green-600 rounded-lg transition-colors text-slate-400" title="Unblock User">
-                          <UserCheck className="w-5 h-5" />
-                        </button>
-                      ) : (
-                        <button className="p-2 hover:bg-red-50 hover:text-red-600 rounded-lg transition-colors text-slate-400" title="Block User">
-                          <UserMinus className="w-5 h-5" />
-                        </button>
-                      )}
-                      <button className="p-2 hover:bg-slate-100 rounded-lg transition-colors text-slate-400">
-                        <MoreHorizontal className="w-5 h-5" />
-                      </button>
-                    </div>
-                  </td>
-                </tr>
-              ))}
-            </tbody>
+           
           </table>
         </div>
         <div className="px-6 py-4 border-t border-slate-100 flex items-center justify-between bg-slate-50/30">

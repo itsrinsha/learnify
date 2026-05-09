@@ -5,16 +5,19 @@ import { useSelector } from 'react-redux';
 const ProtectedRoute = ({ children, allowedRoles }) => {
   const { user } = useSelector((state) => state.auth);
   const location = useLocation();
+  const getLoginPath = () => {
+    if (allowedRoles?.includes('admin')) return '/admin/login';
+    if (allowedRoles?.includes('instructor')) return '/instructor/login';
+    return '/login';
+  };
 
   if (!user) {
     // Redirect to login if not authenticated
-    const loginPath = allowedRoles.includes('instructor') ? '/instructor/login' : '/login';
-    return <Navigate to={loginPath} state={{ from: location }} replace />;
+    return <Navigate to={getLoginPath()} state={{ from: location }} replace />;
   }
 
   if (allowedRoles && !allowedRoles.includes(user.role)) {
-    // Redirect to home if role not allowed
-    return <Navigate to="/" replace />;
+    return <Navigate to={getLoginPath()} state={{ from: location }} replace />;
   }
 
   // Special check for Instructors: Must be approved to access dashboard/courses
@@ -22,9 +25,6 @@ const ProtectedRoute = ({ children, allowedRoles }) => {
     const isVerificationPage = location.pathname.includes('/instructor/verify');
     const isPendingPage = location.pathname.includes('/instructor/pending');
     
-    // Check if user has already submitted verification
-    const hasSubmitted = user.verificationDetails?.expertise || user.approvalStatus === 'pending';
-
     if (user.approvalStatus === 'approved') {
       if (isVerificationPage || isPendingPage) {
         return <Navigate to="/instructor/dashboard" replace />;

@@ -42,37 +42,41 @@ const LandingPage = () => {
 
   const features = [
     {
-      title: 'Expert Instructors',
-      description: 'Learn from industry professionals with years of real-world experience.',
-      icon: <Users className="text-blue-600" />,
+      title: 'Live Mentor Sessions',
+      description: 'Learn directly from instructors through scheduled classes and focused review sessions.',
+      icon: <Users />
     },
     {
-      title: 'Live Classes',
-      description: 'Interactive sessions with real-time Q&A to clear your doubts instantly.',
-      icon: <PlayCircle className="text-blue-600" />,
+      title: 'Career Ready Courses',
+      description: 'Build practical skills with structured lessons, projects, and progress tracking.',
+      icon: <Laptop />
     },
     {
-      title: 'Progress Tracking',
-      description: 'Visualize your learning journey with detailed analytics and milestones.',
-      icon: <Laptop className="text-blue-600" />,
-    },
-    {
-      title: 'Global Certificates',
-      description: 'Earn industry-recognized certificates upon course completion.',
-      icon: <Award className="text-blue-600" />,
-    },
-    {
-      title: '24/7 Support',
-      description: 'Our dedicated support team is always here to help you succeed.',
-      icon: <MessageSquare className="text-blue-600" />,
-    },
-    {
-      title: 'Flexible Learning',
-      description: 'Access your courses anytime, anywhere, on any device you prefer.',
-      icon: <Globe className="text-blue-600" />,
-    },
+      title: 'Verified Certificates',
+      description: 'Earn certificates with unique IDs after completing courses and passing reviews.',
+      icon: <ShieldCheck />
+    }
   ];
 
+  const testimonials = [
+    {
+      name: 'Alice Johnson',
+      role: 'Frontend Developer',
+      quote: 'The live reviews helped me understand exactly where I needed to improve.'
+    },
+    {
+      name: 'Rahul Mehta',
+      role: 'MERN Student',
+      quote: 'Courses are easy to follow and the dashboard keeps me motivated.'
+    },
+    {
+      name: 'Priya Sharma',
+      role: 'UI Engineer',
+      quote: 'The certificate flow and mentor feedback made the learning feel professional.'
+    }
+  ];
+
+ 
   const [featuredCourses, setFeaturedCourses] = useState([]);
   const [loadingCourses, setLoadingCourses] = useState(true);
 
@@ -90,26 +94,7 @@ const LandingPage = () => {
     fetchCourses();
   }, []);
 
-  const testimonials = [
-    {
-      name: 'Alex Johnson',
-      role: 'Frontend Developer',
-      content: 'Learnify completely changed my career path. The React course was so detailed and the projects helped me land my dream job.',
-      avatar: 'https://i.pravatar.cc/150?u=alex',
-    },
-    {
-      name: 'Priya Sharma',
-      role: 'UI Designer',
-      content: 'The live sessions are incredible. Being able to ask questions directly to experts made a huge difference in my learning curve.',
-      avatar: 'https://i.pravatar.cc/150?u=priya',
-    },
-    {
-      name: 'David Chen',
-      role: 'Student',
-      content: 'The platform is so intuitive and the community support is top-notch. I recommend Learnify to everyone starting their tech journey.',
-      avatar: 'https://i.pravatar.cc/150?u=david',
-    },
-  ];
+  
 
   return (
     <div className="min-h-screen bg-white font-sans text-slate-900 selection:bg-blue-100 selection:text-blue-700">

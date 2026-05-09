@@ -112,6 +112,20 @@ const authSlice = createSlice({
       .addCase(verifyOtp.rejected, (state, action) => {
         state.loading = false;
         state.error = action.payload;
+      })
+
+      // RESEND OTP
+      .addCase(resendOtp.pending, (state) => {
+        state.loading = true;
+        state.error = null;
+      })
+      .addCase(resendOtp.fulfilled, (state) => {
+        state.loading = false;
+        state.otpSent = true;
+      })
+      .addCase(resendOtp.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.payload;
       });
   },
 });
