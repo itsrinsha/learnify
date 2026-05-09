@@ -5,7 +5,6 @@ import { fetchCourseById as fetchCourseThunk } from '../../features/courses/cour
 import { 
   Play, 
   CheckCircle2, 
-  Lock, 
   ChevronDown, 
   ChevronUp, 
   Download, 
@@ -17,27 +16,23 @@ import {
   Volume2,
   Clock,
   BookOpen,
-  FileText,
   Loader2
 } from 'lucide-react';
 
 const CoursePlayer = () => {
   const { id } = useParams();
   const dispatch = useDispatch();
-  const { selectedCourse, loading, error } = useSelector((state) => state.courses);
+  const { selectedCourse, loading } = useSelector((state) => state.courses);
   
-  const [currentLesson, setCurrentLesson] = useState(null);
   const [expandedModule, setExpandedModule] = useState(0);
+  const [currentLessonId, setCurrentLessonId] = useState(null);
 
   useEffect(() => {
     dispatch(fetchCourseThunk(id));
   }, [dispatch, id]);
 
-  useEffect(() => {
-    if (selectedCourse?.lessons?.length > 0 && !currentLesson) {
-      setCurrentLesson(selectedCourse.lessons[0]);
-    }
-  }, [selectedCourse, currentLesson]);
+  const lessons = selectedCourse?.lessons || [];
+  const currentLesson = lessons.find((lesson) => lesson._id === currentLessonId) || lessons[0] || null;
 
   if (loading && !selectedCourse) {
     return (
@@ -54,7 +49,7 @@ const CoursePlayer = () => {
       id: 1,
       title: 'Course Content',
       duration: selectedCourse?.duration || 'Unknown',
-      lessons: selectedCourse?.lessons?.map((l, idx) => ({
+      lessons: lessons.map((l, idx) => ({
         id: l._id || idx,
         title: l.title,
         duration: l.duration || '00:00',
@@ -127,7 +122,7 @@ const CoursePlayer = () => {
             <button 
               onClick={() => {
                 const idx = selectedCourse?.lessons?.findIndex(l => l._id === currentLesson?._id);
-                if (idx > 0) setCurrentLesson(selectedCourse.lessons[idx - 1]);
+                if (idx > 0) setCurrentLessonId(selectedCourse.lessons[idx - 1]._id);
               }}
               disabled={!selectedCourse?.lessons || selectedCourse.lessons.indexOf(currentLesson) === 0}
               className="px-6 py-3 bg-slate-50 text-slate-500 rounded-2xl font-bold text-sm hover:bg-slate-100 disabled:opacity-50 transition-all flex items-center gap-2 border border-slate-100"
@@ -137,7 +132,7 @@ const CoursePlayer = () => {
             <button 
               onClick={() => {
                 const idx = selectedCourse?.lessons?.findIndex(l => l._id === currentLesson?._id);
-                if (idx < selectedCourse.lessons.length - 1) setCurrentLesson(selectedCourse.lessons[idx + 1]);
+                if (idx < selectedCourse.lessons.length - 1) setCurrentLessonId(selectedCourse.lessons[idx + 1]._id);
               }}
               disabled={!selectedCourse?.lessons || selectedCourse.lessons.indexOf(currentLesson) === selectedCourse.lessons.length - 1}
               className="px-8 py-3 bg-blue-600 text-white rounded-2xl font-bold text-sm hover:bg-blue-700 disabled:opacity-50 transition-all shadow-xl shadow-blue-100 flex items-center gap-2"
@@ -186,10 +181,8 @@ const CoursePlayer = () => {
                     <div 
                       key={lesson.id} 
                       onClick={() => {
-                        const realLesson = selectedCourse.lessons.find(l => l._id === (lesson.id === lesson.title ? l.title : lesson.id)); 
-                        // Wait, lesson.id is l._id or idx.
                         const target = selectedCourse.lessons.find(l => l._id === lesson.id);
-                        if (target) setCurrentLesson(target);
+                        if (target) setCurrentLessonId(target._id);
                       }}
                       className={`p-4 pl-12 flex items-center gap-4 cursor-pointer hover:bg-blue-50/50 transition-all relative ${
                         currentLesson?._id === lesson.id ? 'bg-blue-50 border-r-4 border-blue-600' : ''

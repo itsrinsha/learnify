@@ -16,7 +16,7 @@ const StatCard = ({ title, value, icon: Icon, trend, color }) => {
     <div className="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm hover:shadow-md transition-shadow">
       <div className="flex items-center justify-between mb-4">
         <div className={`p-3 rounded-xl ${colorStyles[color] || colorStyles.blue}`}>
-          <Icon className="w-6 h-6" />
+          {Icon ? React.createElement(Icon, { className: 'w-6 h-6' }) : null}
         </div>
         {trend && (
           <div className={`flex items-center gap-1 text-sm font-medium ${trend > 0 ? 'text-green-600' : 'text-red-600'}`}>

@@ -17,16 +17,101 @@ import {
   ToggleLeft,
   ToggleRight,
   ShieldCheck,
-  FileBadge
+  FileBadge,
+  Globe,
+  Loader2,
+  AlertCircle
 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
+import { createCourseDraft, addModule, addLesson, publishCourse } from '../../services/instructorCourseService';
 
 const CreateCourse = () => {
   const navigate = useNavigate();
   const [step, setStep] = useState(1);
-  const [isLiveEnabled, setIsLiveEnabled] = useState(false);
-  const [isReviewEnabled, setIsReviewEnabled] = useState(false);
-  const [isCertEnabled, setIsCertEnabled] = useState(true);
+  const [loading, setLoading] = useState(false);
+  const [courseId, setCourseId] = useState(null);
+  
+  // Form States
+  const [courseData, setCourseData] = useState({
+    title: '',
+    subtitle: '',
+    description: '',
+    category: 'Web Development',
+    level: 'Beginner',
+    language: 'English',
+    price: '',
+    discountPrice: '',
+  });
+
+  const [modules, setModules] = useState([
+    { title: 'Introduction', lessons: [{ title: 'Welcome to the course', duration: '5:00', isPreviewFree: true }] }
+  ]);
+
+  const [settings, setSettings] = useState({
+    examRequired: false,
+    certificateEligibility: true,
+  });
+
+  const handleInputChange = (e) => {
+    const { name, value } = e.target;
+    setCourseData(prev => ({ ...prev, [name]: value }));
+  };
+
+  const handleAddModule = () => {
+    setModules([...modules, { title: `Module ${modules.length + 1}`, lessons: [] }]);
+  };
+
+  const handleAddLesson = (moduleIndex) => {
+    const newModules = [...modules];
+    newModules[moduleIndex].lessons.push({ title: 'New Lesson', duration: '10:00', isPreviewFree: false });
+    setModules(newModules);
+  };
+
+  const handleNextStep = async () => {
+    try {
+      setLoading(true);
+      if (step === 1) {
+        if (!courseData.title.trim()) {
+          alert("Please enter a course title.");
+          return;
+        }
+
+        // Create Draft if not already created
+        if (!courseId) {
+          const payload = {
+            ...courseData,
+            price: Number(courseData.price) || 0,
+            discountPrice: Number(courseData.discountPrice) || 0,
+          };
+          const result = await createCourseDraft(payload);
+          setCourseId(result.course._id);
+        }
+        setStep(2);
+      } else if (step === 2) {
+        // Save Modules & Lessons (In a real app, you might save these one by one, but here we'll simulate the flow)
+        // We'll iterate and call the API for each module and lesson
+        for (const mod of modules) {
+          const modResult = await addModule(courseId, { title: mod.title });
+          for (const lesson of mod.lessons) {
+            await addLesson(courseId, modResult.module._id, lesson);
+          }
+        }
+        setStep(3);
+      } else if (step === 3) {
+        setStep(4);
+      } else if (step === 4) {
+        // Final Publish
+        await publishCourse(courseId);
+        alert('Congratulations! Your course is now published.');
+        navigate('/instructor/courses');
+      }
+    } catch (error) {
+      console.error("Error saving step:", error);
+      alert(error.response?.data?.message || "Something went wrong. Please try again.");
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const steps = [
     { id: 1, title: 'Basic Information', icon: <FileText size={18} /> },
@@ -44,7 +129,7 @@ const CreateCourse = () => {
           <p className="text-slate-500 mt-1 font-medium">Follow the steps to submit your course for admin approval.</p>
         </div>
         <div className="px-5 py-2.5 bg-yellow-50 text-yellow-700 rounded-xl border border-yellow-100 flex items-center gap-2 text-xs font-bold uppercase tracking-widest">
-          <Info size={16} /> Draft Auto-saved
+          <Info size={16} /> {courseId ? 'Course ID: ' + courseId : 'Draft Mode'}
         </div>
       </div>
 
@@ -83,6 +168,9 @@ const CreateCourse = () => {
                 <label className="text-sm font-black text-slate-900 uppercase tracking-widest">Course Title</label>
                 <input 
                   type="text" 
+                  name="title"
+                  value={courseData.title}
+                  onChange={handleInputChange}
                   placeholder="e.g. Mastering Advanced React Patterns" 
                   className="w-full px-6 py-4 bg-slate-50 border border-slate-100 rounded-2xl text-sm focus:ring-2 focus:ring-blue-500 outline-none transition-all font-bold text-slate-700"
                 />
@@ -91,6 +179,9 @@ const CreateCourse = () => {
                 <label className="text-sm font-black text-slate-900 uppercase tracking-widest">Description</label>
                 <textarea 
                   rows="5" 
+                  name="description"
+                  value={courseData.description}
+                  onChange={handleInputChange}
                   placeholder="Describe what students will learn..." 
                   className="w-full px-6 py-4 bg-slate-50 border border-slate-100 rounded-2xl text-sm focus:ring-2 focus:ring-blue-500 outline-none transition-all resize-none font-medium text-slate-600"
                 ></textarea>
@@ -98,7 +189,12 @@ const CreateCourse = () => {
               <div className="grid md:grid-cols-2 gap-6">
                 <div className="space-y-2">
                   <label className="text-sm font-black text-slate-900 uppercase tracking-widest">Category</label>
-                  <select className="w-full px-6 py-4 bg-slate-50 border border-slate-100 rounded-2xl text-sm focus:ring-2 focus:ring-blue-500 outline-none transition-all font-bold text-slate-600">
+                  <select 
+                    name="category"
+                    value={courseData.category}
+                    onChange={handleInputChange}
+                    className="w-full px-6 py-4 bg-slate-50 border border-slate-100 rounded-2xl text-sm focus:ring-2 focus:ring-blue-500 outline-none transition-all font-bold text-slate-600"
+                  >
                     <option>Web Development</option>
                     <option>Data Science</option>
                     <option>Mobile App Dev</option>
@@ -107,7 +203,12 @@ const CreateCourse = () => {
                 </div>
                 <div className="space-y-2">
                   <label className="text-sm font-black text-slate-900 uppercase tracking-widest">Level</label>
-                  <select className="w-full px-6 py-4 bg-slate-50 border border-slate-100 rounded-2xl text-sm focus:ring-2 focus:ring-blue-500 outline-none transition-all font-bold text-slate-600">
+                  <select 
+                    name="level"
+                    value={courseData.level}
+                    onChange={handleInputChange}
+                    className="w-full px-6 py-4 bg-slate-50 border border-slate-100 rounded-2xl text-sm focus:ring-2 focus:ring-blue-500 outline-none transition-all font-bold text-slate-600"
+                  >
                     <option>Beginner</option>
                     <option>Intermediate</option>
                     <option>Advanced</option>
@@ -135,33 +236,55 @@ const CreateCourse = () => {
           <div className="space-y-10 animate-in fade-in slide-in-from-bottom-4 duration-500">
             <div className="flex items-center justify-between">
               <h3 className="text-xl font-bold text-slate-900">Modules & Lessons</h3>
-              <button className="flex items-center gap-2 text-blue-600 font-bold text-sm hover:underline">
+              <button 
+                onClick={handleAddModule}
+                className="flex items-center gap-2 text-blue-600 font-bold text-sm hover:underline"
+              >
                 <Plus size={18} /> Add Module
               </button>
             </div>
 
             <div className="space-y-6">
-              {[1, 2].map((m) => (
-                <div key={m} className="border border-slate-100 rounded-3xl overflow-hidden shadow-sm">
+              {modules.map((m, mIdx) => (
+                <div key={mIdx} className="border border-slate-100 rounded-3xl overflow-hidden shadow-sm">
                   <div className="bg-slate-50 p-6 flex items-center justify-between border-b border-slate-100">
                     <div className="flex items-center gap-4">
-                      <div className="w-10 h-10 bg-white rounded-xl flex items-center justify-center font-black text-slate-900 shadow-sm">{m}</div>
+                      <div className="w-10 h-10 bg-white rounded-xl flex items-center justify-center font-black text-slate-900 shadow-sm">{mIdx + 1}</div>
                       <input 
                         type="text" 
-                        defaultValue={`Module ${m}: Introduction`} 
+                        value={m.title}
+                        onChange={(e) => {
+                          const newMods = [...modules];
+                          newMods[mIdx].title = e.target.value;
+                          setModules(newMods);
+                        }}
                         className="bg-transparent border-none font-bold text-slate-900 focus:ring-0 text-lg"
                       />
                     </div>
-                    <button className="p-2 text-slate-400 hover:text-red-500 transition-all"><X size={20} /></button>
+                    <button 
+                      onClick={() => setModules(modules.filter((_, i) => i !== mIdx))}
+                      className="p-2 text-slate-400 hover:text-red-500 transition-all"
+                    >
+                      <X size={20} />
+                    </button>
                   </div>
                   <div className="p-6 space-y-4">
-                    {[1, 2].map((l) => (
-                      <div key={l} className="p-4 bg-white border border-slate-100 rounded-2xl flex items-center justify-between group hover:border-blue-200 transition-all">
+                    {m.lessons.map((l, lIdx) => (
+                      <div key={lIdx} className="p-4 bg-white border border-slate-100 rounded-2xl flex items-center justify-between group hover:border-blue-200 transition-all">
                         <div className="flex items-center gap-4">
                           <div className="p-2 bg-slate-50 text-slate-400 rounded-lg group-hover:text-blue-600 group-hover:bg-blue-50 transition-all">
                             <PlayCircle size={18} />
                           </div>
-                          <span className="text-sm font-bold text-slate-700">Lesson {l}: Core Concepts</span>
+                          <input 
+                            type="text"
+                            value={l.title}
+                            onChange={(e) => {
+                              const newMods = [...modules];
+                              newMods[mIdx].lessons[lIdx].title = e.target.value;
+                              setModules(newMods);
+                            }}
+                            className="text-sm font-bold text-slate-700 bg-transparent border-none focus:ring-0"
+                          />
                         </div>
                         <div className="flex items-center gap-4">
                           <button className="p-2 text-slate-400 hover:text-blue-600 transition-all"><LinkIcon size={16} /></button>
@@ -169,8 +292,11 @@ const CreateCourse = () => {
                         </div>
                       </div>
                     ))}
-                    <button className="w-full py-3 border-2 border-dashed border-slate-100 rounded-2xl text-slate-400 text-xs font-bold hover:border-blue-200 hover:text-blue-600 transition-all flex items-center justify-center gap-2">
-                      <Plus size={16} /> Add Lesson to Module {m}
+                    <button 
+                      onClick={() => handleAddLesson(mIdx)}
+                      className="w-full py-3 border-2 border-dashed border-slate-100 rounded-2xl text-slate-400 text-xs font-bold hover:border-blue-200 hover:text-blue-600 transition-all flex items-center justify-center gap-2"
+                    >
+                      <Plus size={16} /> Add Lesson to Module {mIdx + 1}
                     </button>
                   </div>
                 </div>
@@ -188,6 +314,9 @@ const CreateCourse = () => {
                     <IndianRupee size={18} className="absolute left-6 top-1/2 -translate-y-1/2 text-slate-400" />
                     <input 
                       type="number" 
+                      name="price"
+                      value={courseData.price}
+                      onChange={handleInputChange}
                       placeholder="2499" 
                       className="w-full pl-14 pr-6 py-4 bg-slate-50 border border-slate-100 rounded-2xl text-sm focus:ring-2 focus:ring-blue-500 outline-none transition-all font-bold"
                     />
@@ -199,6 +328,9 @@ const CreateCourse = () => {
                     <IndianRupee size={18} className="absolute left-6 top-1/2 -translate-y-1/2 text-slate-400" />
                     <input 
                       type="number" 
+                      name="discountPrice"
+                      value={courseData.discountPrice}
+                      onChange={handleInputChange}
                       placeholder="1999" 
                       className="w-full pl-14 pr-6 py-4 bg-slate-50 border border-slate-100 rounded-2xl text-sm focus:ring-2 focus:ring-blue-500 outline-none transition-all font-bold"
                     />
@@ -219,35 +351,22 @@ const CreateCourse = () => {
         {step === 4 && (
           <div className="space-y-10 animate-in fade-in slide-in-from-bottom-4 duration-500">
              <div className="grid md:grid-cols-2 gap-8">
-                <div className={`p-8 rounded-[2rem] border transition-all cursor-pointer flex items-center justify-between group ${isLiveEnabled ? 'border-blue-600 bg-blue-50/50' : 'border-slate-100 bg-white'}`} onClick={() => setIsLiveEnabled(!isLiveEnabled)}>
+                <div className={`p-8 rounded-[2rem] border transition-all cursor-pointer flex items-center justify-between group ${settings.examRequired ? 'border-blue-600 bg-blue-50/50' : 'border-slate-100 bg-white'}`} onClick={() => setSettings({...settings, examRequired: !settings.examRequired})}>
                    <div className="flex items-center gap-4">
-                      <div className={`p-4 rounded-2xl ${isLiveEnabled ? 'bg-blue-600 text-white' : 'bg-slate-50 text-slate-400'}`}>
-                         <Video size={24} />
-                      </div>
-                      <div>
-                         <p className="font-bold text-slate-900">Live Classes</p>
-                         <p className="text-xs text-slate-400 font-medium">Allow group sessions</p>
-                      </div>
-                   </div>
-                   {isLiveEnabled ? <ToggleRight size={32} className="text-blue-600" /> : <ToggleLeft size={32} className="text-slate-300" />}
-                </div>
-
-                <div className={`p-8 rounded-[2rem] border transition-all cursor-pointer flex items-center justify-between group ${isReviewEnabled ? 'border-blue-600 bg-blue-50/50' : 'border-slate-100 bg-white'}`} onClick={() => setIsReviewEnabled(!isReviewEnabled)}>
-                   <div className="flex items-center gap-4">
-                      <div className={`p-4 rounded-2xl ${isReviewEnabled ? 'bg-blue-600 text-white' : 'bg-slate-50 text-slate-400'}`}>
+                      <div className={`p-4 rounded-2xl ${settings.examRequired ? 'bg-blue-600 text-white' : 'bg-slate-50 text-slate-400'}`}>
                          <ShieldCheck size={24} />
                       </div>
                       <div>
-                         <p className="font-bold text-slate-900">Expert Reviews</p>
-                         <p className="text-xs text-slate-400 font-medium">Enable 1-on-1 sessions</p>
+                         <p className="font-bold text-slate-900">Exam Required</p>
+                         <p className="text-xs text-slate-400 font-medium">Mandatory for certificate</p>
                       </div>
                    </div>
-                   {isReviewEnabled ? <ToggleRight size={32} className="text-blue-600" /> : <ToggleLeft size={32} className="text-slate-300" />}
+                   {settings.examRequired ? <ToggleRight size={32} className="text-blue-600" /> : <ToggleLeft size={32} className="text-slate-300" />}
                 </div>
 
-                <div className={`p-8 rounded-[2rem] border transition-all cursor-pointer flex items-center justify-between group ${isCertEnabled ? 'border-blue-600 bg-blue-50/50' : 'border-slate-100 bg-white'}`} onClick={() => setIsCertEnabled(!isCertEnabled)}>
+                <div className={`p-8 rounded-[2rem] border transition-all cursor-pointer flex items-center justify-between group ${settings.certificateEligibility ? 'border-blue-600 bg-blue-50/50' : 'border-slate-100 bg-white'}`} onClick={() => setSettings({...settings, certificateEligibility: !settings.certificateEligibility})}>
                    <div className="flex items-center gap-4">
-                      <div className={`p-4 rounded-2xl ${isCertEnabled ? 'bg-blue-600 text-white' : 'bg-slate-50 text-slate-400'}`}>
+                      <div className={`p-4 rounded-2xl ${settings.certificateEligibility ? 'bg-blue-600 text-white' : 'bg-slate-50 text-slate-400'}`}>
                          <FileBadge size={24} />
                       </div>
                       <div>
@@ -255,16 +374,16 @@ const CreateCourse = () => {
                          <p className="text-xs text-slate-400 font-medium">Auto-generate on pass</p>
                       </div>
                    </div>
-                   {isCertEnabled ? <ToggleRight size={32} className="text-blue-600" /> : <ToggleLeft size={32} className="text-slate-300" />}
+                   {settings.certificateEligibility ? <ToggleRight size={32} className="text-blue-600" /> : <ToggleLeft size={32} className="text-slate-300" />}
                 </div>
 
-                <div className="p-8 rounded-[2rem] border border-slate-100 bg-white flex items-center gap-4">
+                <div className="p-8 rounded-[2rem] border border-slate-100 bg-white flex items-center gap-4 opacity-50">
                    <div className="p-4 rounded-2xl bg-slate-50 text-slate-400">
                       <Globe size={24} />
                    </div>
                    <div>
                       <p className="font-bold text-slate-900">Visibility</p>
-                      <p className="text-xs text-slate-400 font-medium">Approved only (Fixed)</p>
+                      <p className="text-xs text-slate-400 font-medium">Approved only (Locked)</p>
                    </div>
                 </div>
              </div>
@@ -287,7 +406,7 @@ const CreateCourse = () => {
         {/* Navigation Buttons */}
         <div className="pt-10 border-t border-slate-50 flex items-center justify-between">
           <button 
-            disabled={step === 1}
+            disabled={step === 1 || loading}
             onClick={() => setStep(step - 1)}
             className={`px-8 py-4 rounded-2xl font-bold text-sm flex items-center gap-2 transition-all ${
               step === 1 ? 'text-slate-300' : 'text-slate-600 hover:bg-slate-50 border border-slate-200 shadow-sm'
@@ -296,25 +415,23 @@ const CreateCourse = () => {
             <ChevronLeft size={18} /> Previous Step
           </button>
           
-          {step < 4 ? (
-            <button 
-              onClick={() => setStep(step + 1)}
-              className="px-10 py-4 bg-slate-900 text-white rounded-2xl font-bold text-sm hover:bg-blue-600 shadow-xl shadow-slate-100 transition-all flex items-center gap-2 active:scale-95"
-            >
-              Next Step <ChevronRight size={18} />
-            </button>
-          ) : (
-            <button 
-              onClick={() => {
-                alert('Course submitted for admin approval!');
-                navigate('/instructor/courses');
-              }}
-              className="px-12 py-4 bg-blue-600 text-white rounded-2xl font-bold text-sm hover:bg-blue-700 shadow-xl shadow-blue-100 transition-all flex items-center gap-2 active:scale-95"
-            >
-              <CheckCircle2 size={20} />
-              Submit for Approval
-            </button>
-          )}
+          <button 
+            onClick={handleNextStep}
+            disabled={loading}
+            className={`px-10 py-4 ${step === 4 ? 'bg-blue-600' : 'bg-slate-900'} text-white rounded-2xl font-bold text-sm hover:opacity-90 shadow-xl shadow-slate-100 transition-all flex items-center gap-2 active:scale-95 disabled:opacity-50`}
+          >
+            {loading ? (
+              <>
+                <Loader2 size={18} className="animate-spin" />
+                Processing...
+              </>
+            ) : (
+              <>
+                {step < 4 ? 'Next Step' : 'Submit for Approval'}
+                {step < 4 ? <ChevronRight size={18} /> : <CheckCircle2 size={20} />}
+              </>
+            )}
+          </button>
         </div>
       </div>
     </div>

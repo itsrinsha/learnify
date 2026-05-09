@@ -13,41 +13,11 @@ import {
   VideoOff
 } from 'lucide-react';
 
+
 const InstructorLiveClasses = () => {
   const [showScheduleForm, setShowScheduleForm] = useState(false);
 
-  const classes = [
-    {
-      id: 1,
-      title: 'Advanced React 19 Patterns',
-      course: 'Advanced React 19',
-      date: 'Today',
-      time: '04:00 PM',
-      students: 145,
-      status: 'Active',
-      thumbnail: 'https://images.unsplash.com/photo-1633356122544-f134324a6cee?auto=format&fit=crop&w=600&q=80'
-    },
-    {
-      id: 2,
-      title: 'Q&A Session: Microservices',
-      course: 'Node.js Microservices',
-      date: 'Tomorrow',
-      time: '10:00 AM',
-      students: 82,
-      status: 'Scheduled',
-      thumbnail: 'https://images.unsplash.com/photo-1555949963-ff9fe0c870eb?auto=format&fit=crop&w=600&q=80'
-    },
-    {
-      id: 3,
-      title: 'UI Design Principles Workshop',
-      course: 'UI/UX Fundamentals',
-      date: 'May 05, 2026',
-      time: '02:00 PM',
-      students: 210,
-      status: 'Scheduled',
-      thumbnail: 'https://images.unsplash.com/photo-1512941937669-90a1b58e7e9c?auto=format&fit=crop&w=600&q=80'
-    }
-  ];
+
 
   return (
     <div className="space-y-10 pb-20">
@@ -84,99 +54,10 @@ const InstructorLiveClasses = () => {
       </div>
 
       {/* Class List */}
-      <div className="grid md:grid-cols-2 xl:grid-cols-3 gap-8">
-        {classes.map((item) => (
-          <div key={item.id} className="bg-white rounded-[2.5rem] border border-slate-200 overflow-hidden shadow-sm hover:shadow-2xl transition-all group">
-            <div className="h-48 relative overflow-hidden">
-              <img src={item.thumbnail} alt={item.title} className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700" />
-              <div className="absolute inset-0 bg-gradient-to-t from-slate-900/80 to-transparent"></div>
-              <div className="absolute bottom-4 left-6">
-                <span className={`px-3 py-1 rounded-lg text-[9px] font-black uppercase tracking-widest ${
-                  item.status === 'Active' ? 'bg-red-600 text-white animate-pulse' : 'bg-white/20 backdrop-blur-md text-white border border-white/30'
-                }`}>
-                  {item.status}
-                </span>
-              </div>
-              {item.status === 'Active' && (
-                <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
-                  <div className="w-16 h-16 bg-red-600 text-white rounded-full flex items-center justify-center shadow-2xl animate-bounce">
-                    <Play size={24} fill="currentColor" />
-                  </div>
-                </div>
-              )}
-            </div>
-            <div className="p-8 space-y-6">
-              <div className="space-y-2">
-                <p className="text-blue-600 font-black text-[10px] uppercase tracking-widest">{item.course}</p>
-                <h3 className="text-lg font-black text-slate-900 leading-tight">{item.title}</h3>
-              </div>
-
-              <div className="grid grid-cols-2 gap-4 py-4 border-y border-slate-50">
-                <div className="space-y-1">
-                  <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest flex items-center gap-1.5">
-                    <Calendar size={12} /> Date
-                  </p>
-                  <p className="text-sm font-bold text-slate-900">{item.date}</p>
-                </div>
-                <div className="space-y-1">
-                  <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest flex items-center gap-1.5">
-                    <Clock size={12} /> Time
-                  </p>
-                  <p className="text-sm font-bold text-slate-900">{item.time}</p>
-                </div>
-              </div>
-
-              <div className="flex items-center justify-between pt-2">
-                <div className="flex items-center gap-2">
-                  <div className="flex -space-x-2">
-                    {[1, 2, 3].map(i => (
-                      <div key={i} className="w-8 h-8 rounded-full border-2 border-white bg-slate-100 flex items-center justify-center overflow-hidden">
-                        <img src={`https://i.pravatar.cc/100?u=${i + item.id}`} alt="student" />
-                      </div>
-                    ))}
-                  </div>
-                  <span className="text-xs font-bold text-slate-500">+{item.students} students</span>
-                </div>
-                <button className={`px-6 py-3 rounded-2xl font-black text-xs transition-all active:scale-95 shadow-lg ${
-                  item.status === 'Active' 
-                    ? 'bg-red-600 text-white shadow-red-100 hover:bg-red-700' 
-                    : 'bg-slate-900 text-white shadow-slate-100 hover:bg-blue-600'
-                }`}>
-                  {item.status === 'Active' ? 'Join Now' : 'Manage'}
-                </button>
-              </div>
-            </div>
-          </div>
-        ))}
-
-        {/* Create Card */}
-        <button 
-          onClick={() => setShowScheduleForm(true)}
-          className="bg-slate-50 rounded-[2.5rem] border-2 border-dashed border-slate-200 flex flex-col items-center justify-center p-10 group hover:border-blue-300 hover:bg-white transition-all min-h-[400px]"
-        >
-          <div className="w-20 h-20 bg-white rounded-[2rem] shadow-sm flex items-center justify-center text-slate-300 group-hover:text-blue-600 group-hover:shadow-xl transition-all mb-6">
-            <Plus size={32} />
-          </div>
-          <p className="font-black text-slate-900 uppercase tracking-widest text-sm">Schedule Class</p>
-          <p className="text-xs text-slate-400 font-bold mt-2">Maximum 4 live sessions per day</p>
-        </button>
-      </div>
+    
 
       {/* Empty State Mockup */}
-      {classes.length === 0 && (
-        <div className="bg-white rounded-[3rem] border border-slate-200 p-20 flex flex-col items-center text-center space-y-6">
-          <div className="w-32 h-32 bg-slate-50 rounded-[3rem] flex items-center justify-center text-slate-200 mb-4">
-            <VideoOff size={64} />
-          </div>
-          <div>
-            <h3 className="text-2xl font-black text-slate-900">No Live Classes Scheduled</h3>
-            <p className="text-slate-500 font-medium max-w-md mx-auto mt-2">You haven't scheduled any live sessions yet. Use the button above to create your first class.</p>
-          </div>
-          <button className="px-8 py-4 bg-blue-600 text-white rounded-2xl font-black text-sm shadow-xl shadow-blue-100 hover:bg-blue-700 transition-all">
-            Get Started
-          </button>
-        </div>
-      )}
+     
 
       {/* Schedule Form Modal */}
       {showScheduleForm && (

@@ -25,6 +25,7 @@ const BuyCourses = () => {
   const [selectedCourse, setSelectedCourse] = useState(null);
   const [showPayment, setShowPayment] = useState(false);
   const [isProcessing, setIsProcessing] = useState(false);
+  const [orderId, setOrderId] = useState("");
 
   useEffect(() => {
     dispatch(fetchAllCourses());
@@ -68,6 +69,7 @@ const BuyCourses = () => {
 
   const handleBuyClick = (course, instructor) => {
     setSelectedCourse({ ...course, instructorName: instructor.name });
+    setOrderId(`#LRN-${Math.floor(10000 + Math.random() * 90000)}`);
     setShowPayment(true);
   };
 
@@ -232,7 +234,7 @@ const BuyCourses = () => {
                 </div>
                 <div>
                   <h3 className="text-xl font-bold text-slate-900">Secure Checkout</h3>
-                  <p className="text-slate-500 text-sm">Order ID: #LRN-{Math.floor(10000 + Math.random() * 90000)}</p>
+                  <p className="text-slate-500 text-sm">Order ID: {orderId}</p>
                 </div>
               </div>
               <button onClick={() => setShowPayment(false)} className="p-2 hover:bg-slate-200 rounded-full transition-all">
@@ -249,7 +251,7 @@ const BuyCourses = () => {
                 </h4>
                 <div className="bg-slate-50 p-6 rounded-3xl border border-slate-100 space-y-4">
                   <div className="flex items-center gap-4">
-                    <img src={selectedCourse.thumbnail} className="w-16 h-16 rounded-xl object-cover" />
+                    <img src={selectedCourse.thumbnail} alt={selectedCourse.title} className="w-16 h-16 rounded-xl object-cover" />
                     <div>
                       <h5 className="font-bold text-slate-900 text-sm">{selectedCourse.title}</h5>
                       <p className="text-xs text-slate-500 mt-1">Instructor: {selectedCourse.instructorName}</p>

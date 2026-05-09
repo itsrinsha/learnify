@@ -88,6 +88,28 @@ export const getUserById = async (userId) => {
   }
 };
 
+// Get instructors for student
+export const getMyInstructors = async () => {
+  try {
+    const response = await axiosInstance.get('/users/my-instructors');
+    return response.data;
+  } catch (error) {
+    console.error('Error fetching instructors:', error);
+    throw error;
+  }
+};
+
+// Get enrolled courses for student
+export const getEnrolledCourses = async () => {
+  try {
+    const response = await axiosInstance.get('/users/enrollments');
+    return response.data;
+  } catch (error) {
+    console.error('Error fetching enrolled courses:', error);
+    throw error;
+  }
+};
+
 export default {
   getUserProfile,
   updateUserProfile,
@@ -95,4 +117,6 @@ export default {
   uploadUserAvatar,
   getAllUsers,
   getUserById,
+  getMyInstructors,
+  getEnrolledCourses,
 };

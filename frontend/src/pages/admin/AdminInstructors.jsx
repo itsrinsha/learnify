@@ -35,7 +35,7 @@ const AdminInstructors = () => {
       const data = await adminService.getAllUsers();
       setInstructors(data.filter(u => u.role === 'instructor'));
       setError(null);
-    } catch (err) {
+    } catch {
       setError('Failed to fetch instructors');
     } finally {
       setLoading(false);
@@ -52,7 +52,7 @@ const AdminInstructors = () => {
       await adminService.approveInstructor(id);
       fetchInstructors();
       alert('Instructor approved successfully!');
-    } catch (err) {
+    } catch {
       alert('Failed to approve instructor');
     }
   };
@@ -63,7 +63,7 @@ const AdminInstructors = () => {
       await adminService.rejectInstructor(id);
       fetchInstructors();
       alert('Instructor rejected.');
-    } catch (err) {
+    } catch {
       alert('Failed to reject instructor');
     }
   };
@@ -85,6 +85,11 @@ const AdminInstructors = () => {
 
   return (
     <div className="space-y-6">
+      {error && (
+        <div className="rounded-2xl border border-red-100 bg-red-50 px-5 py-3 text-sm font-bold text-red-600">
+          {error}
+        </div>
+      )}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
           <h2 className="text-2xl font-bold text-slate-900">Instructor Management</h2>

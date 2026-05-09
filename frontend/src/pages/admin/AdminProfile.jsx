@@ -15,11 +15,11 @@ import {
   X,
   Loader2
 } from 'lucide-react';
-import { fetchProfile, updateProfile, clearState } from '../../features/auth/authSlice';
+import { fetchProfile, updateProfile } from '../../features/auth/authSlice';
 
 const AdminProfile = () => {
   const dispatch = useDispatch();
-  const { user, loading, error, success } = useSelector((state) => state.auth);
+  const { user, loading } = useSelector((state) => state.auth);
   
   const [isEditing, setIsEditing] = useState(false);
   const [formData, setFormData] = useState({

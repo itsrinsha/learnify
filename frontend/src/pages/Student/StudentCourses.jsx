@@ -17,7 +17,7 @@ import { useNavigate } from 'react-router-dom';
 const StudentCourses = () => {
   const navigate = useNavigate();
   const dispatch = useDispatch();
-  const { dashboardData, loading, error } = useSelector((state) => state.student);
+  const { dashboardData, loading } = useSelector((state) => state.student);
 
   useEffect(() => {
     if (!dashboardData) {

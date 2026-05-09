@@ -12,44 +12,12 @@ import {
   AlertCircle
 } from 'lucide-react';
 
+
+
 const InstructorOffers = () => {
   const [showOfferForm, setShowOfferForm] = useState(false);
 
-  const offers = [
-    {
-      id: 1,
-      course: 'Advanced React 19',
-      originalPrice: '₹2,499',
-      offerPrice: '₹1,999',
-      discount: '20%',
-      startDate: 'May 01, 2026',
-      endDate: 'May 10, 2026',
-      status: 'Active',
-      thumbnail: 'https://images.unsplash.com/photo-1633356122544-f134324a6cee?auto=format&fit=crop&w=600&q=80'
-    },
-    {
-      id: 2,
-      course: 'Node.js Microservices',
-      originalPrice: '₹3,299',
-      offerPrice: '₹2,499',
-      discount: '24%',
-      startDate: 'May 15, 2026',
-      endDate: 'May 20, 2026',
-      status: 'Scheduled',
-      thumbnail: 'https://images.unsplash.com/photo-1555949963-ff9fe0c870eb?auto=format&fit=crop&w=600&q=80'
-    },
-    {
-      id: 3,
-      course: 'UI/UX Fundamentals',
-      originalPrice: '₹1,499',
-      offerPrice: '₹999',
-      discount: '33%',
-      startDate: 'Apr 20, 2026',
-      endDate: 'Apr 30, 2026',
-      status: 'Expired',
-      thumbnail: 'https://images.unsplash.com/photo-1512941937669-90a1b58e7e9c?auto=format&fit=crop&w=600&q=80'
-    }
-  ];
+ 
 
   return (
     <div className="space-y-10 pb-20">
@@ -101,83 +69,7 @@ const InstructorOffers = () => {
       </div>
 
       {/* Offers List */}
-      <div className="grid gap-8">
-        {offers.map((offer) => (
-          <div key={offer.id} className="bg-white rounded-[2.5rem] border border-slate-200 overflow-hidden shadow-sm hover:shadow-2xl transition-all group">
-            <div className="flex flex-col lg:flex-row">
-              <div className="lg:w-72 h-48 lg:h-auto relative overflow-hidden flex-shrink-0">
-                <img src={offer.thumbnail} alt={offer.course} className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700" />
-                <div className="absolute inset-0 bg-slate-900/40 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
-                   <div className="bg-white px-4 py-2 rounded-xl font-black text-xs uppercase tracking-widest text-slate-900 shadow-2xl">
-                     {offer.discount} OFF
-                   </div>
-                </div>
-              </div>
-
-              <div className="flex-1 p-8 lg:p-10 flex flex-col justify-between">
-                <div className="flex flex-col md:flex-row md:items-start justify-between gap-6">
-                  <div className="space-y-2">
-                    <div className="flex items-center gap-3">
-                      <span className={`px-3 py-1 rounded-lg text-[9px] font-black uppercase tracking-widest ${
-                        offer.status === 'Active' ? 'bg-green-50 text-green-600 animate-pulse' :
-                        offer.status === 'Scheduled' ? 'bg-blue-50 text-blue-600' : 'bg-slate-100 text-slate-400'
-                      }`}>
-                        {offer.status}
-                      </span>
-                      <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest flex items-center gap-1.5">
-                        <Tag size={12} className="text-blue-600" /> Promo Active
-                      </p>
-                    </div>
-                    <h3 className="text-2xl font-black text-slate-900">{offer.course}</h3>
-                  </div>
-
-                  <div className="flex items-center gap-6">
-                    <div className="text-right">
-                      <p className="text-2xl font-black text-blue-600">{offer.offerPrice}</p>
-                      <p className="text-sm text-slate-400 line-through font-bold">{offer.originalPrice}</p>
-                    </div>
-                    <button className="p-3 bg-slate-50 text-slate-400 rounded-xl hover:bg-slate-100 transition-all border border-slate-100">
-                      <MoreVertical size={20} />
-                    </button>
-                  </div>
-                </div>
-
-                <div className="flex flex-wrap items-center gap-10 mt-8 pt-8 border-t border-slate-50">
-                  <div className="flex items-center gap-3">
-                    <div className="w-10 h-10 bg-slate-50 rounded-xl flex items-center justify-center text-slate-400">
-                      <Calendar size={18} />
-                    </div>
-                    <div>
-                      <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Start Date</p>
-                      <p className="text-sm font-bold text-slate-900">{offer.startDate}</p>
-                    </div>
-                  </div>
-                  <div className="flex items-center gap-3">
-                    <div className="w-10 h-10 bg-slate-50 rounded-xl flex items-center justify-center text-slate-400">
-                      <Clock size={18} />
-                    </div>
-                    <div>
-                      <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">End Date</p>
-                      <p className="text-sm font-bold text-slate-900">{offer.endDate}</p>
-                    </div>
-                  </div>
-                  <div className="flex-1"></div>
-                  <div className="flex gap-3 w-full md:w-auto">
-                    <button className="flex-1 md:flex-none px-6 py-3 bg-slate-900 text-white rounded-xl font-bold text-xs hover:bg-blue-600 transition-all active:scale-95 shadow-xl shadow-slate-100">
-                      Edit Offer
-                    </button>
-                    {offer.status === 'Active' && (
-                      <button className="flex-1 md:flex-none px-6 py-3 bg-white border border-red-200 text-red-600 rounded-xl font-bold text-xs hover:bg-red-50 transition-all">
-                        End Now
-                      </button>
-                    )}
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-        ))}
-      </div>
+   
 
       {/* Offer Form Modal */}
       {showOfferForm && (

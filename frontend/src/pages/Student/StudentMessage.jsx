@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { 
   Search, 
   Send, 
@@ -11,52 +11,87 @@ import {
   X,
   FileText,
   User,
-  Info
+  Info,
+  Loader2,
+  AlertCircle
 } from 'lucide-react';
+import { getMyInstructors } from '../../services/userService';
 
 const StudentMessage = () => {
-  const [selectedChat, setSelectedChat] = useState(1);
+  const [instructors, setInstructors] = useState([]);
+  const [selectedChat, setSelectedChat] = useState(null);
   const [messageText, setMessageText] = useState('');
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+  const [currentMessages] = useState([]); // Will be used for real-time messages later
 
-  const instructors = [
-    {
-      id: 1,
-      name: 'Dr. Angela Yu',
-      avatar: 'https://i.pravatar.cc/150?u=angela',
-      course: 'The Complete Web Development Bootcamp',
-      lastMessage: "I've reviewed your project. Great work on the React part!",
-      time: '2h ago',
-      unread: 2,
-      status: 'online'
-    },
-    {
-      id: 2,
-      name: 'Michael Scott',
-      avatar: 'https://i.pravatar.cc/150?u=michael',
-      course: 'Advanced UI/UX Masterclass',
-      lastMessage: "Please check the accessibility guidelines.",
-      time: '1d ago',
-      unread: 0,
-      status: 'offline'
-    },
-    {
-      id: 3,
-      name: 'Sarah Jenkins',
-      avatar: 'https://i.pravatar.cc/150?u=sarah',
-      course: 'Advanced React Patterns',
-      lastMessage: "The live session has been rescheduled.",
-      time: '2d ago',
-      unread: 0,
-      status: 'offline'
+  useEffect(() => {
+    fetchInstructors();
+  }, []);
+
+  const fetchInstructors = async () => {
+    try {
+      setLoading(true);
+      const data = await getMyInstructors();
+      setInstructors(data);
+      if (data.length > 0) {
+        setSelectedChat(data[0]._id);
+      }
+      setError(null);
+    } catch (err) {
+      console.error("Error fetching instructors:", err);
+      setError("Failed to load instructors. Please try again later.");
+    } finally {
+      setLoading(false);
     }
-  ];
+  };
 
-  const currentMessages = [
-    { id: 1, sender: 'instructor', text: "Hello Rinsha! How is your progress with the portfolio project?", time: '10:00 AM', status: 'seen' },
-    { id: 2, sender: 'student', text: "Hello Dr. Angela! It's going well. I'm just struggling a bit with the responsive navigation.", time: '10:15 AM', status: 'seen' },
-    { id: 3, sender: 'instructor', text: "I've reviewed your project. Great work on the React part!", time: '11:30 AM', status: 'seen' },
-    { id: 4, sender: 'instructor', text: "For the navigation, check lesson 42. I've explained the flexbox strategy there.", time: '11:31 AM', status: 'seen' },
-  ];
+  const selectedInstructor = instructors.find(i => i._id === selectedChat);
+
+  if (loading) {
+    return (
+      <div className="h-[calc(100vh-140px)] flex items-center justify-center bg-white rounded-[2.5rem] border border-slate-200">
+        <div className="flex flex-col items-center gap-4">
+          <Loader2 className="w-10 h-10 text-blue-600 animate-spin" />
+          <p className="text-slate-500 font-medium">Loading your instructors...</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="h-[calc(100vh-140px)] flex items-center justify-center bg-white rounded-[2.5rem] border border-slate-200">
+        <div className="flex flex-col items-center gap-4 text-center p-6">
+          <AlertCircle className="w-12 h-12 text-red-500" />
+          <h3 className="text-xl font-bold text-slate-900">Oops! Something went wrong</h3>
+          <p className="text-slate-500 max-w-md">{error}</p>
+          <button 
+            onClick={fetchInstructors}
+            className="mt-2 px-6 py-2 bg-blue-600 text-white rounded-xl font-bold hover:bg-blue-700 transition-all"
+          >
+            Try Again
+          </button>
+        </div>
+      </div>
+    );
+  }
+
+  if (instructors.length === 0) {
+    return (
+      <div className="h-[calc(100vh-140px)] flex items-center justify-center bg-white rounded-[2.5rem] border border-slate-200">
+        <div className="flex flex-col items-center gap-4 text-center p-6">
+          <div className="p-6 bg-blue-50 text-blue-600 rounded-[2rem] mb-2">
+            <User size={48} />
+          </div>
+          <h3 className="text-2xl font-bold text-slate-900">No Instructors Yet</h3>
+          <p className="text-slate-500 max-w-sm">
+            Enrolled in a course to start chatting with your instructors and clearing your doubts.
+          </p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="h-[calc(100vh-140px)] flex flex-col lg:flex-row bg-white rounded-[2.5rem] border border-slate-200 shadow-sm overflow-hidden">
@@ -85,14 +120,18 @@ const StudentMessage = () => {
         <div className="flex-1 overflow-y-auto divide-y divide-slate-50">
           {instructors.map((instructor) => (
             <div 
-              key={instructor.id} 
-              onClick={() => setSelectedChat(instructor.id)}
+              key={instructor._id + (instructor.course?._id || '')} 
+              onClick={() => setSelectedChat(instructor._id)}
               className={`p-5 flex gap-4 cursor-pointer transition-all hover:bg-slate-50 ${
-                selectedChat === instructor.id ? 'bg-blue-50/50 border-l-4 border-blue-600' : ''
+                selectedChat === instructor._id ? 'bg-blue-50/50 border-l-4 border-blue-600' : ''
               }`}
             >
               <div className="relative flex-shrink-0">
-                <img src={instructor.avatar} alt={instructor.name} className="w-14 h-14 rounded-2xl object-cover" />
+                <img 
+                  src={instructor.profileImage || `https://ui-avatars.com/api/?name=${encodeURIComponent(instructor.name)}&background=random`} 
+                  alt={instructor.name} 
+                  className="w-14 h-14 rounded-2xl object-cover" 
+                />
                 <div className={`absolute -bottom-1 -right-1 w-4 h-4 rounded-full border-2 border-white ${
                   instructor.status === 'online' ? 'bg-green-500' : 'bg-slate-300'
                 }`}></div>
@@ -100,13 +139,13 @@ const StudentMessage = () => {
               <div className="flex-1 min-w-0">
                 <div className="flex justify-between items-start mb-1">
                   <h4 className="text-sm font-bold text-slate-900 truncate">{instructor.name}</h4>
-                  <span className="text-[10px] text-slate-400 font-medium">{instructor.time}</span>
+                  <span className="text-[10px] text-slate-400 font-medium">{instructor.time || ''}</span>
                 </div>
                 <p className="text-xs text-slate-500 font-bold flex items-center gap-1 mb-1 truncate">
-                  <BookOpen size={10} /> {instructor.course}
+                  <BookOpen size={10} /> {instructor.course?.title || 'No Course Info'}
                 </p>
                 <p className="text-xs text-slate-400 truncate leading-relaxed">
-                  {instructor.lastMessage}
+                  {instructor.lastMessage || 'Start a conversation...'}
                 </p>
               </div>
               {instructor.unread > 0 && (
@@ -125,17 +164,17 @@ const StudentMessage = () => {
         <header className="p-6 border-b border-slate-100 flex items-center justify-between bg-slate-50/30">
           <div className="flex items-center gap-4">
             <img 
-              src={instructors.find(i => i.id === selectedChat)?.avatar} 
+              src={selectedInstructor?.profileImage || `https://ui-avatars.com/api/?name=${encodeURIComponent(selectedInstructor?.name || 'User')}&background=random`} 
               className="w-12 h-12 rounded-2xl object-cover shadow-sm border-2 border-white" 
               alt="Avatar"
             />
             <div>
               <h3 className="font-bold text-slate-900 text-base">
-                {instructors.find(i => i.id === selectedChat)?.name}
+                {selectedInstructor?.name}
               </h3>
               <p className="text-xs text-slate-500 flex items-center gap-1">
-                <span className="w-2 h-2 rounded-full bg-green-500"></span>
-                Active for: {instructors.find(i => i.id === selectedChat)?.course}
+                <span className={`w-2 h-2 rounded-full ${selectedInstructor?.status === 'online' ? 'bg-green-500' : 'bg-slate-300'}`}></span>
+                {selectedInstructor?.course?.title}
               </p>
             </div>
           </div>
@@ -151,31 +190,40 @@ const StudentMessage = () => {
 
         {/* Message Container */}
         <div className="flex-1 overflow-y-auto p-6 space-y-6 bg-slate-50/20">
-          <div className="flex justify-center">
-            <span className="px-4 py-1.5 bg-white rounded-full border border-slate-100 text-[10px] font-bold text-slate-400 uppercase tracking-widest shadow-sm">
-              Today
-            </span>
-          </div>
-
-          {currentMessages.map((msg) => (
-            <div key={msg.id} className={`flex ${msg.sender === 'student' ? 'justify-end' : 'justify-start'}`}>
-              <div className={`max-w-[75%] space-y-2 ${msg.sender === 'student' ? 'items-end' : 'items-start'}`}>
-                <div className={`p-4 rounded-[2rem] text-sm leading-relaxed shadow-sm ${
-                  msg.sender === 'student' 
-                  ? 'bg-blue-600 text-white rounded-tr-none' 
-                  : 'bg-white text-slate-700 rounded-tl-none border border-slate-100'
-                }`}>
-                  {msg.text}
-                </div>
-                <div className={`flex items-center gap-2 text-[10px] font-bold ${
-                  msg.sender === 'student' ? 'flex-row-reverse text-slate-400' : 'text-slate-400'
-                }`}>
-                  <span>{msg.time}</span>
-                  {msg.sender === 'student' && <CheckCheck size={14} className="text-blue-500" />}
-                </div>
-              </div>
+          {currentMessages.length === 0 ? (
+            <div className="flex flex-col items-center justify-center h-full opacity-50 space-y-4">
+              <MessageCircle size={48} className="text-slate-300" />
+              <p className="text-slate-500 font-medium">No messages yet. Start the conversation!</p>
             </div>
-          ))}
+          ) : (
+            <>
+              <div className="flex justify-center">
+                <span className="px-4 py-1.5 bg-white rounded-full border border-slate-100 text-[10px] font-bold text-slate-400 uppercase tracking-widest shadow-sm">
+                  Today
+                </span>
+              </div>
+
+              {currentMessages.map((msg) => (
+                <div key={msg.id} className={`flex ${msg.sender === 'student' ? 'justify-end' : 'justify-start'}`}>
+                  <div className={`max-w-[75%] space-y-2 ${msg.sender === 'student' ? 'items-end' : 'items-start'}`}>
+                    <div className={`p-4 rounded-[2rem] text-sm leading-relaxed shadow-sm ${
+                      msg.sender === 'student' 
+                      ? 'bg-blue-600 text-white rounded-tr-none' 
+                      : 'bg-white text-slate-700 rounded-tl-none border border-slate-100'
+                    }`}>
+                      {msg.text}
+                    </div>
+                    <div className={`flex items-center gap-2 text-[10px] font-bold ${
+                      msg.sender === 'student' ? 'flex-row-reverse text-slate-400' : 'text-slate-400'
+                    }`}>
+                      <span>{msg.time}</span>
+                      {msg.sender === 'student' && <CheckCheck size={14} className="text-blue-500" />}
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </>
+          )}
         </div>
 
         {/* Message Input */}
