@@ -19,7 +19,7 @@ import {
 const InstructorDashboard = () => {
   const navigate = useNavigate();
   const dispatch = useDispatch();
-  const { dashboardData, loading, error } = useSelector((state) => state.instructor);
+  const { dashboardData, loading } = useSelector((state) => state.instructor);
   const { user } = useSelector((state) => state.auth);
 
   useEffect(() => {

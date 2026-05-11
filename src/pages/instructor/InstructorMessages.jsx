@@ -9,58 +9,31 @@ import {
   MessageSquare,
   BookOpen,
   Image as ImageIcon,
-  Link as LinkIcon,
-  X
 } from 'lucide-react';
+
+const chats = [
+  {
+    id: 1,
+    student: 'Alice Johnson',
+    avatar: 'https://i.pravatar.cc/160?u=alice',
+    course: 'Advanced React 19',
+    lastMessage: 'Can you review my assignment?',
+    time: '10:30 AM',
+    unread: 2
+  }
+];
+
+const messages = [
+  { id: 1, sender: 'student', text: 'Can you review my assignment?', time: '10:30 AM' },
+  { id: 2, sender: 'instructor', text: 'Sure, send me the link and I will check it.', time: '10:32 AM' }
+];
 
 const InstructorMessages = () => {
   const [selectedChat, setSelectedChat] = useState(1);
 
-  const chats = [
-    {
-      id: 1,
-      student: 'Alice Johnson',
-      course: 'Advanced React 19',
-      lastMessage: 'I am having trouble with the new useActionState hook in React 19.',
-      time: '10:30 AM',
-      unread: 2,
-      avatar: 'https://i.pravatar.cc/100?u=alice'
-    },
-    {
-      id: 2,
-      student: 'Bob Smith',
-      course: 'Node.js Microservices',
-      lastMessage: 'Is the Kafka setup covered in the next module?',
-      time: 'Yesterday',
-      unread: 0,
-      avatar: 'https://i.pravatar.cc/100?u=bob'
-    },
-    {
-      id: 3,
-      student: 'Charlie Brown',
-      course: 'Advanced React 19',
-      lastMessage: 'The assignment submission is not working for me.',
-      time: 'May 01',
-      unread: 0,
-      avatar: 'https://i.pravatar.cc/100?u=charlie'
-    },
-    {
-      id: 4,
-      student: 'David Miller',
-      course: 'UI/UX Fundamentals',
-      lastMessage: 'Thanks for the feedback on my Figma design!',
-      time: 'Apr 28',
-      unread: 0,
-      avatar: 'https://i.pravatar.cc/100?u=david'
-    }
-  ];
 
-  const messages = [
-    { id: 1, sender: 'student', text: 'Hi Professor, I was going through the module on React 19 Server Components.', time: '10:25 AM' },
-    { id: 2, sender: 'student', text: 'I am having trouble with the new useActionState hook. Could you explain it once more?', time: '10:26 AM' },
-    { id: 3, sender: 'instructor', text: 'Hello Alice! useActionState is designed to handle form actions with pending states automatically.', time: '10:30 AM' },
-    { id: 4, sender: 'instructor', text: 'Have you checked the documentation link I posted in the resources section?', time: '10:31 AM' },
-  ];
+
+
 
   return (
     <div className="h-[calc(100vh-12rem)] flex flex-col md:flex-row bg-white rounded-[3rem] border border-slate-200 overflow-hidden shadow-2xl">

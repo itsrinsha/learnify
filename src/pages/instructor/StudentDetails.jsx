@@ -14,46 +14,42 @@ import {
   Award,
   AlertCircle
 } from 'lucide-react';
-import { useNavigate, useParams } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
+
+const student = {
+  id: 1,
+  name: 'Alice Johnson',
+  email: 'alice@example.com',
+  avatar: 'https://i.pravatar.cc/300?u=alice',
+  joinDate: 'May 01, 2026',
+  totalSpent: 'Rs. 4,999',
+  courses: [
+    {
+      id: 1,
+      title: 'Advanced React 19 Patterns',
+      lastActive: 'Today',
+      progress: 80,
+      completedLessons: 12,
+      totalLessons: 15,
+      attendance: '92%',
+      reviewStatus: 'Pending',
+      topics: ['Performance', 'Hooks', 'Testing']
+    }
+  ],
+  reviewHistory: [
+    {
+      id: 1,
+      course: 'Advanced React 19 Patterns',
+      date: 'May 06, 2026',
+      attempt: 1,
+      result: 'Needs Work',
+      notes: 'Good fundamentals, needs more practice with state management.'
+    }
+  ]
+};
 
 const StudentDetails = () => {
   const navigate = useNavigate();
-  // In a real app, we'd fetch data based on ID
-  
-  const student = {
-    name: 'Alice Johnson',
-    email: 'alice.j@gmail.com',
-    avatar: 'https://i.pravatar.cc/150?u=alice',
-    joinDate: 'March 15, 2026',
-    totalSpent: '₹3,998',
-    courses: [
-      {
-        id: 1,
-        title: 'Advanced React 19 Patterns',
-        progress: 85,
-        completedLessons: 42,
-        totalLessons: 48,
-        lastActive: '2 hours ago',
-        reviewStatus: 'Pending',
-        attendance: '95%',
-        topics: ['Server Components', 'Action States', 'Transition API']
-      },
-      {
-        id: 2,
-        title: 'Node.js Microservices',
-        progress: 45,
-        completedLessons: 15,
-        totalLessons: 32,
-        lastActive: 'Yesterday',
-        reviewStatus: 'N/A',
-        attendance: '78%',
-        topics: ['Kafka Setup', 'Redis Caching']
-      }
-    ],
-    reviewHistory: [
-      { id: 1, course: 'Advanced React 19', date: 'Apr 28, 2026', result: 'Fail', attempt: 1, notes: 'Struggled with state management concepts.' }
-    ]
-  };
 
   return (
     <div className="space-y-10 pb-20">

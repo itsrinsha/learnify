@@ -6,6 +6,7 @@ import { Eye, EyeOff, Mail, Lock, ArrowRight, ShieldCheck } from "lucide-react";
 import authIllustration from "../../../assets/auth_illustration.png";
 import { useDispatch } from "react-redux";
 import { loginUser } from "../../../features/auth/authThunk";
+import { logout } from "../../../features/auth/authSlice";
 
 function AdminLogin() {
   const navigate = useNavigate();
@@ -45,8 +46,9 @@ function AdminLogin() {
 
         // Ensure the role is admin
         if (user.role !== "admin") {
-            setApiError("Access denied. You do not have administrator privileges.");
-            return;
+          dispatch(logout());
+          setApiError("Access denied. You do not have administrator privileges.");
+          return;
         }
 
         // Store token/user if needed (assuming logic exists in your app)
@@ -55,13 +57,7 @@ function AdminLogin() {
         alert("Welcome to the Admin Dashboard!");
         navigate("/admin/dashboard");
       } catch (err) {
-        if (err.response) {
-          setApiError(err.response.data.message || "Invalid credentials");
-        } else if (err.request) {
-          setApiError("Unable to connect to server. Please try again later.");
-        } else {
-          setApiError("Something went wrong. Please try again.");
-        }
+        setApiError(err || "Something went wrong. Please try again.");
       } finally {
         setIsLoading(false);
       }

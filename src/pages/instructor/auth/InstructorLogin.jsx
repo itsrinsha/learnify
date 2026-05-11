@@ -52,13 +52,7 @@ function InstructorLogin() {
         alert("Welcome back, Instructor!");
         navigate("/instructor/dashboard");
       } catch (err) {
-        if (err.response) {
-          setApiError(err.response.data.message || "Invalid credentials");
-        } else if (err.request) {
-          setApiError("Unable to connect to server. Please try again later.");
-        } else {
-          setApiError("Something went wrong. Please try again.");
-        }
+        setApiError(err || "Something went wrong. Please try again.");
       } finally {
         setIsLoading(false);
       }

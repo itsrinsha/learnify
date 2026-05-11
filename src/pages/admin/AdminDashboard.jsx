@@ -51,9 +51,8 @@ const AdminDashboard = () => {
     const fetchDashboardData = async () => {
       try {
         setLoading(true);
-        const [users, courses, pendingReqs] = await Promise.all([
+        const [users, pendingReqs] = await Promise.all([
           adminService.getAllUsers(),
-          adminService.getAllUsers(), // Assuming we might have a courses API or use generic
           adminService.getInstructorRequests()
         ]);
 
@@ -201,7 +200,7 @@ const AdminDashboard = () => {
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-50">
-              {requests.map((req, i) => (
+              {requests.map((req) => (
                 <tr key={req._id} className="hover:bg-slate-50/50 transition-colors">
                   <td className="px-8 py-6">
                     <div className="flex items-center gap-4">

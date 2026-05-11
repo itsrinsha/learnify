@@ -91,66 +91,7 @@ const AdminCourseApproval = () => {
 
       {/* Courses List */}
       <div className="space-y-4">
-        {coursesData.map((course) => (
-          <div key={course.id} className="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden flex flex-col md:flex-row items-stretch group hover:border-blue-200 transition-colors">
-            {/* Thumbnail */}
-            <div className="md:w-64 lg:w-72 shrink-0 relative overflow-hidden bg-slate-100">
-              <img 
-                src={course.thumbnail} 
-                alt={course.title} 
-                className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
-              />
-              <div className="absolute inset-0 bg-slate-900/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
-                <button className="w-12 h-12 bg-white rounded-full flex items-center justify-center text-blue-600 shadow-xl">
-                  <Play className="w-6 h-6 ml-1" />
-                </button>
-              </div>
-              <div className="absolute top-4 left-4">
-                <StatusBadge status={course.status} />
-              </div>
-            </div>
-
-            {/* Details */}
-            <div className="flex-1 p-6 flex flex-col justify-between">
-              <div>
-                <div className="flex items-center gap-2 text-xs font-bold text-blue-600 uppercase tracking-wider mb-2">
-                  <Tag className="w-3 h-3" /> {course.category}
-                </div>
-                <h3 className="text-xl font-bold text-slate-900 mb-2 group-hover:text-blue-600 transition-colors">{course.title}</h3>
-                <div className="flex flex-wrap items-center gap-y-2 gap-x-6">
-                  <div className="flex items-center gap-2 text-sm text-slate-600 font-medium">
-                    <User className="w-4 h-4 text-slate-400" /> {course.instructor}
-                  </div>
-                  <div className="flex items-center gap-2 text-sm text-slate-600 font-medium">
-                    <BookOpen className="w-4 h-4 text-slate-400" /> {course.lessons} Lessons
-                  </div>
-                  <div className="flex items-center gap-2 text-sm text-slate-600 font-medium">
-                    <Clock className="w-4 h-4 text-slate-400" /> Submitted on {course.submittedDate}
-                  </div>
-                </div>
-              </div>
-
-              <div className="mt-6 flex flex-col sm:flex-row sm:items-center justify-between gap-4 pt-6 border-t border-slate-100">
-                <div className="text-2xl font-bold text-slate-900">{course.price}</div>
-                <div className="flex items-center gap-3">
-                  <button className="flex-1 sm:flex-none flex items-center justify-center gap-2 px-4 py-2.5 bg-slate-100 rounded-xl text-sm font-bold text-slate-700 hover:bg-slate-200 transition-colors">
-                    <Eye className="w-4 h-4" /> View Details
-                  </button>
-                  {course.status === 'Pending' && (
-                    <>
-                      <button className="flex-1 sm:flex-none flex items-center justify-center gap-2 px-4 py-2.5 bg-red-50 rounded-xl text-sm font-bold text-red-600 hover:bg-red-100 transition-colors border border-red-100">
-                        <XCircle className="w-4 h-4" /> Reject
-                      </button>
-                      <button className="flex-1 sm:flex-none flex items-center justify-center gap-2 px-4 py-2.5 bg-green-600 rounded-xl text-sm font-bold text-white hover:bg-green-700 transition-all shadow-lg shadow-green-900/20">
-                        <CheckCircle className="w-4 h-4" /> Approve
-                      </button>
-                    </>
-                  )}
-                </div>
-              </div>
-            </div>
-          </div>
-        ))}
+       
       </div>
     </div>
   );

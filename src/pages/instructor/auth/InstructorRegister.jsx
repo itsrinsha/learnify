@@ -77,7 +77,7 @@ function InstructorRegister() {
         alert("Instructor Registration successful! Please complete your verification.");
         navigate("/instructor/verify");
       } catch (err) {
-        setError(err.response?.data?.message || "Registration failed. Please try again.");
+        setError(err || "Registration failed. Please try again.");
       }
     },
   });
@@ -95,8 +95,13 @@ function InstructorRegister() {
 
   // Send OTP
   const handleSendOtp = async () => {
-    if (!formik.values.email || !formik.values.name) {
-      return setError("Please provide your name and work email to receive a code.");
+    // Mark fields as touched to show validation errors
+    formik.setFieldTouched("name", true);
+    formik.setFieldTouched("email", true);
+
+    // Check if there are any validation errors for name or email
+    if (formik.errors.name || formik.errors.email || !formik.values.email || !formik.values.name) {
+      return setError("Please provide a valid name and work email to receive a code.");
     }
 
     try {
@@ -116,7 +121,7 @@ function InstructorRegister() {
       setTimer(30);
       setError("");
     } catch (err) {
-      setError(err?.message || "Failed to resend code.");
+      setError(typeof err === "string" ? err : err?.message || "Failed to resend code.");
     }
   };
 

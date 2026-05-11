@@ -17,7 +17,7 @@ import {
 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import axiosInstance from '../../features/axiosInstance';
-import { updateProfile, logout, clearState, fetchProfile } from '../../features/auth/authSlice';
+import { logout, fetchProfile } from '../../features/auth/authSlice';
 
 const InstructorVerification = () => {
   const dispatch = useDispatch();

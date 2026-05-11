@@ -1,4 +1,5 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
+import instructorService from '../../services/instructorService';
 import { 
   Calendar, 
   Clock, 
@@ -15,50 +16,25 @@ import {
   AlertCircle
 } from 'lucide-react';
 
+
+
+
+
 const InstructorReviews = () => {
+  const [history, setHistory] = useState([]);
   const [showScheduleForm, setShowScheduleForm] = useState(false);
+useEffect(()=>{
+  const fetchHistory = async ()=>{
+    try{
+      const gata = await instructorCourseService.getReviewHistory();
 
-  const reviews = [
-    {
-      id: 1,
-      student: 'Alice Johnson',
-      course: 'Advanced React 19',
-      date: 'May 05, 2026',
-      time: '10:00 AM',
-      link: 'https://meet.google.com/abc-defg-hij',
-      attempt: 1,
-      status: 'Pending',
-      remainingAttempts: 2
-    },
-    {
-      id: 2,
-      student: 'Bob Smith',
-      course: 'Node.js Microservices',
-      date: 'May 03, 2026',
-      time: '02:30 PM',
-      link: 'https://meet.google.com/xyz-uvw-rst',
-      attempt: 2,
-      status: 'Pass',
-      remainingAttempts: 1
-    },
-    {
-      id: 3,
-      student: 'Charlie Brown',
-      course: 'UI/UX Fundamentals',
-      date: 'May 01, 2026',
-      time: '11:00 AM',
-      link: 'https://meet.google.com/pqr-stu-vwx',
-      attempt: 1,
-      status: 'Fail',
-      remainingAttempts: 2
+      setHistory(data.history||[]);
+    }catch(error){
+      console.log(error)
     }
-  ];
-
-  const history = [
-    { student: 'David Miller', course: 'Advanced React 19', result: 'Pass', date: 'April 28, 2026', attempt: 1 },
-    { student: 'Eva Green', course: 'Node.js Microservices', result: 'Fail', date: 'April 25, 2026', attempt: 1 },
-  ];
-
+  }
+  fetchHistory();
+},[])
   return (
     <div className="space-y-10 pb-20">
       {/* Header */}
@@ -91,67 +67,7 @@ const InstructorReviews = () => {
             </div>
           </div>
 
-          <div className="grid gap-6">
-            {reviews.map((review) => (
-              <div key={review.id} className="bg-white rounded-[2.5rem] border border-slate-200 p-8 hover:shadow-xl transition-all group">
-                <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
-                  <div className="flex items-center gap-6">
-                    <div className="w-16 h-16 bg-blue-50 rounded-2xl flex items-center justify-center text-blue-600 font-bold text-xl">
-                      {review.student.charAt(0)}
-                    </div>
-                    <div className="space-y-1">
-                      <h4 className="font-black text-slate-900 text-lg">{review.student}</h4>
-                      <p className="text-sm font-bold text-blue-600 flex items-center gap-2">
-                        <BookOpen size={14} />
-                        {review.course}
-                      </p>
-                    </div>
-                  </div>
-                  <div className="flex flex-wrap items-center gap-6">
-                    <div className="text-right hidden sm:block">
-                      <p className="text-sm font-black text-slate-900">{review.date}</p>
-                      <p className="text-xs font-bold text-slate-400 uppercase tracking-widest">{review.time}</p>
-                    </div>
-                    <div className="h-10 w-[1px] bg-slate-100 hidden sm:block"></div>
-                    <div className="text-right">
-                      <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Attempt</p>
-                      <p className="font-black text-slate-900">{review.attempt} of 3</p>
-                    </div>
-                    <span className={`px-4 py-1.5 rounded-xl text-[10px] font-black uppercase tracking-widest ${
-                      review.status === 'Pass' ? 'bg-green-50 text-green-600' :
-                      review.status === 'Fail' ? 'bg-red-50 text-red-600' : 'bg-yellow-50 text-yellow-600'
-                    }`}>
-                      {review.status}
-                    </span>
-                  </div>
-                </div>
-
-                <div className="mt-8 pt-8 border-t border-slate-50 flex flex-col sm:flex-row items-center justify-between gap-6">
-                  <div className="flex items-center gap-4">
-                    <a 
-                      href={review.link} 
-                      target="_blank" 
-                      rel="noopener noreferrer"
-                      className="flex items-center gap-2 text-sm font-bold text-slate-500 hover:text-blue-600 transition-colors"
-                    >
-                      <Video size={16} />
-                      Join Meeting
-                    </a>
-                    <div className="w-1 h-1 bg-slate-300 rounded-full"></div>
-                    <p className="text-sm font-bold text-slate-500">{review.remainingAttempts} attempts remaining</p>
-                  </div>
-                  <div className="flex gap-3 w-full sm:w-auto">
-                    <button className="flex-1 sm:flex-none px-6 py-3 bg-slate-900 text-white rounded-xl font-bold text-xs hover:bg-blue-600 transition-all active:scale-95 shadow-lg shadow-slate-100">
-                      Update Result
-                    </button>
-                    <button className="flex-1 sm:flex-none px-6 py-3 bg-white border border-slate-200 text-slate-600 rounded-xl font-bold text-xs hover:bg-slate-50 transition-all">
-                      Reschedule
-                    </button>
-                  </div>
-                </div>
-              </div>
-            ))}
-          </div>
+         
         </div>
 
         {/* Sidebar History & Info */}
@@ -190,8 +106,8 @@ const InstructorReviews = () => {
               <History size={18} className="text-slate-300" />
             </div>
             <div className="divide-y divide-slate-50">
-              {history.map((item, idx) => (
-                <div key={idx} className="p-6 space-y-3 hover:bg-slate-50 transition-colors">
+              {history.map((item) => (
+                <div key={`${item.student}-${item.course}`} className="p-6 space-y-3 hover:bg-slate-50 transition-colors">
                   <div className="flex justify-between items-start">
                     <div>
                       <h4 className="text-sm font-bold text-slate-900">{item.student}</h4>
@@ -234,17 +150,11 @@ const InstructorReviews = () => {
               <div className="grid md:grid-cols-2 gap-8">
                 <div className="space-y-3">
                   <label className="text-xs font-black text-slate-400 uppercase tracking-widest px-1">Select Course</label>
-                  <select className="w-full px-5 py-4 bg-slate-50 border-none rounded-2xl text-sm font-bold text-slate-700 outline-none focus:ring-2 focus:ring-blue-500 transition-all">
-                    <option>Advanced React 19</option>
-                    <option>Node.js Microservices</option>
-                  </select>
+
                 </div>
                 <div className="space-y-3">
                   <label className="text-xs font-black text-slate-400 uppercase tracking-widest px-1">Select Student</label>
-                  <select className="w-full px-5 py-4 bg-slate-50 border-none rounded-2xl text-sm font-bold text-slate-700 outline-none focus:ring-2 focus:ring-blue-500 transition-all">
-                    <option>Alice Johnson</option>
-                    <option>Bob Smith</option>
-                  </select>
+  
                 </div>
                 <div className="space-y-3">
                   <label className="text-xs font-black text-slate-400 uppercase tracking-widest px-1">Date</label>

@@ -1,6 +1,5 @@
 import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import axios from "axios";
 import { useFormik } from "formik";
 import * as Yup from "yup";
 import { Eye, EyeOff, Mail, Lock, ArrowRight } from "lucide-react";
@@ -57,13 +56,7 @@ function Login() {
         alert("Welcome back!");
         navigate("/student/dashboard");
       } catch (err) {
-        if (err.response) {
-          setApiError(err.response.data.message || "Invalid credentials");
-        } else if (err.request) {
-          setApiError("Unable to connect to server. Please try again later.");
-        } else {
-          setApiError("Something went wrong. Please try again.");
-        }
+        setApiError(err || "Something went wrong. Please try again.");
       } finally {
         setIsLoading(false);
       }

@@ -22,7 +22,7 @@ import { FaFileInvoiceDollar } from 'react-icons/fa';
 const InstructorEarnings = () => {
   const [timeframe, setTimeframe] = useState('Last 30 Days');
   const dispatch = useDispatch();
-  const { dashboardData, loading } = useSelector((state) => state.instructor);
+  const { dashboardData } = useSelector((state) => state.instructor);
 
   useEffect(() => {
     dispatch(fetchInstructorDashboard());

@@ -78,7 +78,7 @@ function Register() {
         alert("Registration successful! Welcome to Learnify.");
         navigate("/student");
       } catch (err) {
-        setError(err.response?.data?.message || "Registration failed. Please try again.");
+        setError(err || "Registration failed. Please try again.");
       }
     },
   });

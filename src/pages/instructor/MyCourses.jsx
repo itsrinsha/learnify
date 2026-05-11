@@ -24,7 +24,7 @@ import { fetchInstructorDashboard } from '../../features/instructor/instructorTh
 const MyCourses = () => {
   const navigate = useNavigate();
   const dispatch = useDispatch();
-  const { dashboardData, loading, error } = useSelector((state) => state.instructor);
+  const { dashboardData, loading } = useSelector((state) => state.instructor);
 
   useEffect(() => {
     dispatch(fetchInstructorDashboard());

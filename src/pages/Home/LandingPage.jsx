@@ -1,7 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { 
   BookOpen, 
-  Users, 
+  User, 
+  Users,
   Award, 
   PlayCircle, 
   Star, 
@@ -18,12 +19,17 @@ import {
   GraduationCap
 } from 'lucide-react';
 import { useNavigate, Link } from 'react-router-dom';
-import { getAllCourses } from '../../services/courseService';
+import { useDispatch, useSelector } from 'react-redux';
+import { fetchAllCourses } from '../../features/courses/courseThunk';
 
 const LandingPage = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
   const navigate = useNavigate();
+  const dispatch = useDispatch();
+  const { courses: allCourses, loading: loadingCourses } = useSelector((state) => state.courses);
+
+  const featuredCourses = allCourses?.slice(0, 3) || [];
 
   useEffect(() => {
     const handleScroll = () => {
@@ -42,74 +48,46 @@ const LandingPage = () => {
 
   const features = [
     {
-      title: 'Expert Instructors',
-      description: 'Learn from industry professionals with years of real-world experience.',
-      icon: <Users className="text-blue-600" />,
+      title: 'Live Mentor Sessions',
+      description: 'Learn directly from instructors through scheduled classes and focused review sessions.',
+      icon: <Users />
     },
     {
-      title: 'Live Classes',
-      description: 'Interactive sessions with real-time Q&A to clear your doubts instantly.',
-      icon: <PlayCircle className="text-blue-600" />,
+      title: 'Career Ready Courses',
+      description: 'Build practical skills with structured lessons, projects, and progress tracking.',
+      icon: <Laptop />
     },
     {
-      title: 'Progress Tracking',
-      description: 'Visualize your learning journey with detailed analytics and milestones.',
-      icon: <Laptop className="text-blue-600" />,
-    },
-    {
-      title: 'Global Certificates',
-      description: 'Earn industry-recognized certificates upon course completion.',
-      icon: <Award className="text-blue-600" />,
-    },
-    {
-      title: '24/7 Support',
-      description: 'Our dedicated support team is always here to help you succeed.',
-      icon: <MessageSquare className="text-blue-600" />,
-    },
-    {
-      title: 'Flexible Learning',
-      description: 'Access your courses anytime, anywhere, on any device you prefer.',
-      icon: <Globe className="text-blue-600" />,
-    },
+      title: 'Verified Certificates',
+      description: 'Earn certificates with unique IDs after completing courses and passing reviews.',
+      icon: <ShieldCheck />
+    }
   ];
-
-  const [featuredCourses, setFeaturedCourses] = useState([]);
-  const [loadingCourses, setLoadingCourses] = useState(true);
-
-  useEffect(() => {
-    const fetchCourses = async () => {
-      try {
-        const data = await getAllCourses({ limit: 3, status: 'published' });
-        setFeaturedCourses(data || []);
-      } catch (error) {
-        console.error('Error fetching landing courses:', error);
-      } finally {
-        setLoadingCourses(false);
-      }
-    };
-    fetchCourses();
-  }, []);
 
   const testimonials = [
     {
-      name: 'Alex Johnson',
+      name: 'Alice Johnson',
       role: 'Frontend Developer',
-      content: 'Learnify completely changed my career path. The React course was so detailed and the projects helped me land my dream job.',
-      avatar: 'https://i.pravatar.cc/150?u=alex',
+      quote: 'The live reviews helped me understand exactly where I needed to improve.'
+    },
+    {
+      name: 'Rahul Mehta',
+      role: 'MERN Student',
+      quote: 'Courses are easy to follow and the dashboard keeps me motivated.'
     },
     {
       name: 'Priya Sharma',
-      role: 'UI Designer',
-      content: 'The live sessions are incredible. Being able to ask questions directly to experts made a huge difference in my learning curve.',
-      avatar: 'https://i.pravatar.cc/150?u=priya',
-    },
-    {
-      name: 'David Chen',
-      role: 'Student',
-      content: 'The platform is so intuitive and the community support is top-notch. I recommend Learnify to everyone starting their tech journey.',
-      avatar: 'https://i.pravatar.cc/150?u=david',
-    },
+      role: 'UI Engineer',
+      quote: 'The certificate flow and mentor feedback made the learning feel professional.'
+    }
   ];
+
+ 
+  useEffect(() => {
+    dispatch(fetchAllCourses({ limit: 3, status: 'published' }));
+  }, [dispatch]);
+
+  
 
   return (
     <div className="min-h-screen bg-white font-sans text-slate-900 selection:bg-blue-100 selection:text-blue-700">
@@ -142,7 +120,7 @@ const LandingPage = () => {
               className="px-5 py-2.5 text-sm font-semibold text-slate-700 hover:text-blue-600 transition-colors"
               
             >
-              start leaching
+              Start Teaching
             </button>
           </div>
 
@@ -279,7 +257,10 @@ const LandingPage = () => {
                     </div>
                     <span className="text-slate-400 text-sm">({course.enrolledCount || 0} students)</span>
                   </div>
-                  <h4 className="text-xl font-bold text-slate-900 leading-tight hover:text-blue-600 cursor-pointer transition-colors line-clamp-2 h-14">
+                  <h4 
+                    onClick={() => navigate('/register')}
+                    className="text-xl font-bold text-slate-900 leading-tight hover:text-blue-600 cursor-pointer transition-colors line-clamp-2 h-14"
+                  >
                     {course.title}
                   </h4>
                   <p className="text-slate-500 text-sm font-medium">By <span className="text-slate-900">{course.instructor?.name || 'Expert Instructor'}</span></p>
@@ -292,7 +273,7 @@ const LandingPage = () => {
                     </div>
                     <div className="text-2xl font-black text-blue-600">₹{course.price}</div>
                   </div>
-                  <button onClick={() => navigate(`/course-details/${course._id}`)} className="w-full py-3 bg-slate-50 text-slate-900 font-bold rounded-xl hover:bg-blue-600 hover:text-white transition-all active:scale-[0.98]">
+                  <button onClick={() => navigate('/register')} className="w-full py-3 bg-slate-50 text-slate-900 font-bold rounded-xl hover:bg-blue-600 hover:text-white transition-all active:scale-[0.98]">
                     Enroll Now
                   </button>
                 </div>
@@ -358,9 +339,11 @@ const LandingPage = () => {
                 <div className="flex items-center gap-1 mb-6 text-yellow-400">
                   {[1, 2, 3, 4, 5].map(i => <Star key={i} className="w-4 h-4 fill-current" />)}
                 </div>
-                <p className="text-slate-700 text-lg italic leading-relaxed mb-8">"{t.content}"</p>
+                <p className="text-slate-700 text-lg italic leading-relaxed mb-8">"{t.quote}"</p>
                 <div className="flex items-center gap-4">
-                  <img src={t.avatar} alt={t.name} className="w-14 h-14 rounded-full border-2 border-white shadow-sm" />
+                  <div className="w-14 h-14 rounded-full bg-blue-100 flex items-center justify-center text-blue-600 font-bold border-2 border-white shadow-sm">
+                    {t.name.charAt(0)}
+                  </div>
                   <div>
                     <h5 className="font-bold text-slate-900">{t.name}</h5>
                     <p className="text-sm text-slate-500">{t.role}</p>
