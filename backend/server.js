@@ -18,14 +18,14 @@ import certificateRoutes from "./routes/certificateRoutes.js"
 //middleware
 import errorMiddleware from "./middleware/errorMiddleware.js"
 import roleMiddleware from "./middleware/roleMiddleware.js"
-
+import paymentRoutes from "./routes/paymentRoutes.js";
 
 
 console.log('server.js loaded');
 const app = express();
 
 console.log('connectDB function:', connectDB);
-process.env.NODE_TLS_REJECT_UNAUTHORIZED = "0";
+
 connectDB(env.MONGO_URL);
 
 app.use(cors({ 
@@ -47,6 +47,7 @@ app.use("/api/live",liveRoutes)
 app.use("/api/exams", examRoutes)
 app.use("/api/progress", progressRoutes)
 app.use("/api/certificates", certificateRoutes)
+app.use("/api/payments",paymentRoutes)
 app.use(errorMiddleware);
 
 const PORT =process.env.PORT || 5000;

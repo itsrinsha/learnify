@@ -1,92 +1,215 @@
 import Course from "../models/Course.js";
 import Enrollment from "../models/Enrollment.js";
+import Module from "../models/Module.js";
+import Lesson from "../models/Lesson.js";
 
-
-
-// create
-export const createCourseService = async ({ title, description, price, category, instructor }) => {
+// ================= CREATE COURSE =================
+export const createCourseService = async ({
+  title,
+  description,
+  price,
+  category,
+  instructor,
+  thumbnail,
+  language,
+  level,
+}) => {
   const course = await Course.create({
     title,
     description,
     price,
     category,
     instructor,
+    thumbnail,
+    language,
+    level,
   });
 
   return course;
 };
 
-// get all published
+// ================= GET ALL COURSES =================
 export const getCoursesService = async () => {
-  return await Course.find()
-    .populate("instructor", "name email");
+  const courses = await Course.find({
+    status: "published",
+  })
+    .populate("instructor", "name email profileImage")
+    .sort({ createdAt: -1 });
+
+  return courses;
 };
 
-// get by id
-export const getCourseByIdService = async (courseId, userId = null, userRole = null) => {
-  const course = await Course.findById(courseId)
-    .populate("instructor", "name email profileImage");
+// ================= GET COURSE BY ID =================
+export const getCourseByIdService = async (
+  courseId,
+  userId = null,
+  userRole = null
+) => {
+  const course = await Course.findById(courseId).populate(
+    "instructor",
+    "name email profileImage verificationDetails"
+  );
 
   if (!course) {
-    throw new Error("Course not found");
+    const error = new Error("Course not found");
+    error.statusCode = 404;
+    throw error;
   }
 
-  // If user is a student, check enrollment
+  // Get modules
+  const modules = await Module.find({ courseId }).sort({
+    order: 1,
+  });
+
+  // Get lessons
+  const lessons = await Lesson.find({ courseId }).sort({
+    order: 1,
+  });
+
+  // Attach lessons to modules
+  const structuredModules = modules.map((module) => ({
+    ...module.toObject(),
+    lessons: lessons.filter(
+      (lesson) =>
+        lesson.moduleId.toString() === module._id.toString()
+    ),
+  }));
+
+  const courseData = {
+    ...course.toObject(),
+    modules: structuredModules,
+    lessonsCount: lessons.length,
+  };
+
+  // ================= STUDENT =================
   if (userRole === "student") {
-    const isEnrolled = await Enrollment.findOne({ user: userId, course: courseId });
+    const isEnrolled = await Enrollment.findOne({
+      user: userId,
+      course: courseId,
+    });
+
+    // If not enrolled → hide paid lessons
     if (!isEnrolled) {
-      // If not enrolled, return course info but hide lessons/sensitive content
-      const courseObj = course.toObject();
-      delete courseObj.lessons; 
-      return { ...courseObj, isEnrolled: false };
+      courseData.modules = courseData.modules.map((module) => ({
+        ...module,
+        lessons: module.lessons.map((lesson) => ({
+          _id: lesson._id,
+          title: lesson.title,
+          description: lesson.description,
+          duration: lesson.duration,
+          isPreviewFree: lesson.isPreviewFree,
+          videoUrl: lesson.isPreviewFree
+            ? lesson.videoUrl
+            : null,
+        })),
+      }));
+
+      return {
+        ...courseData,
+        isEnrolled: false,
+      };
     }
-    return { ...course.toObject(), isEnrolled: true };
+
+    return {
+      ...courseData,
+      isEnrolled: true,
+    };
   }
 
-  // If user is the instructor of this course, they can see everything
-  if (userRole === "instructor" && course.instructor._id.toString() === userId) {
-    return { ...course.toObject(), isEnrolled: true };
+  // ================= INSTRUCTOR =================
+  if (
+    userRole === "instructor" &&
+    course.instructor._id.toString() === userId
+  ) {
+    return {
+      ...courseData,
+      isEnrolled: true,
+    };
   }
 
-  // If user is admin, they can see everything
+  // ================= ADMIN =================
   if (userRole === "admin") {
-    return { ...course.toObject(), isEnrolled: true };
+    return {
+      ...courseData,
+      isEnrolled: true,
+    };
   }
 
-  // Default: Return public info only
-  const publicCourse = course.toObject();
-  delete publicCourse.lessons;
-  return { ...publicCourse, isEnrolled: false };
+  // ================= PUBLIC USER =================
+  courseData.modules = courseData.modules.map((module) => ({
+    ...module,
+    lessons: module.lessons.map((lesson) => ({
+      _id: lesson._id,
+      title: lesson.title,
+      description: lesson.description,
+      duration: lesson.duration,
+      isPreviewFree: lesson.isPreviewFree,
+      videoUrl: lesson.isPreviewFree
+        ? lesson.videoUrl
+        : null,
+    })),
+  }));
+
+  return {
+    ...courseData,
+    isEnrolled: false,
+  };
 };
 
-// update
-export const updateCourseService = async ({ courseId, userId, updates }) => {
+// ================= UPDATE COURSE =================
+export const updateCourseService = async ({
+  courseId,
+  userId,
+  updates,
+}) => {
   const course = await Course.findById(courseId);
 
   if (!course) {
-    throw new Error("Course not found");
+    const error = new Error("Course not found");
+    error.statusCode = 404;
+    throw error;
   }
 
-  // ownership check
+  // Ownership check
   if (course.instructor.toString() !== userId) {
-    const err = new Error("Not authorized");
-    err.statusCode = 403;
-    throw err;
+    const error = new Error("Not authorized");
+    error.statusCode = 403;
+    throw error;
   }
 
   Object.assign(course, updates);
 
-  return await course.save();
+  await course.save();
+
+  return course;
 };
 
-// delete
-export const deleteCourseService = async (courseId) => {
+// ================= DELETE COURSE =================
+export const deleteCourseService = async (
+  courseId,
+  userId
+) => {
   const course = await Course.findById(courseId);
 
   if (!course) {
-    throw new Error("Course not found");
+    const error = new Error("Course not found");
+    error.statusCode = 404;
+    throw error;
   }
 
+  // Ownership check
+  if (course.instructor.toString() !== userId) {
+    const error = new Error("Not authorized");
+    error.statusCode = 403;
+    throw error;
+  }
+
+  // Delete related data
+  await Module.deleteMany({ courseId });
+  await Lesson.deleteMany({ courseId });
+  await Enrollment.deleteMany({ course: courseId });
+
+  // Delete course
   await course.deleteOne();
 
   return true;

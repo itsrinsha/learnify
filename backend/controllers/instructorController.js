@@ -78,3 +78,28 @@ export const submitVerification = asyncHandler(async (req, res) => {
     const user = await updateUserProfileService(req.user.id, updateData);
     res.json({ success: true, message: "Verification details submitted successfully", user });
 });
+
+export const getReviewHistory = async (req, res) => {
+  try {
+
+    const history = await Review.find({
+      instructor: req.user._id,
+    })
+      .populate("student", "name")
+      .populate("course", "title")
+      .sort({ createdAt: -1 });
+
+    res.status(200).json({
+      success: true,
+      history,
+    });
+
+  } catch (error) {
+
+    res.status(500).json({
+      success: false,
+      message: error.message,
+    });
+  }
+};
+

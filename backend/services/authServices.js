@@ -22,7 +22,7 @@ export const registerUser = async ({ name, email, password, role }) => {
   if (!otpRecord.isVerified) {
     throw new Error("OTP not verified");
   }
-
+  console.log(password)
   const salt = await bcrypt.genSalt(10);
   const hashedPassword = await bcrypt.hash(password, salt);
 
@@ -69,10 +69,14 @@ export const loginUser = async ({ email, password }) => {
   const user = await User.findOne({ email });
 
   if (!user || !user.password) {
+
+
     const error = new Error("Invalid email or password");
     error.statusCode = 401;
     throw error;
   }
+console.log("user is",user.password);
+  
 
   if (!user.isVerified) {
     const error = new Error("Please verify your account first");
@@ -81,8 +85,10 @@ export const loginUser = async ({ email, password }) => {
   }
 
   const isMatch = await bcrypt.compare(password, user.password);
+    console.log(isMatch);
 
   if (!isMatch) {
+    
     const error = new Error("Invalid email or password");
     error.statusCode = 401;
     throw error;
