@@ -79,3 +79,72 @@ export const publishCourseService = async (instructorId, courseId) => {
 export const getInstructorCoursesService = async (instructorId) => {
   return await Course.find({ instructor: instructorId }).sort({ createdAt: -1 });
 };
+
+// ✅ Get Instructor Dashboard Service
+
+
+
+
+export const getInstructorDashboardService = async (instructorId) => {
+
+  // Get all instructor courses
+  const courses = await Course.find({
+    instructor: instructorId,
+  }).sort({ createdAt: -1 });
+
+  // Extract course IDs
+  const courseIds = courses.map(
+    (course) => course._id
+  );
+
+  // Get all enrollments for instructor courses
+  const enrollments = await Enrollment.find({
+    course: { $in: courseIds },
+  })
+    .populate("user", "name email profileImage")
+    .populate("course", "title price thumbnail");
+
+  // Total students
+  const totalStudents = enrollments.length;
+
+  // Total earnings
+  let totalEarnings = 0;
+
+  enrollments.forEach((enrollment) => {
+
+    if (enrollment.course?.price) {
+
+      totalEarnings += enrollment.course.price;
+    }
+  });
+
+  // Recent courses
+  const recentCourses = courses.slice(0, 5);
+
+  // Recent students
+  const recentStudents = enrollments.slice(0, 5);
+
+  return {
+
+    totalCourses: courses.length,
+
+    totalStudents,
+
+    enrolledStudents: totalStudents,
+
+    totalEarnings,
+
+    recentCourses,
+
+    recentStudents,
+  };
+};
+
+export const getReviewHistory = async () => {
+
+  const response = await axiosInstance.get(
+    "/instructor/review-history"
+  );
+
+  return response.data;
+};

@@ -1,20 +1,24 @@
 import express from "express";
 import roleMiddleware from "../middleware/roleMiddleware.js";
-import { 
-  getInstructorCourses, 
-  getInstructorDashboard, 
-  publishCourse, 
+
+import {
+  getInstructorCourses,
+  getInstructorDashboard,
+  publishCourse,
   submitVerification,
   createCourseDraft,
   addModule,
-  addLesson
+  addLesson,
 } from "../controllers/instructorController.js";
+
 import { authMiddleware } from "../middleware/authMiddleware.js";
+
 import approvalMiddleware from "../middleware/approvalMiddleware.js";
+import { getReviewHistory } from "../services/instructorService.js";
 
 const router = express.Router();
 
-// ✅ Dashboard (Requires Approval)
+// ✅ Dashboard
 router.get(
   "/dashboard",
   authMiddleware,
@@ -23,7 +27,7 @@ router.get(
   getInstructorDashboard
 );
 
-// ✅ Verification Submission (DOES NOT require Approval)
+// ✅ Verification
 router.post(
   "/verify",
   authMiddleware,
@@ -31,7 +35,7 @@ router.post(
   submitVerification
 );
 
-// ✅ Course Management (Requires Approval)
+// ✅ Courses
 router.get(
   "/courses",
   authMiddleware,
@@ -57,7 +61,7 @@ router.post(
   createCourseDraft
 );
 
-// ✅ Manage Content
+// ✅ Add Module
 router.post(
   "/courses/:courseId/modules",
   authMiddleware,
@@ -66,6 +70,7 @@ router.post(
   addModule
 );
 
+// ✅ Add Lesson
 router.post(
   "/courses/:courseId/modules/:moduleId/lessons",
   authMiddleware,
@@ -73,5 +78,11 @@ router.post(
   approvalMiddleware,
   addLesson
 );
-
+router.get(
+  "/review-history",
+  authMiddleware,
+  roleMiddleware("instructor"),
+  approvalMiddleware,
+  getReviewHistory
+);
 export default router;

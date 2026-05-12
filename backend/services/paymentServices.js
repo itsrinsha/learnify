@@ -1,0 +1,108 @@
+import crypto from "crypto";
+import razorpay from "../config/razorpay.js";
+import Payment from "../models/Payment.js";
+import Course from "../models/Course.js";
+import Enrollment from "../models/Enrollment.js";
+
+// Create Razorpay Order
+export const createOrderService = async ({ courseId, userId }) => {
+  // Find course
+  const course = await Course.findById(courseId);
+
+  if (!course) {
+    throw new Error("Course not found");
+  }
+
+  // Prevent duplicate enrollment
+  const alreadyEnrolled = await Enrollment.findOne({
+    user: userId,
+    course: courseId,
+  });
+
+  if (alreadyEnrolled) {
+    throw new Error("You already enrolled in this course");
+  }
+
+  // Razorpay order options
+  const options = {
+    amount: course.price * 100, // paisa
+    currency: "INR",
+    receipt: `receipt_${Date.now()}`,
+  };
+
+  // Create Razorpay order
+  const order = await razorpay.orders.create(options);
+
+  // Save payment record
+  await Payment.create({
+    user: userId,
+    course: courseId,
+    amount: course.price,
+    razorpay_order_id: order.id,
+    status: "created",
+  });
+
+  return {
+    success: true,
+    order,
+    course,
+  };
+};
+
+// Verify Payment
+export const verifyPaymentService = async ({
+  razorpay_order_id,
+  razorpay_payment_id,
+  razorpay_signature,
+  courseId,
+  userId,
+}) => {
+  // Generate signature
+  const generatedSignature = crypto
+    .createHmac("sha256", process.env.RAZORPAY_KEY_SECRET)
+    .update(`${razorpay_order_id}|${razorpay_payment_id}`)
+    .digest("hex");
+
+  // Verify signature
+  if (generatedSignature !== razorpay_signature) {
+    throw new Error("Invalid payment signature");
+  }
+
+  // Find payment
+  const payment = await Payment.findOne({
+    razorpay_order_id,
+  });
+
+  if (!payment) {
+    throw new Error("Payment record not found");
+  }
+
+  // Update payment status
+  payment.razorpay_payment_id = razorpay_payment_id;
+  payment.razorpay_signature = razorpay_signature;
+  payment.status = "paid";
+
+  await payment.save();
+
+  // Get course
+  const course = await Course.findById(courseId);
+
+  // Enroll student
+  const alreadyEnrolled = await Enrollment.findOne({
+    user: userId,
+    course: courseId,
+  });
+
+  if (!alreadyEnrolled) {
+    await Enrollment.create({
+      user: userId,
+      course: courseId,
+      instructor: course.instructor,
+    });
+  }
+
+  return {
+    success: true,
+    message: "Payment verified and enrollment successful",
+  };
+};
