@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { 
   BarChart3, 
   TrendingUp, 
@@ -7,7 +7,8 @@ import {
   BookOpen, 
   Download,
   Calendar,
-  Filter
+  Filter,
+  Loader2
 } from 'lucide-react';
 import { 
   LineChart, 
@@ -18,19 +19,43 @@ import {
   Tooltip, 
   ResponsiveContainer,
   BarChart,
-  Bar,
-  Legend
+  Bar
 } from 'recharts';
-
-const growthData = [
-  { name: 'Jan', students: 400, instructors: 24, courses: 40 },
-  { name: 'Feb', students: 600, instructors: 35, courses: 55 },
-  { name: 'Mar', students: 900, instructors: 48, courses: 72 },
-  { name: 'Apr', students: 1200, instructors: 62, courses: 95 },
-  { name: 'May', students: 1800, instructors: 85, courses: 120 },
-];
+import adminService from '../../services/adminService';
 
 const AdminReports = () => {
+  const [stats, setStats] = useState(null);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    fetchStats();
+  }, []);
+
+  const fetchStats = async () => {
+    try {
+      setLoading(true);
+      const data = await adminService.getAdminStats();
+      setStats(data);
+    } catch (error) {
+      console.error('Failed to fetch stats', error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  if (loading) {
+    return (
+      <div className="flex flex-col items-center justify-center min-h-[60vh]">
+        <Loader2 className="w-12 h-12 text-blue-600 animate-spin" />
+        <p className="mt-4 text-slate-500 font-medium">Generating reports...</p>
+      </div>
+    );
+  }
+
+  // Mock data for trends since we only have current month in stats for now
+  // In a real app, this would come from a specialized analytics endpoint
+  const growthData = stats?.chartData || [];
+
   return (
     <div className="space-y-8">
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
@@ -43,25 +68,22 @@ const AdminReports = () => {
         </button>
       </div>
 
-      {/* Overview Charts */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
         <div className="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm">
           <div className="flex items-center justify-between mb-8">
-            <h3 className="text-lg font-bold text-slate-900">Growth Trends</h3>
+            <h3 className="text-lg font-bold text-slate-900">Revenue Growth</h3>
             <div className="flex gap-2">
-               <span className="flex items-center gap-1 text-xs font-bold text-blue-600"><div className="w-3 h-3 rounded-full bg-blue-600"></div> Students</span>
-               <span className="flex items-center gap-1 text-xs font-bold text-purple-600"><div className="w-3 h-3 rounded-full bg-purple-600"></div> Instructors</span>
+               <span className="flex items-center gap-1 text-xs font-bold text-blue-600"><div className="w-3 h-3 rounded-full bg-blue-600"></div> Revenue</span>
             </div>
           </div>
           <div className="h-[350px] w-full min-h-[350px]">
-            <ResponsiveContainer width="100%" height="100%" minWidth={0}>
+            <ResponsiveContainer width="100%" height="100%">
               <LineChart data={growthData}>
                 <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f1f5f9" />
                 <XAxis dataKey="name" axisLine={false} tickLine={false} tick={{fill: '#64748b', fontSize: 12}} />
-                <YAxis axisLine={false} tickLine={false} tick={{fill: '#64748b', fontSize: 12}} />
+                <YAxis axisLine={false} tickLine={false} tick={{fill: '#64748b', fontSize: 12}} tickFormatter={(v) => `₹${v}`} />
                 <Tooltip contentStyle={{borderRadius: '12px', border: 'none', boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)'}} />
-                <Line type="monotone" dataKey="students" stroke="#2563eb" strokeWidth={3} dot={{r: 4, fill: '#2563eb'}} activeDot={{r: 6}} />
-                <Line type="monotone" dataKey="instructors" stroke="#7c3aed" strokeWidth={3} dot={{r: 4, fill: '#7c3aed'}} activeDot={{r: 6}} />
+                <Line type="monotone" dataKey="revenue" stroke="#2563eb" strokeWidth={3} dot={{r: 4, fill: '#2563eb'}} activeDot={{r: 6}} />
               </LineChart>
             </ResponsiveContainer>
           </div>
@@ -69,32 +91,31 @@ const AdminReports = () => {
 
         <div className="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm">
           <div className="flex items-center justify-between mb-8">
-            <h3 className="text-lg font-bold text-slate-900">Course Submissions</h3>
-            <select className="text-xs font-bold bg-slate-50 border-none rounded-lg focus:ring-0">
-              <option>Last 6 Months</option>
-              <option>Last Year</option>
-            </select>
+            <h3 className="text-lg font-bold text-slate-900">Platform Distribution</h3>
           </div>
           <div className="h-[350px] w-full min-h-[350px]">
-            <ResponsiveContainer width="100%" height="100%" minWidth={0}>
-              <BarChart data={growthData}>
+            <ResponsiveContainer width="100%" height="100%">
+              <BarChart data={[
+                { name: 'Students', count: stats?.totalStudents || 0 },
+                { name: 'Instructors', count: stats?.totalInstructors || 0 },
+                { name: 'Courses', count: stats?.totalCourses || 0 },
+              ]}>
                 <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f1f5f9" />
                 <XAxis dataKey="name" axisLine={false} tickLine={false} tick={{fill: '#64748b', fontSize: 12}} />
                 <YAxis axisLine={false} tickLine={false} tick={{fill: '#64748b', fontSize: 12}} />
                 <Tooltip cursor={{fill: '#f8fafc'}} contentStyle={{borderRadius: '12px', border: 'none', boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)'}} />
-                <Bar dataKey="courses" fill="#059669" radius={[4, 4, 0, 0]} barSize={40} />
+                <Bar dataKey="count" fill="#7c3aed" radius={[4, 4, 0, 0]} barSize={40} />
               </BarChart>
             </ResponsiveContainer>
           </div>
         </div>
       </div>
 
-      {/* Summary Cards */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
         {[
-          { label: 'Most Enrolled Course', value: 'React Masterclass', stat: '1.2k New Enrolls', icon: BookOpen, color: 'blue' },
-          { label: 'Top Performing Instructor', value: 'Dr. Sarah Jenkins', stat: '$15k Revenue', icon: GraduationCap, color: 'purple' },
-          { label: 'Student Retention Rate', value: '84.2%', stat: '+2.4% from last month', icon: Users, color: 'green' },
+          { label: 'Total Users', value: (stats?.totalStudents + stats?.totalInstructors) || 0, stat: 'Live across platform', icon: Users, color: 'blue' },
+          { label: 'Platform Revenue', value: `₹${stats?.totalRevenue?.toLocaleString()}`, stat: 'Total transactions', icon: TrendingUp, color: 'purple' },
+          { label: 'Active Courses', value: stats?.totalCourses || 0, stat: 'Published & Drafts', icon: BookOpen, color: 'green' },
         ].map((item, i) => (
           <div key={i} className="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm relative overflow-hidden group">
             <div className={`absolute top-0 right-0 w-24 h-24 bg-slate-50 rounded-full -mr-12 -mt-12 group-hover:scale-150 transition-transform duration-500`}></div>

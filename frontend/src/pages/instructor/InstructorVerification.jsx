@@ -310,12 +310,7 @@ const InstructorVerification = () => {
                 {loading ? <Loader2 className="animate-spin" size={24} /> : <Save size={24} />}
                 Submit Details for Approval
               </button>
-              {success && (
-                <p className="text-center text-green-600 font-bold mt-4 animate-bounce">Submitted Successfully!</p>
-              )}
-              {error && (
-                <p className="text-center text-red-600 font-bold mt-4">{error}</p>
-              )}
+             
             </div>
           </form>
         </div>

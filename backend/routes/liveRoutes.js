@@ -5,6 +5,7 @@ import {
   startLiveSession,
   endLiveSession,
   getMyLiveSessions,
+  getInstructorSessions,
 } from "../controllers/liveController.js";
 import { authMiddleware } from "../middleware/authMiddleware.js";
 
@@ -14,6 +15,7 @@ const router = express.Router();
 
 router.post("/", authMiddleware, createLiveSession);
 router.get("/my-sessions", authMiddleware, getMyLiveSessions);
+router.get("/instructor-sessions", authMiddleware, getInstructorSessions);
 router.get("/:courseId", getLiveSessions);
 
 router.put("/:id/start", authMiddleware, startLiveSession);

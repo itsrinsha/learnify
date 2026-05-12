@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { useNavigate } from 'react-router-dom';
 import { fetchInstructorDashboard } from '../../features/instructor/instructorThunk';
@@ -13,18 +13,32 @@ import {
   MessageSquare,
   AlertCircle,
   CheckCircle2,
-  Loader2
+  Loader2,
+  Calendar,
+  Clock
 } from 'lucide-react';
+import liveService from '../../services/liveService';
 
 const InstructorDashboard = () => {
   const navigate = useNavigate();
   const dispatch = useDispatch();
   const { dashboardData, loading } = useSelector((state) => state.instructor);
   const { user } = useSelector((state) => state.auth);
+  const [liveSessions, setLiveSessions] = useState([]);
 
   useEffect(() => {
     dispatch(fetchInstructorDashboard());
+    fetchLiveSessions();
   }, [dispatch]);
+
+  const fetchLiveSessions = async () => {
+    try {
+      const data = await liveService.getInstructorLiveSessions();
+      setLiveSessions(data);
+    } catch (error) {
+      console.error('Failed to fetch live sessions', error);
+    }
+  };
 
   if (loading && !dashboardData) {
     return (
@@ -35,11 +49,15 @@ const InstructorDashboard = () => {
     );
   }
 
+  const upcomingSessions = liveSessions
+    .filter(s => new Date(s.startTime) > new Date() || s.isLive)
+    .slice(0, 3);
+
   const stats = [
     { label: 'Total Courses', value: dashboardData?.stats?.totalCourses || 0, icon: <BookOpen className="text-blue-600" />, bg: 'bg-blue-50', sub: `${dashboardData?.stats?.publishedCourses || 0} Published` },
     { label: 'Total Students', value: dashboardData?.stats?.totalStudents || 0, icon: <Users className="text-purple-600" />, bg: 'bg-purple-50', sub: 'Across all courses' },
     { label: 'Total Earnings', value: `₹${dashboardData?.stats?.totalEarnings?.toLocaleString() || 0}`, icon: <DollarSign className="text-green-600" />, bg: 'bg-green-50', sub: 'Withdraw anytime' },
-    { label: 'Enrolled Students', value: dashboardData?.stats?.totalStudents || 0, icon: <Users className="text-red-600" />, bg: 'bg-red-50', sub: 'Across all courses' },
+    { label: 'Upcoming Live', value: upcomingSessions.length, icon: <Video className="text-red-600" />, bg: 'bg-red-50', sub: 'Scheduled sessions' },
   ];
 
   const recentApprovals = (dashboardData?.courses || []).slice(0, 3).map(c => ({
@@ -85,29 +103,64 @@ const InstructorDashboard = () => {
       </div>
 
       <div className="grid lg:grid-cols-3 gap-10">
-        {/* Main Content Area */}
         <div className="lg:col-span-2 space-y-10">
-          {/* Upcoming Live Classes placeholder */}
+          {/* Real Live Classes Schedule */}
           <div className="bg-white rounded-[2.5rem] border border-slate-200 shadow-sm overflow-hidden">
             <div className="p-8 border-b border-slate-50 flex items-center justify-between">
               <h3 className="text-xl font-black text-slate-900">Live Classes Schedule</h3>
-              <button className="text-blue-600 text-xs font-bold hover:underline">Manage Live</button>
+              <button onClick={() => navigate('/instructor/live-classes')} className="text-blue-600 text-xs font-bold hover:underline">Manage Live</button>
             </div>
-            <div className="p-12 text-center space-y-4">
-              <div className="w-16 h-16 bg-blue-50 rounded-2xl flex items-center justify-center text-blue-600 mx-auto">
-                <Video size={32} />
-              </div>
-              <div>
-                <p className="font-bold text-slate-900">No live classes scheduled</p>
-                <p className="text-sm text-slate-500 mt-1">Start a live session to interact with your students in real-time.</p>
-              </div>
-              <button className="px-6 py-2 bg-slate-900 text-white rounded-xl text-sm font-bold hover:bg-blue-600 transition-all">
-                Schedule New Class
-              </button>
+            
+            <div className="p-0">
+              {upcomingSessions.length > 0 ? (
+                <div className="divide-y divide-slate-50">
+                  {upcomingSessions.map((session) => (
+                    <div key={session._id} className="p-8 hover:bg-slate-50 transition-all flex items-center justify-between group">
+                      <div className="flex items-center gap-6">
+                        <div className={`p-4 rounded-2xl ${session.isLive ? 'bg-red-50 text-red-600 animate-pulse' : 'bg-blue-50 text-blue-600'}`}>
+                          <Video size={20} />
+                        </div>
+                        <div>
+                          <p className="text-xs font-black text-blue-600 uppercase tracking-widest mb-1">{session.course?.title || 'General'}</p>
+                          <h4 className="font-black text-slate-900">{session.title}</h4>
+                          <div className="flex items-center gap-4 mt-2">
+                            <span className="flex items-center gap-1.5 text-xs font-bold text-slate-400">
+                              <Calendar size={12} /> {new Date(session.startTime).toLocaleDateString()}
+                            </span>
+                            <span className="flex items-center gap-1.5 text-xs font-bold text-slate-400">
+                              <Clock size={12} /> {new Date(session.startTime).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                            </span>
+                          </div>
+                        </div>
+                      </div>
+                      <button 
+                        onClick={() => navigate('/instructor/live-classes')}
+                        className={`px-5 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all ${
+                          session.isLive ? 'bg-red-600 text-white' : 'bg-slate-100 text-slate-600 hover:bg-blue-600 hover:text-white'
+                        }`}
+                      >
+                        {session.isLive ? 'Live Now' : 'Details'}
+                      </button>
+                    </div>
+                  ))}
+                </div>
+              ) : (
+                <div className="p-12 text-center space-y-4">
+                  <div className="w-16 h-16 bg-blue-50 rounded-2xl flex items-center justify-center text-blue-600 mx-auto">
+                    <Video size={32} />
+                  </div>
+                  <div>
+                    <p className="font-bold text-slate-900">No live classes scheduled</p>
+                    <p className="text-sm text-slate-500 mt-1">Start a live session to interact with your students in real-time.</p>
+                  </div>
+                  <button onClick={() => navigate('/instructor/live-classes')} className="px-6 py-2 bg-slate-900 text-white rounded-xl text-sm font-bold hover:bg-blue-600 transition-all">
+                    Schedule New Class
+                  </button>
+                </div>
+              )}
             </div>
           </div>
 
-          {/* Student Progress Snapshot */}
           <div className="bg-white p-8 rounded-[2.5rem] border border-slate-200 shadow-sm">
             <h3 className="text-xl font-black text-slate-900 mb-8">Course Performance</h3>
             <div className="space-y-8">
@@ -135,9 +188,7 @@ const InstructorDashboard = () => {
           </div>
         </div>
 
-        {/* Sidebar Area */}
         <div className="space-y-10">
-          {/* Course Approval Status */}
           <div className="bg-white rounded-[2.5rem] border border-slate-200 shadow-sm overflow-hidden">
             <div className="p-8 border-b border-slate-50">
               <h3 className="font-black text-slate-900">Recent Courses</h3>
@@ -164,7 +215,6 @@ const InstructorDashboard = () => {
             </div>
           </div>
 
-          {/* Earnings Summary */}
           <div className="bg-slate-900 rounded-[2.5rem] p-8 text-white relative overflow-hidden shadow-2xl">
             <div className="absolute top-0 right-0 w-32 h-32 bg-blue-600 rounded-full -mr-16 -mt-16 opacity-50 blur-3xl"></div>
             <div className="relative z-10 space-y-6">
@@ -175,7 +225,7 @@ const InstructorDashboard = () => {
               <div className="space-y-4">
                 <div className="flex justify-between items-center">
                   <span className="text-sm font-medium text-slate-400">Total Revenue</span>
-                  <span className="text-lg font-black">₹{dashboardData?.stats?.totalEarnings || 0}</span>
+                  <span className="text-lg font-black">₹{dashboardData?.stats?.totalEarnings?.toLocaleString() || 0}</span>
                 </div>
                 <div className="flex justify-between items-center">
                   <span className="text-sm font-medium text-slate-400">Next Payout</span>

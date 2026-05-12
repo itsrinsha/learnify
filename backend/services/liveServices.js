@@ -35,6 +35,13 @@ export const getMyLiveSessionsService = async (userId) => {
     .populate("instructor", "name profileImage");
 };
 
+// get instructor sessions
+export const getInstructorSessionsService = async (instructorId) => {
+  return await LiveSession.find({ instructor: instructorId })
+    .populate("course", "title")
+    .sort({ startTime: 1 });
+};
+
 // start session
 export const startLiveSessionService = async ({ sessionId, userId }) => {
   const session = await LiveSession.findById(sessionId);

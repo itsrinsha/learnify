@@ -1,5 +1,28 @@
 import mongoose from "mongoose";
-
+const lectureSchema = new mongoose.Schema(
+  {
+    title: {
+      type: String,
+      require: true
+    },
+    description: {
+      type: String,
+      default: ""
+    },
+    videoUrl: {
+      type: String,
+      require: true
+    },
+    duration: {
+      type: String,
+      default: "0m"
+    },
+    isPreviewFree: {
+      type: Boolean,
+      default: false
+    },
+  }, { _id: true }
+)
 const courseSchema = new mongoose.Schema(
   {
     title: {
@@ -71,7 +94,7 @@ const courseSchema = new mongoose.Schema(
     certificateEligibility: {
       type: Boolean,
       default: true,
-    },
+    }
   },
   { timestamps: true }
 );

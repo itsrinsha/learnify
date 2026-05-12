@@ -1,4 +1,6 @@
 import { asyncHandler } from "../middleware/trycatchmiddleware.js";
+import Course from "../models/Course.js";
+import cloudinary from "../config/cloudinary.js";
 
 import {
   createCourseService,
@@ -75,6 +77,57 @@ export const deleteCourse = async (req, res) => {
     success: true,
     message: "Course deleted successfully",
   });
+};
+
+export const addLecture = async (req, res) => {
+  try {
+    const { courseId } = req.params;
+    const { title, description, duration, isPreviewFree } = req.body;
+
+    // Find course
+    const course = await Course.findById(courseId);
+
+    if (!course) {
+      return res.status(404).json({
+        message: "Course not found",
+      });
+    }
+
+    // Upload video to Cloudinary
+    const result = await cloudinary.uploader.upload(
+      `data:${req.file.mimetype};base64,${req.file.buffer.toString(
+        "base64"
+      )}`,
+      {
+        resource_type: "video",
+        folder: "learnify-lectures",
+      }
+    );
+
+    // Create lecture object
+    const lecture = {
+      title,
+      description,
+      duration,
+      isPreviewFree,
+      videoUrl: result.secure_url,
+    };
+
+    // Push lecture into course
+    course.lectures.push(lecture);
+
+    await course.save();
+
+    res.status(200).json({
+      success: true,
+      message: "Lecture added successfully",
+      course,
+    });
+  } catch (error) {
+    res.status(500).json({
+      message: error.message,
+    });
+  }
 };
 
 

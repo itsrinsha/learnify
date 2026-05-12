@@ -14,6 +14,9 @@ import liveRoutes from "./routes/liveRoutes.js"
 import examRoutes from "./routes/examRoutes.js"
 import progressRoutes from "./routes/progressRoutes.js"
 import certificateRoutes from "./routes/certificateRoutes.js"
+import videoRouter from "./routes/videoRoutes.js"
+
+
 
 //middleware
 import errorMiddleware from "./middleware/errorMiddleware.js"
@@ -48,6 +51,7 @@ app.use("/api/exams", examRoutes)
 app.use("/api/progress", progressRoutes)
 app.use("/api/certificates", certificateRoutes)
 app.use("/api/payments",paymentRoutes)
+app.use("/api/video",videoRouter)
 app.use(errorMiddleware);
 
 const PORT =process.env.PORT || 5000;

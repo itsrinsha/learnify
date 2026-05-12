@@ -7,7 +7,8 @@ import {
   deleteCourse,
 } from "../controllers/courseController.js";
 import { optionalAuthMiddleware } from "../middleware/optionalAuthMiddleware.js";
-
+import upload from "../middleware/upload.js";
+import { addLecture } from "../controllers/courseController.js";
 
 
 const router = express.Router();
@@ -26,5 +27,11 @@ router.put("/:id", updateCourse);
 
 // delete course
 router.delete("/:id", deleteCourse);
+
+router.post(
+  '/:courseId/add-lecture',
+  upload.any("video"),
+  addLecture
+)
 
 export default router;

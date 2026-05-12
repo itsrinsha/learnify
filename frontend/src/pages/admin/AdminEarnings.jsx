@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { 
   TrendingUp, 
   DollarSign, 
@@ -8,7 +8,8 @@ import {
   ArrowUpRight, 
   ArrowDownRight,
   Download,
-  Filter
+  Filter,
+  Loader2
 } from 'lucide-react';
 import { 
   BarChart as ReBarChart, 
@@ -17,23 +18,48 @@ import {
   YAxis, 
   CartesianGrid, 
   Tooltip, 
-  ResponsiveContainer,
-  Cell
+  ResponsiveContainer
 } from 'recharts';
-
-const data = [
-  { name: 'Mon', revenue: 4500 },
-  { name: 'Tue', revenue: 5200 },
-  { name: 'Wed', revenue: 3800 },
-  { name: 'Thu', revenue: 6500 },
-  { name: 'Fri', revenue: 4800 },
-  { name: 'Sat', revenue: 7200 },
-  { name: 'Sun', revenue: 5900 },
-];
-
-const COLORS = ['#2563eb', '#7c3aed', '#059669', '#d97706', '#dc2626'];
+import adminService from '../../services/adminService';
+import { toast } from 'react-hot-toast';
 
 const AdminEarnings = () => {
+  const [earnings, setEarnings] = useState(null);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    fetchEarnings();
+  }, []);
+
+  const fetchEarnings = async () => {
+    try {
+      setLoading(true);
+      const data = await adminService.getEarnings();
+      setEarnings(data);
+    } catch (error) {
+      console.error('Failed to fetch earnings', error);
+      toast.error('Failed to load earnings');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  if (loading) {
+    return (
+      <div className="flex flex-col items-center justify-center min-h-[60vh]">
+        <Loader2 className="w-12 h-12 text-blue-600 animate-spin" />
+        <p className="mt-4 text-slate-500 font-medium">Calculating revenue data...</p>
+      </div>
+    );
+  }
+
+  const stats = [
+    { title: 'Total Revenue', value: `₹${earnings?.totalRevenue?.toLocaleString()}`, trend: 0, icon: DollarSign, color: 'blue' },
+    { title: 'Platform Profit (20%)', value: `₹${earnings?.platformProfit?.toLocaleString()}`, trend: 0, icon: TrendingUp, color: 'green' },
+    { title: 'Instructor Payouts', value: `₹${earnings?.instructorPayouts?.toLocaleString()}`, trend: 0, icon: PieChart, color: 'purple' },
+    { title: 'Pending Payouts', value: `₹${earnings?.pendingPayouts?.toLocaleString()}`, trend: 0, icon: BarChart, color: 'amber' },
+  ];
+
   return (
     <div className="space-y-8">
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
@@ -43,7 +69,7 @@ const AdminEarnings = () => {
         </div>
         <div className="flex gap-3">
           <button className="flex items-center gap-2 px-4 py-2 bg-white border border-slate-200 rounded-xl text-sm font-semibold text-slate-700 hover:bg-slate-50 transition-colors shadow-sm">
-            <Calendar className="w-4 h-4" /> Custom Range
+            <Calendar className="w-4 h-4" /> Last 30 Days
           </button>
           <button className="flex items-center gap-2 px-4 py-2 bg-blue-600 rounded-xl text-sm font-semibold text-white hover:bg-blue-700 transition-colors shadow-lg shadow-blue-900/20">
             <Download className="w-4 h-4" /> Export Report
@@ -51,23 +77,13 @@ const AdminEarnings = () => {
         </div>
       </div>
 
-      {/* Stats */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-        {[
-          { title: 'Total Revenue', value: '$254,120', trend: 15, icon: DollarSign, color: 'blue' },
-          { title: 'Platform Profit', value: '$50,824', trend: 12, icon: TrendingUp, color: 'green' },
-          { title: 'Instructor Payouts', value: '$203,296', trend: 8, icon: PieChart, color: 'purple' },
-          { title: 'Pending Payouts', value: '$12,450', trend: -2, icon: BarChart, color: 'amber' },
-        ].map((stat, i) => (
+        {stats.map((stat, i) => (
           <div key={i} className="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm">
             <div className="flex items-center justify-between mb-4">
               <div className={`p-3 rounded-xl bg-slate-50 text-slate-600`}>
                 <stat.icon className="w-6 h-6" />
               </div>
-              <span className={`flex items-center text-xs font-bold ${stat.trend > 0 ? 'text-green-600' : 'text-red-600'}`}>
-                {stat.trend > 0 ? <ArrowUpRight className="w-3 h-3" /> : <ArrowDownRight className="w-3 h-3" />}
-                {Math.abs(stat.trend)}%
-              </span>
             </div>
             <p className="text-sm font-medium text-slate-500 mb-1">{stat.title}</p>
             <h3 className="text-2xl font-bold text-slate-900">{stat.value}</h3>
@@ -76,18 +92,13 @@ const AdminEarnings = () => {
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-        {/* Weekly Revenue Chart */}
         <div className="lg:col-span-2 bg-white p-6 rounded-2xl border border-slate-200 shadow-sm">
           <div className="flex items-center justify-between mb-8">
-            <h3 className="text-lg font-bold text-slate-900">Weekly Performance</h3>
-            <div className="flex gap-2">
-              <button className="px-3 py-1 bg-blue-50 text-blue-600 text-xs font-bold rounded-lg border border-blue-100">Revenue</button>
-              <button className="px-3 py-1 bg-white text-slate-400 text-xs font-bold rounded-lg border border-transparent hover:bg-slate-50">Profit</button>
-            </div>
+            <h3 className="text-lg font-bold text-slate-900">Monthly Performance</h3>
           </div>
           <div className="h-[350px] w-full min-h-[350px]">
-            <ResponsiveContainer width="100%" height="100%" minWidth={0}>
-              <ReBarChart data={data}>
+            <ResponsiveContainer width="100%" height="100%">
+              <ReBarChart data={earnings?.chartData || []}>
                 <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f1f5f9" />
                 <XAxis 
                   dataKey="name" 
@@ -100,7 +111,7 @@ const AdminEarnings = () => {
                   axisLine={false} 
                   tickLine={false} 
                   tick={{fill: '#64748b', fontSize: 12}}
-                  tickFormatter={(value) => `$${value}`}
+                  tickFormatter={(value) => `₹${value}`}
                 />
                 <Tooltip 
                   cursor={{fill: '#f8fafc'}}
@@ -112,34 +123,19 @@ const AdminEarnings = () => {
           </div>
         </div>
 
-        {/* Category Wise Revenue */}
         <div className="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm">
-          <h3 className="text-lg font-bold text-slate-900 mb-6">Revenue by Category</h3>
+          <h3 className="text-lg font-bold text-slate-900 mb-6">Revenue Overview</h3>
+          <p className="text-slate-500 text-sm mb-8">Real-time performance tracking from student enrollments across the platform.</p>
           <div className="space-y-6">
-            {[
-              { label: 'Development', value: '$124,500', percent: 65, color: '#2563eb' },
-              { label: 'Design', value: '$54,200', percent: 45, color: '#7c3aed' },
-              { label: 'Business', value: '$32,100', percent: 30, color: '#059669' },
-              { label: 'Marketing', value: '$24,800', percent: 25, color: '#d97706' },
-              { label: 'Others', value: '$18,520', percent: 15, color: '#64748b' },
-            ].map((cat, i) => (
-              <div key={i} className="space-y-2">
-                <div className="flex justify-between items-center">
-                  <span className="text-sm font-bold text-slate-700">{cat.label}</span>
-                  <span className="text-sm font-bold text-slate-900">{cat.value}</span>
-                </div>
-                <div className="h-2 w-full bg-slate-100 rounded-full overflow-hidden">
-                  <div 
-                    className="h-full rounded-full transition-all duration-1000" 
-                    style={{ width: `${cat.percent}%`, backgroundColor: cat.color }}
-                  ></div>
-                </div>
-              </div>
-            ))}
+             <div className="p-4 rounded-xl bg-blue-50 border border-blue-100">
+                <p className="text-xs font-bold text-blue-600 uppercase mb-1">Top Performing Category</p>
+                <p className="text-lg font-black text-slate-900">Development</p>
+             </div>
+             <div className="p-4 rounded-xl bg-purple-50 border border-purple-100">
+                <p className="text-xs font-bold text-purple-600 uppercase mb-1">Average Order Value</p>
+                <p className="text-lg font-black text-slate-900">₹{earnings?.totalRevenue > 0 ? (earnings.totalRevenue / 10).toFixed(2) : 0}</p>
+             </div>
           </div>
-          <button className="w-full mt-8 py-3 bg-slate-50 hover:bg-slate-100 text-slate-600 text-sm font-bold rounded-xl transition-colors">
-            View Detailed Breakdown
-          </button>
         </div>
       </div>
     </div>
