@@ -29,6 +29,8 @@ const BuyCourses = () => {
   const [showPayment, setShowPayment] = useState(false);
   const [isProcessing, setIsProcessing] = useState(false);
   const [orderId, setOrderId] = useState("");
+  const [showFailureModal, setShowFailureModal] = useState(false);
+  const [failureReason, setFailureReason] = useState("");
 
   useEffect(() => {
     dispatch(fetchAllCourses());
@@ -88,7 +90,11 @@ const BuyCourses = () => {
 
       const rzp = new window.Razorpay(options);
       rzp.on('payment.failed', async function (response) {
-        toast.error("Payment failed: " + response.error.description);
+        console.error("Payment failed:", response.error);
+        setFailureReason(response.error.description || "The transaction was cancelled or declined.");
+        setShowFailureModal(true);
+        setShowPayment(false);
+        
         try {
           await paymentService.recordPaymentFailure({
             razorpay_order_id: response.error.metadata.order_id,
@@ -357,6 +363,44 @@ const BuyCourses = () => {
                   </>
                 )}
               </button>
+            </div>
+          </div>
+        </div>
+      {/* Payment Failure Modal */}
+      {showFailureModal && (
+        <div className="fixed inset-0 z-[70] flex items-center justify-center p-4">
+          <div className="absolute inset-0 bg-slate-900/60 backdrop-blur-sm" onClick={() => setShowFailureModal(false)}></div>
+          <div className="bg-white w-full max-w-md rounded-[2.5rem] shadow-2xl relative z-10 overflow-hidden border border-red-100">
+            <div className="bg-red-50 p-10 flex justify-center">
+              <div className="bg-red-100 p-6 rounded-[2rem] text-red-600 animate-bounce">
+                <AlertCircle size={48} />
+              </div>
+            </div>
+            <div className="p-10 text-center space-y-6">
+              <div className="space-y-2">
+                <h3 className="text-2xl font-black text-slate-900">Payment Failed</h3>
+                <p className="text-slate-500 font-medium">We couldn't process your transaction.</p>
+              </div>
+              
+              <div className="bg-slate-50 p-5 rounded-2xl border border-slate-100 text-left">
+                <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1">Error Details</p>
+                <p className="text-sm text-slate-600 font-medium leading-relaxed">{failureReason}</p>
+              </div>
+
+              <div className="flex flex-col gap-3">
+                <button 
+                  onClick={() => setShowFailureModal(false)}
+                  className="w-full py-4 bg-slate-900 text-white rounded-2xl font-bold hover:bg-slate-800 transition-all shadow-xl shadow-slate-200"
+                >
+                  Try Again
+                </button>
+                <button 
+                  onClick={() => setShowFailureModal(false)}
+                  className="w-full py-4 text-slate-400 font-bold text-sm hover:text-slate-600 transition-colors"
+                >
+                  Cancel
+                </button>
+              </div>
             </div>
           </div>
         </div>

@@ -111,7 +111,7 @@ const StudentMessage = () => {
   }
 
   return (
-    <div className="h-[calc(100vh-140px)] flex flex-col lg:flex-row bg-white rounded-[2.5rem] border border-slate-200 shadow-sm overflow-hidden">
+    <div className="h-[calc(100vh-140px)] flex flex-col lg:flex-row bg-white rounded-[2.5rem] border border-slate-200 shadow-2xl shadow-slate-200/50 overflow-hidden">
       {/* Sidebar - Contacts List */}
       <aside className="w-full lg:w-96 border-r border-slate-100 flex flex-col overflow-hidden">
         <div className="p-6 border-b border-slate-100 flex items-center justify-between">
@@ -126,23 +126,25 @@ const StudentMessage = () => {
             <div 
               key={contact._id} 
               onClick={() => setSelectedChat(contact._id)}
-              className={`p-5 flex gap-4 cursor-pointer transition-all hover:bg-slate-50 ${
-                selectedChat === contact._id ? 'bg-blue-50/50 border-l-4 border-blue-600' : ''
+              className={`p-5 flex gap-4 cursor-pointer transition-all relative group ${
+                selectedChat === contact._id ? 'bg-blue-50/50' : 'hover:bg-slate-50'
               }`}
             >
+              {selectedChat === contact._id && <div className="absolute left-0 top-0 bottom-0 w-1 bg-blue-600"></div>}
               <div className="relative flex-shrink-0">
                 <img 
-                  src={contact.profileImage || `https://ui-avatars.com/api/?name=${encodeURIComponent(contact.name)}&background=random`} 
+                  src={contact.profileImage || `https://ui-avatars.com/api/?name=${encodeURIComponent(contact.name)}&background=2563eb&color=fff`} 
                   alt={contact.name} 
-                  className="w-14 h-14 rounded-2xl object-cover border border-slate-100" 
+                  className="w-14 h-14 rounded-2xl object-cover border-2 border-white shadow-sm" 
                 />
+                <div className="absolute -bottom-1 -right-1 w-4 h-4 bg-green-500 border-2 border-white rounded-full"></div>
               </div>
               <div className="flex-1 min-w-0">
                 <div className="flex justify-between items-start mb-1">
-                  <h4 className="text-sm font-bold text-slate-900 truncate">{contact.name}</h4>
-                  <span className="text-[10px] text-slate-400 font-medium">{new Date(contact.lastMessageTime).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</span>
+                  <h4 className="text-sm font-bold text-slate-900 truncate group-hover:text-blue-600 transition-colors">{contact.name}</h4>
+                  <span className="text-[10px] text-slate-400 font-bold">{new Date(contact.lastMessageTime).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</span>
                 </div>
-                <p className="text-xs text-slate-400 truncate leading-relaxed">
+                <p className="text-xs text-slate-500 truncate leading-relaxed font-medium">
                   {contact.lastMessage}
                 </p>
               </div>
@@ -188,15 +190,20 @@ const StudentMessage = () => {
                   return (
                     <div key={msg._id} className={`flex ${isOwn ? 'justify-end' : 'justify-start'}`}>
                       <div className={`max-w-[75%] space-y-1 ${isOwn ? 'items-end' : 'items-start'}`}>
-                        <div className={`p-4 rounded-2xl text-sm leading-relaxed shadow-sm ${
+                        <div className={`p-4 rounded-2xl text-sm leading-relaxed shadow-sm font-medium ${
                           isOwn 
                           ? 'bg-blue-600 text-white rounded-tr-none' 
-                          : 'bg-white text-slate-700 rounded-tl-none border border-slate-100'
+                          : 'bg-white text-slate-700 rounded-tl-none border border-slate-200'
                         }`}>
                           {msg.message}
                         </div>
-                        <div className="text-[10px] text-slate-400 font-bold px-2">
-                          {new Date(msg.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                        <div className="flex items-center gap-1.5 px-2">
+                          <span className="text-[10px] text-slate-400 font-bold">
+                            {new Date(msg.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                          </span>
+                          {isOwn && (
+                            <CheckCheck size={12} className={msg.read ? 'text-blue-500' : 'text-slate-300'} />
+                          )}
                         </div>
                       </div>
                     </div>

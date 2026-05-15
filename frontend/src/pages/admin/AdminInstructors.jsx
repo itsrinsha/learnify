@@ -65,6 +65,28 @@ const AdminInstructors = () => {
     }
   };
 
+  const handleApprove = async (id) => {
+    if (!window.confirm("Approve this instructor?")) return;
+    try {
+      await adminService.approveInstructor(id);
+      toast.success("Instructor approved successfully");
+      fetchInstructors();
+    } catch (error) {
+      toast.error("Failed to approve instructor");
+    }
+  };
+
+  const handleReject = async (id) => {
+    if (!window.confirm("Reject this instructor?")) return;
+    try {
+      await adminService.rejectInstructor(id);
+      toast.success("Instructor rejected");
+      fetchInstructors();
+    } catch (error) {
+      toast.error("Failed to reject instructor");
+    }
+  };
+
   const filteredInstructors = instructors.filter(ins => {
     const matchesSearch = ins.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
                          ins.email.toLowerCase().includes(searchTerm.toLowerCase()) ||

@@ -59,7 +59,7 @@ export const addLessonService = async (instructorId, courseId, moduleId, lessonD
   return lesson;
 };
 
-// ✅ Publish Course
+// ✅ Publish Course (Submit for Approval)
 export const publishCourseService = async (instructorId, courseId) => {
   const course = await Course.findById(courseId).populate({
     path: "modules",
@@ -70,13 +70,40 @@ export const publishCourseService = async (instructorId, courseId) => {
   if (course.instructor.toString() !== instructorId) throw new Error("Not authorized");
 
   // Validation: Ensure course has content before publishing
-  if (!course.thumbnail) throw new Error("Course thumbnail is required before publishing");
-  if (!course.modules || course.modules.length === 0) throw new Error("Course must have at least one module before publishing");
+  if (!course.thumbnail || course.thumbnail.includes("unsplash.com/photo-1498050108023-c5249f4df085")) {
+    throw new Error("Please upload a professional course thumbnail before publishing.");
+  }
+  if (!course.description || course.description.length < 100) {
+    throw new Error("Course description must be at least 100 characters long.");
+  }
+  if (!course.price || course.price <= 0) {
+    throw new Error("Please set a valid price for the course.");
+  }
+  if (!course.category) {
+    throw new Error("Course category is required.");
+  }
+  
+  if (!course.modules || course.modules.length === 0) {
+    throw new Error("Course must have at least one module before publishing.");
+  }
   
   const hasLessons = course.modules.some(m => m.lessons && m.lessons.length > 0);
-  if (!hasLessons) throw new Error("Each module must have at least one lesson before publishing");
+  if (!hasLessons) {
+    throw new Error("Each module must have at least one lesson before publishing.");
+  }
 
+  // Ensure all lessons have videos
+  for (const module of course.modules) {
+    for (const lesson of module.lessons) {
+      if (!lesson.videoUrl) {
+        throw new Error(`Lesson "${lesson.title}" in module "${module.title}" is missing a video.`);
+      }
+    }
+  }
+
+  // Set status to published and approvalStatus to pending
   course.status = "published";
+  course.approvalStatus = "pending";
   await course.save();
 
   return course;
@@ -84,12 +111,20 @@ export const publishCourseService = async (instructorId, courseId) => {
 
 // ✅ Get Instructor Courses
 export const getInstructorCoursesService = async (instructorId) => {
-  return await Course.find({ instructor: instructorId })
+  const courses = await Course.find({ instructor: instructorId })
     .populate({
       path: "modules",
       populate: { path: "lessons" }
     })
     .sort({ createdAt: -1 });
+
+  return {
+    all: courses,
+    approved: courses.filter(c => c.approvalStatus === "approved"),
+    pending: courses.filter(c => c.approvalStatus === "pending"),
+    rejected: courses.filter(c => c.approvalStatus === "rejected"),
+    drafts: courses.filter(c => c.status === "draft")
+  };
 };
 
 // ✅ Get Single Course Details for Instructor
@@ -111,13 +146,21 @@ export const updateCourseService = async (instructorId, courseId, updateData) =>
   if (!course) throw new Error("Course not found");
   if (course.instructor.toString() !== instructorId) throw new Error("Not authorized");
 
-  const updatedCourse = await Course.findByIdAndUpdate(
-    courseId,
-    { $set: updateData },
-    { new: true, runValidators: true }
-  );
+  // If course was already approved, and major info is being updated, set it back to pending
+  // Fields that trigger re-approval: title, description, price, category, level, thumbnail
+  const majorFields = ["title", "description", "price", "category", "level", "thumbnail", "status"];
+  const isMajorUpdate = Object.keys(updateData).some(key => majorFields.includes(key));
 
-  return updatedCourse;
+  if (course.approvalStatus === "approved" && isMajorUpdate) {
+    course.approvalStatus = "pending";
+  }
+
+  // Update fields
+  Object.assign(course, updateData);
+  
+  await course.save();
+
+  return course;
 };
 
 // ✅ Update Lesson

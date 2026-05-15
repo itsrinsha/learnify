@@ -70,6 +70,7 @@ const AdminCourseApproval = () => {
     else if (selectedStatus === 'approved') matchesStatus = course.approvalStatus === 'approved' && !course.isHidden;
     else if (selectedStatus === 'rejected') matchesStatus = course.approvalStatus === 'rejected';
     else if (selectedStatus === 'hidden') matchesStatus = course.isHidden;
+    else if (selectedStatus === 'blocked') matchesStatus = course.approvalStatus === 'rejected'; // Mapping block to rejected
     else if (selectedStatus === 'all') matchesStatus = true;
     
     return matchesSearch && matchesStatus;
@@ -124,7 +125,7 @@ const AdminCourseApproval = () => {
             <option value="pending">Pending Approval</option>
             <option value="approved">Approved & Visible</option>
             <option value="hidden">Hidden Courses</option>
-            <option value="rejected">Rejected</option>
+            <option value="rejected">Rejected / Blocked</option>
           </select>
         </div>
       </div>
@@ -185,6 +186,12 @@ const AdminCourseApproval = () => {
                     )}
                     {course.approvalStatus === 'approved' && (
                       <>
+                        <button 
+                          onClick={() => handleStatusUpdate(course._id, 'rejected')}
+                          className="px-4 py-2 bg-red-50 text-red-600 rounded-xl text-sm font-bold hover:bg-red-100 transition-colors border border-red-100"
+                        >
+                          Block
+                        </button>
                         {course.isHidden ? (
                           <button 
                             onClick={() => handleStatusUpdate(course._id, 'unhide')}
@@ -197,7 +204,7 @@ const AdminCourseApproval = () => {
                             onClick={() => handleStatusUpdate(course._id, 'hide')}
                             className="px-4 py-2 bg-amber-50 text-amber-600 rounded-xl text-sm font-bold hover:bg-amber-100 transition-colors border border-amber-100"
                           >
-                            Hide Course
+                            Hide
                           </button>
                         )}
                       </>
@@ -207,7 +214,7 @@ const AdminCourseApproval = () => {
                         onClick={() => handleStatusUpdate(course._id, 'approved')}
                         className="px-4 py-2 bg-green-50 text-green-600 rounded-xl text-sm font-bold hover:bg-green-100 transition-colors"
                       >
-                        Approve Now
+                        Unblock / Approve
                       </button>
                     )}
                     <button className="p-2.5 bg-slate-100 text-slate-700 rounded-xl hover:bg-slate-200 transition-colors">
