@@ -6,58 +6,61 @@ import {
   X, 
   Settings, 
   Globe,
-  User
+  User,
+  ShoppingBag
 } from 'lucide-react';
 
 const AdminNavbar = ({ toggleSidebar, isSidebarOpen, title }) => {
   return (
-    <header className="sticky top-0 z-40 bg-white border-b border-slate-200 shadow-sm h-16 flex items-center justify-between px-4 lg:px-8">
+    <header className="h-16 bg-white border-b border-slate-200 flex items-center justify-between px-6 shrink-0">
       <div className="flex items-center gap-4">
         <button 
           onClick={toggleSidebar}
-          className="p-2 rounded-lg hover:bg-slate-100 lg:hidden text-slate-600"
+          className="p-2 rounded-md hover:bg-slate-50 lg:hidden text-slate-500"
         >
-          {isSidebarOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
+          {isSidebarOpen ? <X size={20} /> : <Menu size={20} />}
         </button>
-        <h1 className="text-xl font-semibold text-slate-900 hidden sm:block">
+        <h1 className="text-lg font-semibold text-slate-900">
           {title || 'Dashboard'}
         </h1>
       </div>
 
-      <div className="flex-1 max-w-md mx-8 hidden md:block">
-        <div className="relative group">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within:text-blue-500 transition-colors w-4 h-4" />
-          <input 
-            type="text" 
-            placeholder="Search anything..." 
-            className="w-full bg-slate-100 border-transparent focus:bg-white focus:border-blue-500 focus:ring-4 focus:ring-blue-500/10 rounded-xl py-2 pl-10 pr-4 text-sm transition-all"
+      <div className="flex items-center gap-4">
+        {/* Search */}
+        <div className="relative hidden lg:block w-80">
+          <span className="absolute inset-y-0 left-0 pl-3 flex items-center text-slate-400">
+            <Search size={16} />
+          </span>
+          <input
+            type="text"
+            placeholder="Search platform..."
+            className="w-full pl-10 pr-4 py-1.5 bg-slate-50 border border-slate-200 rounded text-sm focus:ring-1 focus:ring-primary-500 focus:bg-white outline-none transition-all"
           />
         </div>
-      </div>
 
-      <div className="flex items-center gap-2 sm:gap-4">
-        <button className="p-2 rounded-full hover:bg-slate-100 text-slate-600 relative">
-          <Bell className="w-5 h-5" />
-          <span className="absolute top-2 right-2 w-2 h-2 bg-red-500 border-2 border-white rounded-full"></span>
-        </button>
-        
-        <button className="p-2 rounded-full hover:bg-slate-100 text-slate-600 hidden sm:flex">
-          <Globe className="w-5 h-5" />
-        </button>
+        <div className="flex items-center gap-2">
+          <button className="p-2 text-slate-500 hover:bg-slate-50 rounded-md relative">
+            <Bell size={20} />
+            <span className="absolute top-1.5 right-1.5 w-2 h-2 bg-primary-600 rounded-full border-2 border-white"></span>
+          </button>
+          <button className="p-2 text-slate-500 hover:bg-slate-50 rounded-md">
+            <Settings size={20} />
+          </button>
+        </div>
 
-        <div className="h-8 w-px bg-slate-200 mx-2 hidden sm:block"></div>
-
-        <div className="flex items-center gap-3 pl-2 cursor-pointer group">
-          <div className="text-right hidden sm:block">
-            <p className="text-sm font-semibold text-slate-900 group-hover:text-blue-600 transition-colors">Admin User</p>
-            <p className="text-xs text-slate-500">Super Admin</p>
-          </div>
-          <div className="w-10 h-10 rounded-xl bg-blue-100 border-2 border-blue-200 flex items-center justify-center text-blue-600 font-bold overflow-hidden">
+        {/* User Profile */}
+        <div className="h-8 w-px bg-slate-200 mx-1 hidden sm:block"></div>
+        <div className="flex items-center gap-2 group cursor-pointer">
+          <div className="w-8 h-8 rounded bg-primary-100 flex items-center justify-center text-primary-700 overflow-hidden group-hover:ring-2 group-hover:ring-primary-500 transition-all">
             <img 
               src="https://ui-avatars.com/api/?name=Admin+User&background=2563eb&color=fff" 
               alt="Admin" 
               className="w-full h-full object-cover"
             />
+          </div>
+          <div className="hidden sm:block text-right">
+            <p className="text-xs font-semibold text-slate-900 group-hover:text-primary-600 transition-colors leading-none">Admin</p>
+            <p className="text-[10px] text-slate-500 uppercase font-bold tracking-tighter mt-1">Super Admin</p>
           </div>
         </div>
       </div>

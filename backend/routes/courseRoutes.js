@@ -6,6 +6,8 @@ import {
   updateCourse,
   deleteCourse,
 } from "../controllers/courseController.js";
+import { authMiddleware } from "../middleware/authMiddleware.js";
+import roleMiddleware from "../middleware/roleMiddleware.js";
 import { optionalAuthMiddleware } from "../middleware/optionalAuthMiddleware.js";
 
 
@@ -13,7 +15,7 @@ import { optionalAuthMiddleware } from "../middleware/optionalAuthMiddleware.js"
 const router = express.Router();
 
 // create course
-router.post("/", createCourse);
+router.post("/", authMiddleware, roleMiddleware("instructor"), createCourse);
 
 // get all courses
 router.get("/", getCourses);
@@ -22,9 +24,9 @@ router.get("/", getCourses);
 router.get("/:id", optionalAuthMiddleware, getCourseById);
 
 // update course
-router.put("/:id", updateCourse);
+router.put("/:id", authMiddleware, roleMiddleware("instructor"), updateCourse);
 
 // delete course
-router.delete("/:id", deleteCourse);
+router.delete("/:id", authMiddleware, roleMiddleware("instructor"), deleteCourse);
 
 export default router;

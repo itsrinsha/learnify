@@ -35,9 +35,9 @@ const InstructorProfile = () => {
     avatar: user?.profileImage || `https://ui-avatars.com/api/?name=${encodeURIComponent(user?.name || 'I')}&background=random&size=200`,
     isVerified: user?.approvalStatus === 'approved',
     location: user?.location || 'Not set',
-    rating: '4.9',
-    students: dashboardData?.stats?.totalStudents || 0,
-    courses: dashboardData?.stats?.totalCourses || 0,
+    rating: dashboardData?.averageRating?.toFixed(1) || '0.0',
+    students: dashboardData?.totalStudents || 0,
+    courses: dashboardData?.totalCourses || 0,
     socialLinks: user?.socialLinks || {}
   };
 

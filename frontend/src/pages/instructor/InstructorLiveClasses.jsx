@@ -1,4 +1,6 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
+import { useDispatch, useSelector } from 'react-redux';
+import { fetchInstructorDashboard } from '../../features/instructor/instructorThunk';
 import { 
   Video, 
   Calendar, 
@@ -16,8 +18,16 @@ import {
 
 const InstructorLiveClasses = () => {
   const [showScheduleForm, setShowScheduleForm] = useState(false);
+  const dispatch = useDispatch();
+  const { dashboardData } = useSelector((state) => state.instructor);
 
+  useEffect(() => {
+    if (!dashboardData) {
+      dispatch(fetchInstructorDashboard());
+    }
+  }, [dispatch, dashboardData]);
 
+  const courses = dashboardData?.courses || [];
 
   return (
     <div className="space-y-10 pb-20">
@@ -81,8 +91,10 @@ const InstructorLiveClasses = () => {
                 <div className="space-y-3">
                   <label className="text-xs font-black text-slate-400 uppercase tracking-widest px-1">Select Course</label>
                   <select className="w-full px-6 py-4 bg-slate-50 border-none rounded-2xl text-sm font-bold text-slate-700 outline-none focus:ring-2 focus:ring-blue-500 transition-all">
-                    <option>Advanced React 19</option>
-                    <option>Node.js Microservices</option>
+                    {courses.map(course => (
+                      <option key={course._id} value={course._id}>{course.title}</option>
+                    ))}
+                    {courses.length === 0 && <option disabled>No courses available</option>}
                   </select>
                 </div>
                 <div className="space-y-3">

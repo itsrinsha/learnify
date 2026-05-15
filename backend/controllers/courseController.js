@@ -27,7 +27,7 @@ export const createCourse = async (req, res) => {
 // ✅ Get all courses
 export const getCourses = async (req, res) => {
 
-  const courses = await getCoursesService();
+  const courses = await getCoursesService(req.query);
 
   res.status(200).json({
     success: true,
@@ -69,7 +69,7 @@ export const updateCourse = async (req, res) => {
 // ✅ Delete Course
 export const deleteCourse = async (req, res) => {
 
-  await deleteCourseService(req.params.id);
+  await deleteCourseService(req.params.id, req.user.id);
 
   res.status(200).json({
     success: true,

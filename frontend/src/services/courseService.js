@@ -38,7 +38,7 @@ export const getCourseById = async (courseId) => {
 // Get courses enrolled by student
 export const getEnrolledCourses = async () => {
   try {
-    const response = await axiosInstance.get('/user/enrollments');
+    const response = await axiosInstance.get('/users/enrollments');
     return response.data;
   } catch (error) {
     console.error('Error fetching enrolled courses:', error);
@@ -49,7 +49,7 @@ export const getEnrolledCourses = async () => {
 // Enroll in a course
 export const enrollCourse = async (courseId) => {
   try {
-    const response = await axiosInstance.post('/user/enroll', { courseId });
+    const response = await axiosInstance.post('/users/enroll', { courseId });
     return response.data;
   } catch (error) {
     console.error('Error enrolling in course:', error);

@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { 
   Search, 
   Send, 
@@ -9,31 +9,96 @@ import {
   MessageSquare,
   BookOpen,
   Image as ImageIcon,
+  Loader2,
+  User
 } from 'lucide-react';
-
-const chats = [
-  {
-    id: 1,
-    student: 'Alice Johnson',
-    avatar: 'https://i.pravatar.cc/160?u=alice',
-    course: 'Advanced React 19',
-    lastMessage: 'Can you review my assignment?',
-    time: '10:30 AM',
-    unread: 2
-  }
-];
-
-const messages = [
-  { id: 1, sender: 'student', text: 'Can you review my assignment?', time: '10:30 AM' },
-  { id: 2, sender: 'instructor', text: 'Sure, send me the link and I will check it.', time: '10:32 AM' }
-];
+import chatService from '../../services/chatService';
+import { toast } from 'react-hot-toast';
 
 const InstructorMessages = () => {
-  const [selectedChat, setSelectedChat] = useState(1);
+  const [conversations, setConversations] = useState([]);
+  const [selectedChat, setSelectedChat] = useState(null);
+  const [messages, setMessages] = useState([]);
+  const [messageText, setMessageText] = useState('');
+  const [loading, setLoading] = useState(true);
+  const [messagesLoading, setMessagesLoading] = useState(false);
+  const messagesEndRef = useRef(null);
 
+  useEffect(() => {
+    fetchConversations();
+  }, []);
 
+  useEffect(() => {
+    if (selectedChat) {
+      fetchMessages(selectedChat);
+      const interval = setInterval(() => fetchMessages(selectedChat, true), 5000);
+      return () => clearInterval(interval);
+    }
+  }, [selectedChat]);
 
+  useEffect(() => {
+    scrollToBottom();
+  }, [messages]);
 
+  const scrollToBottom = () => {
+    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
+  };
+
+  const fetchConversations = async () => {
+    try {
+      setLoading(true);
+      const data = await chatService.getConversations();
+      const conversationsData = Array.isArray(data) ? data : (data?.conversations || []);
+      setConversations(conversationsData);
+      
+      if (conversationsData.length > 0 && !selectedChat) {
+        setSelectedChat(conversationsData[0]._id);
+      }
+    } catch (err) {
+      console.error("Error fetching conversations:", err);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const fetchMessages = async (userId, isPolling = false) => {
+    try {
+      if (!isPolling) setMessagesLoading(true);
+      const data = await chatService.getMessages(userId);
+      setMessages(Array.isArray(data) ? data : (data?.messages || []));
+    } catch (err) {
+      console.error("Error fetching messages:", err);
+    } finally {
+      if (!isPolling) setMessagesLoading(false);
+    }
+  };
+
+  const handleSendMessage = async (e) => {
+    e.preventDefault();
+    if (!messageText.trim() || !selectedChat) return;
+
+    try {
+      const tempMsg = messageText;
+      setMessageText('');
+      await chatService.sendMessage(selectedChat, tempMsg);
+      fetchMessages(selectedChat, true);
+      fetchConversations();
+    } catch (err) {
+      toast.error("Failed to send message");
+    }
+  };
+
+  const selectedContact = Array.isArray(conversations) 
+    ? conversations.find(c => c._id === selectedChat) 
+    : null;
+
+  if (loading) {
+    return (
+      <div className="h-[calc(100vh-12rem)] flex items-center justify-center bg-white rounded-[3rem] border border-slate-200">
+        <Loader2 className="w-10 h-10 text-blue-600 animate-spin" />
+      </div>
+    );
+  }
 
   return (
     <div className="h-[calc(100vh-12rem)] flex flex-col md:flex-row bg-white rounded-[3rem] border border-slate-200 overflow-hidden shadow-2xl">
@@ -46,55 +111,43 @@ const InstructorMessages = () => {
               <MessageSquare size={20} />
             </div>
           </div>
-          <div className="relative">
-            <span className="absolute inset-y-0 left-0 pl-4 flex items-center text-slate-400">
-              <Search size={16} />
-            </span>
-            <input
-              type="text"
-              placeholder="Search students or courses..."
-              className="w-full pl-10 pr-4 py-3.5 bg-slate-50 border-none rounded-2xl text-xs font-bold outline-none focus:ring-2 focus:ring-blue-500 transition-all"
-            />
-          </div>
-          <div className="flex gap-2">
-            <button className="px-4 py-2 bg-blue-600 text-white rounded-lg text-[10px] font-black uppercase tracking-widest">All</button>
-            <button className="px-4 py-2 bg-slate-50 text-slate-400 rounded-lg text-[10px] font-black uppercase tracking-widest hover:bg-slate-100 transition-colors">Unread</button>
-            <button className="px-4 py-2 bg-slate-50 text-slate-400 rounded-lg text-[10px] font-black uppercase tracking-widest hover:bg-slate-100 transition-colors">Archived</button>
-          </div>
         </div>
 
-        <div className="flex-1 overflow-y-auto custom-scrollbar px-4 pb-8">
+        <div className="flex-1 overflow-y-auto px-4 pb-8">
           <div className="space-y-2">
-            {chats.map((chat) => (
+            {conversations.length > 0 ? conversations.map((chat) => (
               <button
-                key={chat.id}
-                onClick={() => setSelectedChat(chat.id)}
+                key={chat._id}
+                onClick={() => setSelectedChat(chat._id)}
                 className={`w-full p-4 rounded-[2rem] flex items-center gap-4 transition-all ${
-                  selectedChat === chat.id ? 'bg-blue-600 shadow-xl shadow-blue-100' : 'hover:bg-slate-50'
+                  selectedChat === chat._id ? 'bg-blue-600 shadow-xl shadow-blue-100' : 'hover:bg-slate-50'
                 }`}
               >
-                <div className="relative">
-                  <img src={chat.avatar} alt={chat.student} className="w-14 h-14 rounded-2xl object-cover" />
-                  {chat.unread > 0 && selectedChat !== chat.id && (
-                    <span className="absolute -top-1 -right-1 w-6 h-6 bg-red-500 text-white text-[10px] font-black rounded-full flex items-center justify-center border-2 border-white">
-                      {chat.unread}
-                    </span>
-                  )}
+                <div className="relative flex-shrink-0">
+                  <img 
+                    src={chat.profileImage || `https://ui-avatars.com/api/?name=${encodeURIComponent(chat.name)}&background=random`} 
+                    alt={chat.name} 
+                    className="w-14 h-14 rounded-2xl object-cover border-2 border-white shadow-sm" 
+                  />
                 </div>
-                <div className="flex-1 text-left space-y-1">
+                <div className="flex-1 text-left min-w-0">
                   <div className="flex justify-between items-center">
-                    <h4 className={`text-sm font-black ${selectedChat === chat.id ? 'text-white' : 'text-slate-900'}`}>{chat.student}</h4>
-                    <span className={`text-[9px] font-bold ${selectedChat === chat.id ? 'text-blue-100' : 'text-slate-400'}`}>{chat.time}</span>
+                    <h4 className={`text-sm font-black truncate ${selectedChat === chat._id ? 'text-white' : 'text-slate-900'}`}>{chat.name}</h4>
+                    <span className={`text-[9px] font-bold ${selectedChat === chat._id ? 'text-blue-100' : 'text-slate-400'}`}>
+                      {new Date(chat.lastMessageTime).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                    </span>
                   </div>
-                  <p className={`text-[10px] font-black uppercase tracking-widest ${selectedChat === chat.id ? 'text-blue-200' : 'text-blue-600'}`}>
-                    {chat.course}
-                  </p>
-                  <p className={`text-xs truncate max-w-[180px] font-medium ${selectedChat === chat.id ? 'text-white/80' : 'text-slate-500'}`}>
+                  <p className={`text-xs truncate font-medium ${selectedChat === chat._id ? 'text-white/80' : 'text-slate-500'}`}>
                     {chat.lastMessage}
                   </p>
                 </div>
               </button>
-            ))}
+            )) : (
+              <div className="text-center py-10 opacity-40">
+                <User size={40} className="mx-auto text-slate-300" />
+                <p className="mt-4 text-sm font-bold text-slate-500">No chats found</p>
+              </div>
+            )}
           </div>
         </div>
       </div>
@@ -106,79 +159,69 @@ const InstructorMessages = () => {
             {/* Chat Header */}
             <div className="p-8 bg-white border-b border-slate-100 flex items-center justify-between">
               <div className="flex items-center gap-5">
-                <img src={chats.find(c => c.id === selectedChat)?.avatar} alt="avatar" className="w-12 h-12 rounded-xl object-cover" />
+                <img 
+                  src={selectedContact?.profileImage || `https://ui-avatars.com/api/?name=${encodeURIComponent(selectedContact?.name || 'User')}&background=random`} 
+                  alt="avatar" 
+                  className="w-12 h-12 rounded-xl object-cover border-2 border-slate-50 shadow-sm" 
+                />
                 <div>
-                  <h4 className="text-lg font-black text-slate-900 leading-tight">{chats.find(c => c.id === selectedChat)?.student}</h4>
-                  <p className="text-xs font-bold text-blue-600 flex items-center gap-2 mt-1">
-                    <BookOpen size={12} />
-                    {chats.find(c => c.id === selectedChat)?.course}
-                  </p>
+                  <h4 className="text-lg font-black text-slate-900 leading-tight">{selectedContact?.name}</h4>
+                  <p className="text-xs font-bold text-blue-600 mt-1">{selectedContact?.email}</p>
                 </div>
-              </div>
-              <div className="flex items-center gap-4">
-                <button className="p-3 hover:bg-slate-50 rounded-xl text-slate-400 transition-colors">
-                  <Search size={20} />
-                </button>
-                <button className="p-3 hover:bg-slate-50 rounded-xl text-slate-400 transition-colors">
-                  <MoreVertical size={20} />
-                </button>
               </div>
             </div>
 
             {/* Chat Content */}
-            <div className="flex-1 overflow-y-auto p-8 space-y-8 custom-scrollbar">
-              <div className="flex justify-center">
-                <span className="px-4 py-1.5 bg-slate-100 rounded-full text-[9px] font-black text-slate-400 uppercase tracking-widest">
-                  Today, May 02
-                </span>
-              </div>
-
-              {messages.map((msg) => (
-                <div key={msg.id} className={`flex ${msg.sender === 'instructor' ? 'justify-end' : 'justify-start'}`}>
-                  <div className={`max-w-md space-y-2 ${msg.sender === 'instructor' ? 'items-end' : 'items-start'}`}>
-                    <div className={`p-5 rounded-[2rem] text-sm font-medium shadow-sm ${
-                      msg.sender === 'instructor' 
-                        ? 'bg-slate-900 text-white rounded-tr-none' 
-                        : 'bg-white text-slate-700 rounded-tl-none'
-                    }`}>
-                      {msg.text}
-                    </div>
-                    <div className={`flex items-center gap-2 text-[9px] font-bold text-slate-400 uppercase tracking-widest px-2 ${msg.sender === 'instructor' ? 'flex-row-reverse' : ''}`}>
-                      <span>{msg.time}</span>
-                      {msg.sender === 'instructor' && <CheckCheck size={12} className="text-blue-500" />}
+            <div className="flex-1 overflow-y-auto p-8 space-y-6">
+              {Array.isArray(messages) && messages.map((msg) => {
+                const isOwn = msg.sender === localStorage.getItem('userId') || msg.sender?._id === localStorage.getItem('userId');
+                return (
+                  <div key={msg._id} className={`flex ${isOwn ? 'justify-end' : 'justify-start'}`}>
+                    <div className={`max-w-md space-y-1 ${isOwn ? 'items-end' : 'items-start'}`}>
+                      <div className={`p-5 rounded-[2rem] text-sm font-medium shadow-sm ${
+                        isOwn 
+                          ? 'bg-slate-900 text-white rounded-tr-none' 
+                          : 'bg-white text-slate-700 rounded-tl-none border border-slate-100'
+                      }`}>
+                        {msg.message}
+                      </div>
+                      <div className="text-[9px] font-bold text-slate-400 uppercase tracking-widest px-2">
+                        {new Date(msg.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                      </div>
                     </div>
                   </div>
-                </div>
-              ))}
+                );
+              })}
+              <div ref={messagesEndRef} />
             </div>
 
             {/* Chat Input */}
             <div className="p-8 bg-white border-t border-slate-100">
-              <div className="flex items-center gap-4">
-                <div className="flex items-center gap-2">
-                  <button className="p-3 hover:bg-slate-50 rounded-2xl text-slate-400 transition-colors">
-                    <Paperclip size={20} />
-                  </button>
-                  <button className="p-3 hover:bg-slate-50 rounded-2xl text-slate-400 transition-colors">
-                    <ImageIcon size={20} />
-                  </button>
-                </div>
+              <form onSubmit={handleSendMessage} className="flex items-center gap-4">
                 <div className="flex-1 relative">
                   <input
                     type="text"
                     placeholder="Type your reply here..."
+                    value={messageText}
+                    onChange={(e) => setMessageText(e.target.value)}
                     className="w-full pl-6 pr-12 py-4 bg-slate-50 border-none rounded-2xl text-sm font-bold text-slate-700 outline-none focus:ring-2 focus:ring-blue-500 transition-all shadow-inner"
                   />
-                  <button className="absolute right-3 top-1/2 -translate-y-1/2 p-2 bg-blue-600 text-white rounded-xl hover:bg-blue-700 transition-all">
+                  <button 
+                    type="submit"
+                    disabled={!messageText.trim()}
+                    className={`absolute right-3 top-1/2 -translate-y-1/2 p-2 rounded-xl transition-all ${
+                      messageText.trim() ? 'bg-blue-600 text-white hover:bg-blue-700 shadow-lg active:scale-95' : 'bg-slate-200 text-slate-400'
+                    }`}
+                  >
                     <Send size={18} />
                   </button>
                 </div>
-              </div>
+              </form>
             </div>
           </>
         ) : (
           <div className="flex-1 flex flex-col items-center justify-center text-center p-20 space-y-6">
-            <div className="w-24 h-24 bg-blue-50 rounded-[2rem] flex items-center justify-center text-blue-600 mb-4">
+            <div className="w-24 h-24 bg-blue-50 rounded-[2rem] flex items-center justify-center text-blue-600 mb-4 shadow-inner">
               <MessageSquare size={40} />
             </div>
             <div>

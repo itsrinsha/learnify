@@ -9,6 +9,11 @@ import {
   createCourseDraft,
   addModule,
   addLesson,
+  getCourseDetails,
+  updateCourse,
+  updateLesson,
+  deleteCourse,
+  getInstructorStudents,
 } from "../controllers/instructorController.js";
 
 import { authMiddleware } from "../middleware/authMiddleware.js";
@@ -44,12 +49,44 @@ router.get(
   getInstructorCourses
 );
 
+router.get(
+  "/students",
+  authMiddleware,
+  roleMiddleware("instructor"),
+  approvalMiddleware,
+  getInstructorStudents
+);
+
+router.get(
+  "/courses/:id",
+  authMiddleware,
+  roleMiddleware("instructor"),
+  approvalMiddleware,
+  getCourseDetails
+);
+
+router.put(
+  "/courses/:id",
+  authMiddleware,
+  roleMiddleware("instructor"),
+  approvalMiddleware,
+  updateCourse
+);
+
 router.put(
   "/courses/:id/publish",
   authMiddleware,
   roleMiddleware("instructor"),
   approvalMiddleware,
   publishCourse
+);
+
+router.delete(
+  "/courses/:id",
+  authMiddleware,
+  roleMiddleware("instructor"),
+  approvalMiddleware,
+  deleteCourse
 );
 
 // ✅ Create Course
@@ -78,6 +115,15 @@ router.post(
   approvalMiddleware,
   addLesson
 );
+
+router.put(
+  "/courses/:courseId/lessons/:lessonId",
+  authMiddleware,
+  roleMiddleware("instructor"),
+  approvalMiddleware,
+  updateLesson
+);
+
 router.get(
   "/review-history",
   authMiddleware,

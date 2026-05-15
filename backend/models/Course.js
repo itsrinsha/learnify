@@ -47,6 +47,11 @@ const courseSchema = new mongoose.Schema(
       enum: ["draft", "published"],
       default: "draft",
     },
+    approvalStatus: {
+      type: String,
+      enum: ["pending", "approved", "rejected"],
+      default: "pending",
+    },
     instructor: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "User",
@@ -71,6 +76,10 @@ const courseSchema = new mongoose.Schema(
     certificateEligibility: {
       type: Boolean,
       default: true,
+    },
+    isHidden: {
+      type: Boolean,
+      default: false,
     },
   },
   { timestamps: true }

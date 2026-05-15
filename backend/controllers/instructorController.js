@@ -3,7 +3,13 @@ import {
   publishCourseService,
   createCourseDraftService,
   addModuleService,
-  addLessonService
+  addLessonService,
+  getCourseDetailsService,
+  updateCourseService,
+  updateLessonService,
+  deleteCourseService,
+  getInstructorDashboardService,
+  getInstructorStudentsService
 } from "../services/instructorService.js";
 import { updateUserProfileService } from "../services/userServices.js";
 import { asyncHandler } from "../middleware/trycatchmiddleware.js";
@@ -30,21 +36,18 @@ export const addLesson = asyncHandler(async (req, res) => {
 // ✅ Get instructor dashboard stats
 export const getInstructorDashboard = asyncHandler(async (req, res) => {
     const instructorId = req.user.id;
-    const courses = await getInstructorCoursesService(instructorId);
-    
-    const totalCourses = courses.length;
-    const publishedCourses = courses.filter(c => c.status === "published").length;
+    const dashboardData = await getInstructorDashboardService(instructorId);
     
     res.json({
       success: true,
-      stats: {
-        totalCourses,
-        publishedCourses,
-        totalStudents: courses.reduce((acc, c) => acc + (c.enrolledStudentsCount || 0), 0),
-        totalEarnings: 0, // Placeholder for future payment integration
-      },
-      courses
+      ...dashboardData
     });
+});
+
+// ✅ Get instructor students
+export const getInstructorStudents = asyncHandler(async (req, res) => {
+    const students = await getInstructorStudentsService(req.user.id);
+    res.json({ success: true, students });
 });
 
 // ✅ Get instructor courses
@@ -53,10 +56,34 @@ export const getInstructorCourses = asyncHandler(async (req, res) => {
     res.json(courses);
 });
 
+// ✅ Get single course details
+export const getCourseDetails = asyncHandler(async (req, res) => {
+    const course = await getCourseDetailsService(req.user.id, req.params.id);
+    res.json({ success: true, course });
+});
+
+// ✅ Update course details
+export const updateCourse = asyncHandler(async (req, res) => {
+    const course = await updateCourseService(req.user.id, req.params.id, req.body);
+    res.json({ success: true, message: "Course updated successfully", course });
+});
+
+// ✅ Update lesson details
+export const updateLesson = asyncHandler(async (req, res) => {
+    const lesson = await updateLessonService(req.user.id, req.params.courseId, req.params.lessonId, req.body);
+    res.json({ success: true, message: "Lesson updated successfully", lesson });
+});
+
 // ✅ Publish course
 export const publishCourse = asyncHandler(async (req, res) => {
     const course = await publishCourseService(req.user.id, req.params.id);
     res.json({ success: true, message: "Course published successfully", course });
+});
+
+// ✅ Delete course
+export const deleteCourse = asyncHandler(async (req, res) => {
+    await deleteCourseService(req.user.id, req.params.id);
+    res.json({ success: true, message: "Course deleted successfully" });
 });
 
 // ✅ Submit Verification Details

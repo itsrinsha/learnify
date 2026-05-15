@@ -3,31 +3,31 @@ import { TrendingUp, TrendingDown } from 'lucide-react';
 
 const StatCard = ({ title, value, icon: Icon, trend, color }) => {
   const colorStyles = {
-    blue: 'bg-blue-50 text-blue-600',
-    green: 'bg-green-50 text-green-600',
-    amber: 'bg-amber-50 text-amber-600',
-    red: 'bg-red-50 text-red-600',
-    purple: 'bg-purple-50 text-purple-600',
-    cyan: 'bg-cyan-50 text-cyan-600',
-    slate: 'bg-slate-100 text-slate-600',
+    blue: 'bg-slate-50 text-primary-600',
+    green: 'bg-slate-50 text-success-500',
+    amber: 'bg-slate-50 text-warning-500',
+    red: 'bg-slate-50 text-error-500',
+    purple: 'bg-slate-50 text-primary-700',
+    cyan: 'bg-slate-50 text-primary-500',
+    slate: 'bg-slate-50 text-slate-600',
   };
 
   return (
-    <div className="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm hover:shadow-md transition-shadow">
+    <div className="card p-6 flex flex-col justify-between">
       <div className="flex items-center justify-between mb-4">
-        <div className={`p-3 rounded-xl ${colorStyles[color] || colorStyles.blue}`}>
-          {Icon ? React.createElement(Icon, { className: 'w-6 h-6' }) : null}
+        <div className={`p-2.5 rounded ${colorStyles[color] || colorStyles.blue} border border-slate-100`}>
+          {Icon ? React.createElement(Icon, { size: 20 }) : null}
         </div>
         {trend && (
-          <div className={`flex items-center gap-1 text-sm font-medium ${trend > 0 ? 'text-green-600' : 'text-red-600'}`}>
-            {trend > 0 ? <TrendingUp className="w-4 h-4" /> : <TrendingDown className="w-4 h-4" />}
+          <div className={`flex items-center gap-1 text-[11px] font-bold ${trend > 0 ? 'text-success-500' : 'text-error-500'}`}>
+            {trend > 0 ? <TrendingUp size={14} /> : <TrendingDown size={14} />}
             {Math.abs(trend)}%
           </div>
         )}
       </div>
       <div>
-        <p className="text-sm font-medium text-slate-500 mb-1">{title}</p>
-        <h3 className="text-2xl font-bold text-slate-900">{value}</h3>
+        <p className="text-[11px] font-bold text-slate-500 uppercase tracking-widest mb-1">{title}</p>
+        <h3 className="text-2xl font-bold text-slate-900 tracking-tight">{value}</h3>
       </div>
     </div>
   );

@@ -38,17 +38,12 @@ const LiveClasses = () => {
     }
   };
 
-  const attendanceHistory = [
-    { id: 101, topic: 'React Hooks Deep Dive', date: 'May 10, 2026', status: 'Attended', duration: '1h 30m' },
-    { id: 102, topic: 'UI Principles for Web', date: 'May 08, 2026', status: 'Missed', duration: '-' },
-    { id: 103, topic: 'Node.js Performance', date: 'May 05, 2026', status: 'Attended', duration: '2h 00m' },
-    { id: 104, topic: 'Database Normalization', date: 'May 01, 2026', status: 'Attended', duration: '1h 45m' },
-  ];
+  const attendanceHistory = [];
 
   const stats = [
-    { label: 'Attended Classes', value: '24', icon: <CheckCircle2 className="text-green-600" />, bg: 'bg-green-50' },
-    { label: 'Missed Classes', value: '02', icon: <XCircle className="text-red-600" />, bg: 'bg-red-50' },
-    { label: 'Total Live Hours', value: '38h', icon: <Clock className="text-blue-600" />, bg: 'bg-blue-50' },
+    { label: 'Attended Classes', value: '0', icon: <CheckCircle2 className="text-green-600" />, bg: 'bg-green-50' },
+    { label: 'Missed Classes', value: '0', icon: <XCircle className="text-red-600" />, bg: 'bg-red-50' },
+    { label: 'Total Live Hours', value: '0h', icon: <Clock className="text-blue-600" />, bg: 'bg-blue-50' },
   ];
 
   if (loading) {
@@ -189,22 +184,26 @@ const LiveClasses = () => {
           
           <div className="bg-white rounded-3xl border border-slate-200 shadow-sm overflow-hidden">
             <div className="divide-y divide-slate-100">
-              {attendanceHistory.map((h) => (
-                <div key={h.id} className="p-5 hover:bg-slate-50 transition-all group">
-                  <div className="flex justify-between items-start mb-2">
-                    <h5 className="text-sm font-bold text-slate-900 line-clamp-1 group-hover:text-blue-600 transition-colors">{h.topic}</h5>
-                    <span className={`text-[10px] font-bold uppercase tracking-widest px-2 py-0.5 rounded-md ${
-                      h.status === 'Attended' ? 'bg-green-50 text-green-600' : 'bg-red-50 text-red-600'
-                    }`}>
-                      {h.status}
-                    </span>
+              {attendanceHistory.length === 0 ? (
+                <div className="p-10 text-center text-slate-400 italic text-xs">No attendance history found.</div>
+              ) : (
+                attendanceHistory.map((h) => (
+                  <div key={h.id} className="p-5 hover:bg-slate-50 transition-all group">
+                    <div className="flex justify-between items-start mb-2">
+                      <h5 className="text-sm font-bold text-slate-900 line-clamp-1 group-hover:text-blue-600 transition-colors">{h.topic}</h5>
+                      <span className={`text-[10px] font-bold uppercase tracking-widest px-2 py-0.5 rounded-md ${
+                        h.status === 'Attended' ? 'bg-green-50 text-green-600' : 'bg-red-50 text-red-600'
+                      }`}>
+                        {h.status}
+                      </span>
+                    </div>
+                    <div className="flex justify-between items-center text-[10px] font-medium text-slate-400">
+                      <span>{h.date}</span>
+                      <span>{h.duration}</span>
+                    </div>
                   </div>
-                  <div className="flex justify-between items-center text-[10px] font-medium text-slate-400">
-                    <span>{h.date}</span>
-                    <span>{h.duration}</span>
-                  </div>
-                </div>
-              ))}
+                ))
+              )}
             </div>
             <button className="w-full py-4 bg-slate-50 text-slate-500 font-bold text-xs hover:bg-slate-100 transition-all flex items-center justify-center gap-2">
               Load More <ChevronRight size={14} />

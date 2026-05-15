@@ -1,4 +1,6 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
+import { useDispatch, useSelector } from 'react-redux';
+import { fetchInstructorDashboard, fetchInstructorStudents, fetchReviewHistory } from '../../features/instructor/instructorThunk';
 import { 
   Calendar, 
   Clock, 
@@ -12,23 +14,24 @@ import {
   History,
   CheckCircle2,
   XCircle,
-  AlertCircle
+  AlertCircle,
+  Loader2
 } from 'lucide-react';
 
 
 
-const history = [
-  {
-    student: 'Bob Smith',
-    course: 'Node.js Microservices',
-    date: 'May 02, 2026',
-    attempt: 1,
-    result: 'Pass'
-  }
-];
-
 const InstructorReviews = () => {
   const [showScheduleForm, setShowScheduleForm] = useState(false);
+  const dispatch = useDispatch();
+  const { dashboardData, students, reviewHistory, loading } = useSelector((state) => state.instructor);
+
+  useEffect(() => {
+    if (!dashboardData) dispatch(fetchInstructorDashboard());
+    if (students.length === 0) dispatch(fetchInstructorStudents());
+    dispatch(fetchReviewHistory());
+  }, [dispatch, dashboardData, students.length]);
+
+  const courses = dashboardData?.courses || [];
 
   return (
     <div className="space-y-10 pb-20">
@@ -62,7 +65,13 @@ const InstructorReviews = () => {
             </div>
           </div>
 
-         
+          <div className="py-20 text-center bg-white rounded-[2.5rem] border border-dashed border-slate-200">
+             <div className="w-16 h-16 bg-blue-50 text-blue-600 rounded-2xl flex items-center justify-center mx-auto mb-4">
+                <Calendar size={32} />
+             </div>
+             <p className="text-slate-500 font-bold">No upcoming reviews scheduled.</p>
+             <button onClick={() => setShowScheduleForm(true)} className="text-blue-600 text-sm font-black uppercase tracking-widest mt-4 hover:underline">Schedule Now</button>
+          </div>
         </div>
 
         {/* Sidebar History & Info */}
@@ -100,26 +109,36 @@ const InstructorReviews = () => {
               <h3 className="font-black text-slate-900">Recent History</h3>
               <History size={18} className="text-slate-300" />
             </div>
-            <div className="divide-y divide-slate-50">
-              {history.map((item) => (
-                <div key={`${item.student}-${item.course}`} className="p-6 space-y-3 hover:bg-slate-50 transition-colors">
-                  <div className="flex justify-between items-start">
-                    <div>
-                      <h4 className="text-sm font-bold text-slate-900">{item.student}</h4>
-                      <p className="text-[10px] text-slate-400 font-bold uppercase tracking-widest">{item.course}</p>
-                    </div>
-                    <span className={`px-2 py-0.5 rounded text-[9px] font-black uppercase tracking-widest ${
-                      item.result === 'Pass' ? 'bg-green-50 text-green-600' : 'bg-red-50 text-red-600'
-                    }`}>
-                      {item.result}
-                    </span>
-                  </div>
-                  <div className="flex justify-between items-center text-[10px] font-bold text-slate-400 uppercase tracking-widest">
-                    <span>{item.date}</span>
-                    <span>Attempt {item.attempt}</span>
-                  </div>
+            <div className="divide-y divide-slate-50 min-h-[200px]">
+              {loading ? (
+                <div className="p-8 flex justify-center">
+                  <Loader2 className="w-6 h-6 text-blue-600 animate-spin" />
                 </div>
-              ))}
+              ) : reviewHistory.length > 0 ? (
+                reviewHistory.map((item, idx) => (
+                  <div key={item._id || idx} className="p-6 space-y-3 hover:bg-slate-50 transition-colors">
+                    <div className="flex justify-between items-start">
+                      <div>
+                        <h4 className="text-sm font-bold text-slate-900">{item.student?.name || 'Student'}</h4>
+                        <p className="text-[10px] text-slate-400 font-bold uppercase tracking-widest">{item.course?.title || 'Course'}</p>
+                      </div>
+                      <span className={`px-2 py-0.5 rounded text-[9px] font-black uppercase tracking-widest ${
+                        item.status === 'Pass' ? 'bg-green-50 text-green-600' : 'bg-red-50 text-red-600'
+                      }`}>
+                        {item.status || 'Pending'}
+                      </span>
+                    </div>
+                    <div className="flex justify-between items-center text-[10px] font-bold text-slate-400 uppercase tracking-widest">
+                      <span>{new Date(item.createdAt).toLocaleDateString()}</span>
+                      <span>Attempt {item.attempt || 1}</span>
+                    </div>
+                  </div>
+                ))
+              ) : (
+                <div className="p-8 text-center text-[10px] font-bold text-slate-400 uppercase tracking-widest italic">
+                  No history found
+                </div>
+              )}
             </div>
             <button className="w-full py-4 text-xs font-bold text-blue-600 hover:bg-blue-50 transition-colors uppercase tracking-widest">
               View Full History
@@ -145,11 +164,21 @@ const InstructorReviews = () => {
               <div className="grid md:grid-cols-2 gap-8">
                 <div className="space-y-3">
                   <label className="text-xs font-black text-slate-400 uppercase tracking-widest px-1">Select Course</label>
-
+                  <select className="w-full px-5 py-4 bg-slate-50 border-none rounded-2xl text-sm font-bold text-slate-700 outline-none focus:ring-2 focus:ring-blue-500 transition-all">
+                    {courses.map(course => (
+                      <option key={course._id} value={course._id}>{course.title}</option>
+                    ))}
+                    {courses.length === 0 && <option disabled>No courses available</option>}
+                  </select>
                 </div>
                 <div className="space-y-3">
                   <label className="text-xs font-black text-slate-400 uppercase tracking-widest px-1">Select Student</label>
-  
+                  <select className="w-full px-5 py-4 bg-slate-50 border-none rounded-2xl text-sm font-bold text-slate-700 outline-none focus:ring-2 focus:ring-blue-500 transition-all">
+                    {students.map(student => (
+                      <option key={student.id} value={student.studentId}>{student.name}</option>
+                    ))}
+                    {students.length === 0 && <option disabled>No students found</option>}
+                  </select>
                 </div>
                 <div className="space-y-3">
                   <label className="text-xs font-black text-slate-400 uppercase tracking-widest px-1">Date</label>

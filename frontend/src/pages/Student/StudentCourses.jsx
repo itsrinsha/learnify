@@ -40,7 +40,7 @@ const StudentCourses = () => {
         name: instructor?.name || 'Learnify Instructor',
         avatar: instructor?.profileImage || `https://ui-avatars.com/api/?name=${encodeURIComponent(instructor?.name || 'Instructor')}&background=2563eb&color=fff`,
         expertise: instructor?.verificationDetails?.expertise || 'Certified Instructor',
-        rating: 4.9,
+        rating: 0,
         students: instructor?.studentsCount || 0,
         courses: []
       };
@@ -156,7 +156,7 @@ const StudentCourses = () => {
                 <div className="flex-1 p-6 flex flex-col justify-between space-y-4">
                   <div className="space-y-1">
                     <div className="flex justify-between items-start gap-2">
-                      <h4 className="font-bold text-slate-900 line-clamp-2 leading-tight group-hover:text-blue-600 transition-colors cursor-pointer" onClick={() => navigate('/student/course-player')}>
+                      <h4 className="font-bold text-slate-900 line-clamp-2 leading-tight group-hover:text-blue-600 transition-colors cursor-pointer" onClick={() => navigate(`/student/player/${course.courseId}`)}>
                         {course.title}
                       </h4>
                     </div>
@@ -185,7 +185,7 @@ const StudentCourses = () => {
                         </div>
                       </div>
                       <button 
-                        onClick={() => navigate('/student/course-player')}
+                        onClick={() => navigate(`/student/player/${course.courseId}`)}
                         className={`w-10 h-10 rounded-xl flex items-center justify-center transition-all ${
                           course.progress === 100 
                           ? 'bg-green-50 text-green-600 hover:bg-green-600 hover:text-white' 
