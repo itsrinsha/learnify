@@ -13,7 +13,8 @@ import {
   Camera,
   Save,
   X,
-  Loader2
+  Loader2,
+  ChevronRight
 } from 'lucide-react';
 import { fetchProfile, updateProfile } from '../../features/auth/authSlice';
 

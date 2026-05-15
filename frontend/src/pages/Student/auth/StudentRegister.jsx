@@ -8,7 +8,6 @@ import { useDispatch, useSelector } from "react-redux";
 import { User, Mail, Lock, Eye, EyeOff, ShieldCheck, ArrowRight, CheckCircle2 } from "lucide-react";
 import { FcGoogle } from "react-icons/fc";
 import { FaGithub } from "react-icons/fa";
-import authIllustration from "../../../assets/auth_illustration.png";
 function Register() {
   const navigate = useNavigate();
   const dispatch = useDispatch();
@@ -68,17 +67,21 @@ function Register() {
 
     onSubmit: async (values) => {
       try {
-        await dispatch(registerUser({
+        const result = await dispatch(registerUser({
           name: values.name,
           email: values.email,
           password: values.password,
           role: "student",
-        })).unwrap();
-
-        alert("Registration successful! Welcome to Learnify.");
-        navigate("/student");
+        }));
+        
+        if (result.type === "auth/register/fulfilled") {
+          toast.success("Registration successful! Welcome to Learnify.");
+          navigate("/login");
+        } else {
+          toast.error(result.payload || "Registration failed. Please try again.");
+        }
       } catch (err) {
-        setError(err.response?.data?.message || "Registration failed. Please try again.");
+        toast.error("Registration failed. Please try again.");
       }
     },
   });
@@ -167,9 +170,9 @@ function Register() {
             Create an account to unlock unlimited access to high-quality courses and expert-led sessions.
           </p>
           <img
-            src={authIllustration}
+            src="https://images.unsplash.com/photo-1523240795612-9a054b0db644?q=80&w=2070&auto=format&fit=crop"
             alt="Learning Illustration"
-            className="w-full h-auto drop-shadow-2xl rounded-2xl transform hover:scale-[1.02] transition-transform duration-500"
+            className="w-full h-auto shadow-2xl rounded-3xl object-cover min-h-[400px]"
           />
         </div>
         {/* Abstract shapes */}

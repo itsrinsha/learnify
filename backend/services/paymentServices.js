@@ -13,6 +13,11 @@ export const createOrderService = async ({ courseId, userId }) => {
     throw new Error("Course not found");
   }
 
+  // Ensure course is approved and published
+  if (course.approvalStatus !== "approved" || course.status !== "published") {
+    throw new Error("This course is currently not available for purchase.");
+  }
+
   // Prevent duplicate enrollment
   const alreadyEnrolled = await Enrollment.findOne({
     user: userId,
@@ -24,8 +29,14 @@ export const createOrderService = async ({ courseId, userId }) => {
   }
 
   // Razorpay order options
+  const amount = Math.round(course.price * 100);
+  
+  if (isNaN(amount) || amount <= 0) {
+    throw new Error(`Invalid course price: ${course.price}. Amount must be greater than zero.`);
+  }
+
   const options = {
-    amount: course.price * 100, // paisa
+    amount: amount, // paisa
     currency: "INR",
     receipt: `receipt_${Date.now()}`,
   };
@@ -105,4 +116,15 @@ export const verifyPaymentService = async ({
     success: true,
     message: "Payment verified and enrollment successful",
   };
+};
+
+// Record Payment Failure
+export const recordPaymentFailureService = async ({ razorpay_order_id, error }) => {
+  const payment = await Payment.findOne({ razorpay_order_id });
+  if (payment) {
+    payment.status = "failed";
+    payment.failureReason = error?.description || error?.message || "Payment failed";
+    await payment.save();
+  }
+  return { success: true };
 };

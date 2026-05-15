@@ -29,12 +29,11 @@ const DashboardLayout = () => {
   const menuItems = [
     { name: 'Dashboard', icon: <LayoutDashboard size={20} />, path: '/student/dashboard' },
     { name: 'My Courses', icon: <BookOpen size={20} />, path: '/student/courses' },
-    { name: 'Buy Courses', icon: <ShoppingBag size={20} />, path: '/student/buy-courses' },
-    { name: 'Live Classes', icon: <PlayCircle size={20} />, path: '/student/live-classes' },
-    { name: 'Live Chat', icon: <MessageSquare size={20} />, path: '/student/live-chat' },
-    { name: 'Instructor Messages', icon: <Mail size={20} />, path: '/student/messages' },
-    { name: 'Reviews / Exams', icon: <FileText size={20} />, path: '/student/exams' },
+    { name: 'Exams', icon: <FileText size={20} />, path: '/student/exams' },
     { name: 'Certificates', icon: <Award size={20} />, path: '/student/certificates' },
+    { name: 'Messages', icon: <Mail size={20} />, path: '/student/messages' },
+    { name: 'Buy Course', icon: <ShoppingBag size={20} />, path: '/student/buy-courses' },
+    { name: 'Live Classes', icon: <PlayCircle size={20} />, path: '/student/live-classes' },
     { name: 'Profile', icon: <UserIcon size={20} />, path: '/student/profile' },
   ];
 
@@ -49,7 +48,7 @@ const DashboardLayout = () => {
   };
 
   return (
-    <div className="min-h-screen bg-slate-50 flex">
+    <div className="min-h-screen bg-slate-50 flex font-sans">
       {/* Sidebar */}
       <aside 
         className={`fixed inset-y-0 left-0 z-50 w-64 bg-white border-r border-slate-200 transform transition-transform duration-300 ease-in-out md:relative md:translate-x-0 ${
@@ -58,55 +57,52 @@ const DashboardLayout = () => {
       >
         <div className="flex flex-col h-full">
           {/* Logo */}
-          <div className="p-6 flex items-center gap-2">
-            <div className="bg-blue-600 p-1.5 rounded-lg">
-              <BookOpen className="text-white" size={24} />
-            </div>
-            <span className="text-2xl font-bold tracking-tight text-slate-900">Learnify</span>
-          </div>
-
-          {/* User Profile Summary in Sidebar */}
-          <div className="px-6 py-4 mb-4">
-            <div className="flex items-center gap-3 p-3 bg-slate-50 rounded-2xl border border-slate-100">
-              <div className="w-10 h-10 rounded-xl bg-blue-100 flex items-center justify-center text-blue-600 overflow-hidden shrink-0">
-                {user?.profileImage ? (
-                  <img src={user.profileImage} alt="profile" className="w-full h-full object-cover" />
-                ) : (
-                  <UserIcon size={20} />
-                )}
+          <div className="h-16 flex items-center px-6 border-b border-slate-100">
+            <Link to="/student/dashboard" className="flex items-center gap-2">
+              <div className="bg-primary-600 p-1.5 rounded">
+                <BookOpen className="text-white" size={20} />
               </div>
-              <div className="min-w-0">
-                <p className="text-sm font-bold text-slate-900 truncate">{user?.name || 'Student'}</p>
-                <p className="text-[10px] font-medium text-slate-400 uppercase tracking-widest">{user?.role || 'Student'}</p>
-              </div>
-            </div>
+              <span className="text-xl font-bold tracking-tight text-slate-900 uppercase">Learnify</span>
+            </Link>
           </div>
 
           {/* Navigation */}
-          <nav className="flex-1 px-4 space-y-1 overflow-y-auto">
-            {menuItems.map((item) => (
-              <Link
-                key={item.name}
-                to={item.path}
-                className={`flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium transition-all ${
-                  location.pathname === item.path
-                    ? 'bg-blue-600 text-white shadow-lg shadow-blue-100'
-                    : 'text-slate-500 hover:bg-slate-50 hover:text-slate-900'
-                }`}
-              >
-                {item.icon}
-                {item.name}
-              </Link>
-            ))}
+          <nav className="flex-1 py-6 space-y-1">
+            {menuItems.map((item) => {
+              const isActive = location.pathname === item.path || (item.path !== '/student/dashboard' && location.pathname.startsWith(item.path));
+              return (
+                <Link
+                  key={item.name}
+                  to={item.path}
+                  className={`sidebar-link ${isActive ? 'sidebar-link-active' : ''}`}
+                >
+                  {item.icon}
+                  <span className="text-sm font-medium">{item.name}</span>
+                </Link>
+              );
+            })}
           </nav>
 
-          {/* Logout */}
+          {/* User Profile Summary in Sidebar */}
           <div className="p-4 border-t border-slate-100">
+            <div className="flex items-center gap-3 p-2">
+              <div className="w-9 h-9 rounded bg-slate-100 flex items-center justify-center text-slate-500 overflow-hidden shrink-0">
+                {user?.profileImage ? (
+                  <img src={user.profileImage} alt="profile" className="w-full h-full object-cover" />
+                ) : (
+                  <UserIcon size={18} />
+                )}
+              </div>
+              <div className="min-w-0">
+                <p className="text-xs font-semibold text-slate-900 truncate">{user?.name || 'Student'}</p>
+                <p className="text-[10px] text-slate-500 uppercase tracking-wider">{user?.role || 'Student'}</p>
+              </div>
+            </div>
             <button 
               onClick={handleLogout}
-              className="flex items-center gap-3 w-full px-4 py-3 rounded-xl text-sm font-medium text-red-500 hover:bg-red-50 transition-all"
+              className="mt-2 flex items-center gap-3 w-full px-4 py-2.5 rounded-md text-sm font-medium text-slate-500 hover:bg-red-50 hover:text-red-600 transition-colors"
             >
-              <LogOut size={20} />
+              <LogOut size={18} />
               Logout
             </button>
           </div>
@@ -116,57 +112,59 @@ const DashboardLayout = () => {
       {/* Main Content */}
       <div className="flex-1 flex flex-col min-w-0 h-screen overflow-hidden">
         {/* Top Navbar */}
-        <header className="h-20 bg-white border-b border-slate-200 sticky top-0 z-40 px-4 md:px-8 flex items-center justify-between shrink-0">
+        <header className="h-16 bg-white border-b border-slate-200 flex items-center justify-between px-6 shrink-0">
           <div className="flex items-center gap-4">
             <button 
-              className="md:hidden p-2 text-slate-500 hover:bg-slate-50 rounded-xl transition-all"
+              className="md:hidden p-2 text-slate-500 hover:bg-slate-50 rounded-md"
               onClick={() => setIsSidebarOpen(!isSidebarOpen)}
             >
-              {isSidebarOpen ? <X size={24} /> : <Menu size={24} />}
+              {isSidebarOpen ? <X size={20} /> : <Menu size={20} />}
             </button>
-            <div>
-              <h1 className="text-xl font-bold text-slate-900">{getPageTitle()}</h1>
-              <p className="text-xs text-slate-400 font-medium hidden sm:block">Welcome back to your learning portal</p>
-            </div>
+            <h1 className="text-lg font-semibold text-slate-900">{getPageTitle()}</h1>
           </div>
 
-          <div className="flex items-center gap-3 md:gap-6">
+          <div className="flex items-center gap-4">
             {/* Search */}
-            <div className="relative hidden lg:block w-72">
-              <span className="absolute inset-y-0 left-0 pl-4 flex items-center text-slate-400">
-                <Search size={18} />
+            <div className="relative hidden lg:block w-80">
+              <span className="absolute inset-y-0 left-0 pl-3 flex items-center text-slate-400">
+                <Search size={16} />
               </span>
               <input
                 type="text"
-                placeholder="Search your courses..."
-                className="w-full pl-11 pr-4 py-2.5 bg-slate-50 border border-slate-100 rounded-xl text-sm focus:ring-2 focus:ring-blue-500 outline-none transition-all"
+                placeholder="Search for anything..."
+                className="w-full pl-10 pr-4 py-1.5 bg-slate-50 border border-slate-200 rounded text-sm focus:ring-1 focus:ring-primary-500 focus:bg-white outline-none transition-all"
               />
             </div>
 
-            <button className="p-2.5 text-slate-400 hover:bg-slate-50 rounded-xl relative transition-all">
-              <Bell size={20} />
-              <span className="absolute top-2 right-2 w-2 h-2 bg-red-500 rounded-full border-2 border-white"></span>
-            </button>
+            <div className="flex items-center gap-2">
+              <button className="p-2 text-slate-500 hover:bg-slate-50 rounded-md relative">
+                <Bell size={20} />
+                <span className="absolute top-1.5 right-1.5 w-2 h-2 bg-primary-600 rounded-full border-2 border-white"></span>
+              </button>
+              <button className="p-2 text-slate-500 hover:bg-slate-50 rounded-md">
+                <ShoppingBag size={20} />
+              </button>
+            </div>
 
             {/* User Profile */}
-            <div className="flex items-center gap-3 pl-4 border-l border-slate-100">
-              <div className="text-right hidden sm:block">
-                <p className="text-sm font-bold text-slate-900 leading-none">{user?.name}</p>
-                <p className="text-[10px] text-slate-400 font-bold mt-1 uppercase tracking-tighter">Gold Member</p>
-              </div>
-              <Link to="/student/profile" className="w-10 h-10 rounded-xl bg-slate-100 flex items-center justify-center text-slate-600 overflow-hidden hover:ring-2 hover:ring-blue-500 transition-all">
+            <div className="h-8 w-px bg-slate-200 mx-1 hidden sm:block"></div>
+            <Link to="/student/profile" className="flex items-center gap-2 group">
+              <div className="w-8 h-8 rounded bg-primary-100 flex items-center justify-center text-primary-700 overflow-hidden group-hover:ring-2 group-hover:ring-primary-500 transition-all">
                 {user?.profileImage ? (
                   <img src={user.profileImage} alt="profile" className="w-full h-full object-cover" />
                 ) : (
-                  <UserIcon size={20} />
+                  <UserIcon size={16} />
                 )}
-              </Link>
-            </div>
+              </div>
+              <div className="hidden sm:block">
+                <p className="text-xs font-semibold text-slate-900 group-hover:text-primary-600 transition-colors">{user?.name}</p>
+              </div>
+            </Link>
           </div>
         </header>
 
         {/* Content Area */}
-        <main className="flex-1 overflow-y-auto p-4 md:p-8 bg-slate-50/50">
+        <main className="flex-1 overflow-y-auto p-6 bg-[#f8fafc]">
           <div className="max-w-7xl mx-auto">
             <Outlet />
           </div>
@@ -176,7 +174,7 @@ const DashboardLayout = () => {
       {/* Mobile Overlay */}
       {isSidebarOpen && (
         <div 
-          className="fixed inset-0 bg-slate-900/20 backdrop-blur-sm z-40 md:hidden"
+          className="fixed inset-0 bg-slate-900/40 z-40 md:hidden"
           onClick={() => setIsSidebarOpen(false)}
         ></div>
       )}

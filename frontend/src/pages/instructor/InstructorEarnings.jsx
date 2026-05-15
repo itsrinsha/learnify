@@ -28,7 +28,7 @@ const InstructorEarnings = () => {
     dispatch(fetchInstructorDashboard());
   }, [dispatch]);
 
-  const stats = dashboardData?.stats || {};
+  const stats = dashboardData || {};
   const courses = dashboardData?.courses || [];
 
   const formatCurrency = (amount) => {

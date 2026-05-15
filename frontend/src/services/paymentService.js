@@ -22,7 +22,18 @@ export const verifyPayment = async (paymentData) => {
   return response.data;
 };
 
+// Record Payment Failure
+export const recordPaymentFailure = async (failureData) => {
+  const response = await axiosInstance.post(
+    "/payments/record-failure",
+    failureData
+  );
+
+  return response.data;
+};
+
 export default {
   createOrder,
   verifyPayment,
+  recordPaymentFailure,
 };

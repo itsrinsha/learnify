@@ -1,43 +1,43 @@
 import { asyncHandler } from "../middleware/trycatchmiddleware.js";
-import { getMessagesService, markAsReadService, sendMessageService } from "../services/chatServices.js";
+import { getConversationsService, getMessagesService, markAsReadService, sendMessageService } from "../services/chatServices.js";
 
+
+// ✅ Get conversations
+export const getConversations = asyncHandler(async (req, res) => {
+  const contacts = await getConversationsService(req.user.id);
+  res.json(contacts);
+});
 
 // ✅ Send message
-export const sendMessage = async (req, res, next) => {
-  
-    const { receiver, message } = req.body;
+export const sendMessage = asyncHandler(async (req, res) => {
+  const { receiver, message } = req.body;
 
-    const newMessage = await sendMessageService({
-      sender: req.user.id,
-      receiver,
-      message,
-    });
+  const newMessage = await sendMessageService({
+    sender: req.user.id,
+    receiver,
+    message,
+  });
 
-    res.status(201).json(newMessage);
-  next()
-};
+  res.status(201).json(newMessage);
+});
 
 // ✅ Get conversation
-export const getMessages = async (req, res, next) => {
-  
-    const messages = await getMessagesService({
-      userId: req.params.userId,
-      currentUserId: req.user.id,
-    });
+export const getMessages = asyncHandler(async (req, res) => {
+  const messages = await getMessagesService({
+    userId: req.params.userId,
+    currentUserId: req.user.id,
+  });
 
-    res.json(messages); // 🔥 FIX: you missed this
-   next()
-};
+  res.json(messages);
+});
 
 // ✅ Mark messages as read
-export const markAsRead = async (req, res, next) => {
-  
-    await markAsReadService({
-      currentUserId: req.user.id,
-      userId: req.params.userId,
-    });
+export const markAsRead = asyncHandler(async (req, res) => {
+  await markAsReadService({
+    currentUserId: req.user.id,
+    userId: req.params.userId,
+  });
 
-    res.json({ message: "Messages marked as read" });
-    next()
-};
+  res.json({ message: "Messages marked as read" });
+});
 

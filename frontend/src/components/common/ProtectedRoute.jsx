@@ -4,35 +4,44 @@ import { useSelector } from 'react-redux';
 
 const ProtectedRoute = ({ children, allowedRoles }) => {
   const { user } = useSelector((state) => state.auth);
+  const token = localStorage.getItem('token');
   const location = useLocation();
+
   const getLoginPath = () => {
-    if (allowedRoles?.includes('admin')) return '/admin/login';
-    if (allowedRoles?.includes('instructor')) return '/instructor/login';
+    if (location.pathname.startsWith('/admin')) return '/admin/login';
+    if (location.pathname.startsWith('/instructor')) return '/instructor/login';
     return '/login';
   };
 
-  if (!user) {
-    // Redirect to login if not authenticated
+  // If no user or no token, redirect to login
+  if (!user || !token) {
     return <Navigate to={getLoginPath()} state={{ from: location }} replace />;
   }
 
-  if (allowedRoles && !allowedRoles.includes(user.role)) {
-    return <Navigate to={getLoginPath()} state={{ from: location }} replace />;
+  // If roles are restricted and user's role doesn't match
+  if (allowedRoles && (!user.role || !allowedRoles.includes(user.role.toLowerCase()))) {
+    // If wrong role, redirect to home or login
+    return <Navigate to="/" replace />;
+  }
+
+  // Global Block Check
+  if (user.isBlocked) {
+    return <Navigate to="/blocked" replace />;
   }
 
   // Special check for Instructors: Must be approved to access dashboard/courses
   if (user.role === 'instructor') {
     const isVerificationPage = location.pathname.includes('/instructor/verify');
     const isPendingPage = location.pathname.includes('/instructor/pending');
-    
+
     if (user.approvalStatus === 'approved') {
       if (isVerificationPage || isPendingPage) {
         return <Navigate to="/instructor/dashboard" replace />;
       }
     } else if (user.approvalStatus === 'rejected') {
-       if (!isVerificationPage && !isPendingPage) {
-         return <Navigate to="/instructor/pending" replace />;
-       }
+      if (!isVerificationPage && !isPendingPage) {
+        return <Navigate to="/instructor/pending" replace />;
+      }
     } else if (user.approvalStatus === 'pending') {
       if (!isPendingPage) {
         return <Navigate to="/instructor/pending" replace />;

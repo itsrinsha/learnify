@@ -30,8 +30,30 @@ export const publishCourse = async (courseId) => {
   }
 };
 
+export const getInstructorStudents = async () => {
+  try {
+    const response = await axiosInstance.get('/instructor/students');
+    return response.data;
+  } catch (error) {
+    console.error('Error fetching instructor students:', error);
+    throw error;
+  }
+};
+
+export const getReviewHistory = async () => {
+  try {
+    const response = await axiosInstance.get('/instructor/review-history');
+    return response.data;
+  } catch (error) {
+    console.error('Error fetching review history:', error);
+    throw error;
+  }
+};
+
 export default {
   getInstructorDashboard,
   getInstructorCourses,
   publishCourse,
+  getInstructorStudents,
+  getReviewHistory,
 };

@@ -23,18 +23,28 @@ export const createCourseService = async ({
     thumbnail,
     language,
     level,
+    approvalStatus: "pending",
   });
 
   return course;
 };
 
 // ================= GET ALL COURSES =================
-export const getCoursesService = async () => {
-  const courses = await Course.find({
+export const getCoursesService = async (filters = {}) => {
+  const { limit, skip, ...queryFilters } = filters;
+  
+  const query = {
     status: "published",
-  })
-    .populate("instructor", "name email profileImage")
-    .sort({ createdAt: -1 });
+    approvalStatus: "approved",
+    isHidden: { $ne: true },
+    ...queryFilters
+  };
+
+  const courses = await Course.find(query)
+    .populate("instructor", "name email profileImage verificationDetails studentsCount")
+    .sort({ createdAt: -1 })
+    .limit(limit ? parseInt(limit) : 0)
+    .skip(skip ? parseInt(skip) : 0);
 
   return courses;
 };
@@ -54,6 +64,15 @@ export const getCourseByIdService = async (
     const error = new Error("Course not found");
     error.statusCode = 404;
     throw error;
+  }
+
+  // Check visibility for public/students
+  if (userRole !== "admin" && (course.instructor._id.toString() !== userId)) {
+    if (course.approvalStatus !== "approved" || course.status !== "published" || course.isHidden) {
+      const error = new Error("This course is not available.");
+      error.statusCode = 403;
+      throw error;
+    }
   }
 
   // Get modules
@@ -79,6 +98,7 @@ export const getCourseByIdService = async (
     ...course.toObject(),
     modules: structuredModules,
     lessonsCount: lessons.length,
+    lessons: lessons,
   };
 
   // ================= STUDENT =================
@@ -175,6 +195,11 @@ export const updateCourseService = async ({
     const error = new Error("Not authorized");
     error.statusCode = 403;
     throw error;
+  }
+
+  // If course was approved, and it's being updated, set it back to pending
+  if (course.approvalStatus === "approved") {
+    course.approvalStatus = "pending";
   }
 
   Object.assign(course, updates);

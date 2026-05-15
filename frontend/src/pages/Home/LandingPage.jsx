@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
 import { 
   BookOpen, 
   Users, 
@@ -17,7 +18,8 @@ import {
   Laptop,
   GraduationCap
 } from 'lucide-react';
-import { useNavigate, Link } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
+import { useSelector } from 'react-redux';
 import { getAllCourses } from '../../services/courseService';
 
 const LandingPage = () => {
@@ -43,18 +45,18 @@ const LandingPage = () => {
   const features = [
     {
       title: 'Live Mentor Sessions',
-      description: 'Learn directly from instructors through scheduled classes and focused review sessions.',
-      icon: <Users />
+      description: 'Learn directly from industry experts through scheduled live classes and interactive review sessions.',
+      icon: <Users className="w-6 h-6" />
     },
     {
-      title: 'Career Ready Courses',
-      description: 'Build practical skills with structured lessons, projects, and progress tracking.',
-      icon: <Laptop />
+      title: 'Career Ready Path',
+      description: 'Build production-grade skills with structured modules, real-world projects, and skill tracking.',
+      icon: <Laptop className="w-6 h-6" />
     },
     {
-      title: 'Verified Certificates',
-      description: 'Earn certificates with unique IDs after completing courses and passing reviews.',
-      icon: <ShieldCheck />
+      title: 'Verified Accreditation',
+      description: 'Receive certificates with unique verification IDs upon course completion and passing assessments.',
+      icon: <ShieldCheck className="w-6 h-6" />
     }
   ];
 
@@ -62,29 +64,31 @@ const LandingPage = () => {
     {
       name: 'Alice Johnson',
       role: 'Frontend Developer',
-      quote: 'The live reviews helped me understand exactly where I needed to improve.'
+      quote: 'The live reviews and mentor feedback helped me understand exactly where I needed to improve.'
     },
     {
       name: 'Rahul Mehta',
       role: 'MERN Student',
-      quote: 'Courses are easy to follow and the dashboard keeps me motivated.'
+      quote: 'The structured courses are easy to follow and the dashboard keeps me motivated every day.'
     },
     {
       name: 'Priya Sharma',
       role: 'UI Engineer',
-      quote: 'The certificate flow and mentor feedback made the learning feel professional.'
+      quote: 'The professional certificate flow and real-world project focus made the learning feel truly career-oriented.'
     }
   ];
 
- 
   const [featuredCourses, setFeaturedCourses] = useState([]);
   const [loadingCourses, setLoadingCourses] = useState(true);
+  const { user: currentUser } = useSelector((state) => state.auth);
 
   useEffect(() => {
     const fetchCourses = async () => {
       try {
-        const data = await getAllCourses({ limit: 3, status: 'published' });
-        setFeaturedCourses(data || []);
+        const response = await getAllCourses({ limit: 3 });
+        // Handle both possible response shapes (array or object with courses property)
+        const courses = Array.isArray(response) ? response : (response.courses || []);
+        setFeaturedCourses(courses);
       } catch (error) {
         console.error('Error fetching landing courses:', error);
       } finally {
@@ -94,113 +98,247 @@ const LandingPage = () => {
     fetchCourses();
   }, []);
 
-  
+  const handleEnrollClick = (courseId) => {
+    if (currentUser) {
+      navigate(`/course-details/${courseId}`);
+    } else {
+      navigate('/login');
+    }
+  };
 
   return (
-    <div className="min-h-screen bg-white font-sans text-slate-900 selection:bg-blue-100 selection:text-blue-700">
+    <div className="min-h-screen bg-white font-sans text-slate-900 selection:bg-primary-100 selection:text-primary-700">
       {/* Navigation */}
-      <nav className={`fixed top-0 w-full z-50 transition-all duration-300 ${scrolled ? 'bg-white/80 backdrop-blur-md shadow-sm py-3' : 'bg-transparent py-5'}`}>
+      <nav className={`fixed top-0 w-full z-50 transition-all duration-500 ${
+        scrolled 
+          ? 'bg-white/90 backdrop-blur-md shadow-lg py-2 border-b border-slate-200' 
+          : 'bg-black/20 backdrop-blur-sm py-5 border-b border-white/10'
+      }`}>
         <div className="container mx-auto px-6 flex justify-between items-center">
-          <div className="flex items-center gap-2 cursor-pointer" onClick={() => navigate('/')}>
-            <div className="bg-blue-600 p-2 rounded-lg">
-              <BookOpen className="text-white w-6 h-6" />
+          <div className="flex items-center gap-3 cursor-pointer group" onClick={() => navigate('/')}>
+            <div className="bg-primary-600 p-2 rounded-xl shadow-lg shadow-primary-600/30 group-hover:scale-110 transition-transform duration-300">
+              <BookOpen className="text-white w-5 h-5" />
             </div>
-            <span className="text-2xl font-bold tracking-tight text-slate-900">Learnify</span>
+            <span className={`text-2xl font-black tracking-tighter transition-colors duration-300 ${scrolled ? 'text-slate-900' : 'text-white'}`}>
+              Learnify
+            </span>
           </div>
 
           {/* Desktop Nav */}
-          <div className="hidden md:flex items-center gap-8">
-            <a href="#courses" className="text-sm font-medium text-slate-600 hover:text-blue-600 transition-colors">Courses</a>
-            <a href="#mentors" className="text-sm font-medium text-slate-600 hover:text-blue-600 transition-colors">Mentors</a>
-            <a href="#about" className="text-sm font-medium text-slate-600 hover:text-blue-600 transition-colors">About Us</a>
+          <div className="hidden md:flex items-center gap-10">
+            {['Courses', 'About', 'Teach'].map((item) => (
+              <a 
+                key={item}
+                href={item === 'Teach' ? '/instructor/login' : `#${item.toLowerCase()}`} 
+                className={`text-[11px] font-bold uppercase tracking-[0.2em] transition-all duration-300 relative group ${
+                  scrolled ? 'text-slate-500 hover:text-primary-600' : 'text-slate-200 hover:text-white'
+                }`}
+              >
+                {item}
+                <span className={`absolute -bottom-2 left-0 w-0 h-0.5 transition-all duration-300 group-hover:w-full ${
+                  scrolled ? 'bg-primary-600' : 'bg-primary-400'
+                }`}></span>
+              </a>
+            ))}
           </div>
 
-          <div className="hidden md:flex items-center gap-4">
-            <button 
-              onClick={() => navigate('/login')}
-              className="px-5 py-2.5 text-sm font-semibold text-slate-700 hover:text-blue-600 transition-colors"
-            >
-              Login
-            </button>
-            <button 
-              onClick={() => navigate('/instructor/login')}
-              className="px-5 py-2.5 text-sm font-semibold text-slate-700 hover:text-blue-600 transition-colors"
-              
-            >
-              start leaching
-            </button>
+          <div className="hidden md:flex items-center gap-6">
+            {!currentUser ? (
+              <>
+                <button 
+                  onClick={() => navigate('/login')}
+                  className={`text-[11px] font-bold uppercase tracking-[0.2em] transition-colors duration-300 ${
+                    scrolled ? 'text-slate-600 hover:text-primary-600' : 'text-white hover:text-primary-400'
+                  }`}
+                >
+                  Login
+                </button>
+                <button 
+                  onClick={() => navigate('/register')}
+                  className={`px-8 py-3 rounded-full text-[11px] font-bold uppercase tracking-[0.2em] transition-all duration-300 transform hover:-translate-y-0.5 ${
+                    scrolled 
+                      ? 'bg-primary-600 text-white shadow-xl shadow-primary-600/20 hover:bg-primary-700' 
+                      : 'bg-white text-slate-900 hover:bg-primary-50 shadow-xl shadow-black/10'
+                  }`}
+                >
+                  Get Started
+                </button>
+              </>
+            ) : (
+              <button 
+                onClick={() => navigate('/login')}
+                className={`px-8 py-3 rounded-full text-[11px] font-bold uppercase tracking-[0.2em] transition-all duration-300 transform hover:-translate-y-0.5 ${
+                  scrolled 
+                    ? 'bg-primary-600 text-white shadow-xl shadow-primary-600/20 hover:bg-primary-700' 
+                    : 'bg-white text-slate-900 hover:bg-primary-50 shadow-xl shadow-black/10'
+                }`}
+              >
+                Dashboard
+              </button>
+            )}
           </div>
 
           {/* Mobile Toggle */}
-          <button className="md:hidden p-2" onClick={() => setIsMenuOpen(!isMenuOpen)}>
-            {isMenuOpen ? <X /> : <Menu />}
+          <button 
+            className={`md:hidden p-2 rounded-lg transition-colors duration-300 ${
+              scrolled ? 'text-slate-900 hover:bg-slate-100' : 'text-white hover:bg-white/10'
+            }`} 
+            onClick={() => setIsMenuOpen(!isMenuOpen)}
+          >
+            {isMenuOpen ? <X size={24} /> : <Menu size={24} />}
           </button>
         </div>
 
-        {/* Mobile Menu */}
-        {isMenuOpen && (
-          <div className="md:hidden absolute top-full left-0 w-full bg-white border-t border-slate-100 py-6 px-6 flex flex-col gap-4 shadow-xl">
-            <a href="#courses" className="text-lg font-medium py-2">Courses</a>
-            <a href="#mentors" className="text-lg font-medium py-2">Mentors</a>
-            <a href="#about" className="text-lg font-medium py-2">About</a>
-            <div className="flex flex-col gap-3 pt-4 border-t border-slate-100">
-              <button onClick={() => navigate('/login')} className="w-full py-3 font-semibold text-slate-700 text-left">Login</button>
-              <button onClick={() => navigate('/register')} className="w-full py-3 bg-blue-600 text-white rounded-lg font-bold">Get Started</button>
-            </div>
-          </div>
-        )}
+        {/* Mobile Menu Panel */}
+        <AnimatePresence>
+          {isMenuOpen && (
+            <motion.div 
+              initial={{ opacity: 0, height: 0 }}
+              animate={{ opacity: 1, height: 'auto' }}
+              exit={{ opacity: 0, height: 0 }}
+              className="md:hidden absolute top-full left-0 w-full bg-white border-b border-slate-200 shadow-2xl overflow-hidden"
+            >
+              <div className="flex flex-col p-8 space-y-6">
+                {['Courses', 'About', 'Teach'].map((item) => (
+                  <a 
+                    key={item}
+                    href={item === 'Teach' ? '/instructor/login' : `#${item.toLowerCase()}`}
+                    onClick={() => setIsMenuOpen(false)} 
+                    className="text-xs font-bold uppercase tracking-[0.2em] text-slate-600 hover:text-primary-600 transition-colors"
+                  >
+                    {item}
+                  </a>
+                ))}
+                <div className="pt-8 border-t border-slate-100 flex flex-col gap-4">
+                  {!currentUser ? (
+                    <>
+                      <button onClick={() => navigate('/login')} className="w-full py-4 text-xs font-bold uppercase tracking-[0.2em] text-slate-600 bg-slate-50 rounded-xl hover:bg-slate-100 transition-colors">Login</button>
+                      <button onClick={() => navigate('/register')} className="w-full bg-primary-600 text-white py-4 text-xs font-bold uppercase tracking-[0.2em] rounded-xl shadow-lg shadow-primary-600/20 hover:bg-primary-700 transition-all">Join Now</button>
+                    </>
+                  ) : (
+                    <button onClick={() => navigate('/login')} className="w-full bg-primary-600 text-white py-4 text-xs font-bold uppercase tracking-[0.2em] rounded-xl shadow-lg shadow-primary-600/20 hover:bg-primary-700 transition-all">Dashboard</button>
+                  )}
+                </div>
+              </div>
+            </motion.div>
+          )}
+        </AnimatePresence>
       </nav>
 
       {/* Hero Section */}
-      <section className="pt-32 pb-20 md:pt-48 md:pb-32 bg-gradient-to-b from-slate-50 to-white overflow-hidden">
-        <div className="container mx-auto px-6 grid md:grid-cols-2 gap-16 items-center">
-          <div className="space-y-8 max-w-2xl">
-            <h1 className="text-5xl md:text-7xl font-extrabold text-slate-900 leading-[1.1]">
-              Unlock Your Potential with <span className="text-blue-600">Expert-Led</span> Learning.
-            </h1>
-            <p className="text-xl text-slate-600 leading-relaxed">
-              Master the most in-demand skills from industry experts. Flexible learning designed to fit your schedule and advance your career.
-            </p>
-            <div className="flex flex-col sm:flex-row gap-4 pt-4">
-              <button onClick={() => navigate('/register')} className="px-8 py-4 bg-blue-600 text-white rounded-xl font-bold text-lg hover:bg-blue-700 shadow-xl shadow-blue-200 transition-all flex items-center justify-center gap-2 group active:scale-95">
-                Explore All Courses
-                <ChevronRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
-              </button>
-              <button className="px-8 py-4 bg-white text-slate-700 border border-slate-200 rounded-xl font-bold text-lg hover:bg-slate-50 transition-all flex items-center justify-center gap-2 shadow-sm">
-                View Live Demo
-              </button>
-            </div>
-            
-          </div>
-          
-          <div className="relative">
-            <div className="absolute -top-20 -right-20 w-80 h-80 bg-blue-100 rounded-full blur-3xl opacity-50"></div>
-            <div className="absolute -bottom-20 -left-20 w-80 h-80 bg-blue-50 rounded-full blur-3xl opacity-70"></div>
-            <div className="relative bg-white rounded-2xl shadow-2xl border border-slate-100 p-2 overflow-hidden group">
-              <img 
-                src="https://images.unsplash.com/photo-1501504905252-473c47e087f8?auto=format&fit=crop&w=1200&q=80" 
-                alt="Dashboard Preview" 
-                className="rounded-xl w-full h-auto object-cover group-hover:scale-[1.02] transition-transform duration-700"
-              />
-              <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 bg-blue-600/90 p-5 rounded-full text-white cursor-pointer hover:scale-110 transition-transform shadow-2xl backdrop-blur-sm">
-                <PlayCircle className="w-8 h-8 fill-white text-blue-600" />
+      <section className="relative h-screen min-h-[700px] flex items-center justify-center overflow-hidden">
+        {/* Background Video */}
+        <div className="absolute inset-0 z-0">
+          <video
+            autoPlay
+            muted
+            loop
+            playsInline
+            className="w-full h-full object-cover scale-105"
+          >
+            <source 
+              src="https://assets.mixkit.co/videos/preview/mixkit-girl-in-glasses-studying-with-a-laptop-4411-large.mp4" 
+              type="video/mp4" 
+            />
+            Your browser does not support the video tag.
+          </video>
+          {/* Professional Overlay */}
+          <div className="absolute inset-0 bg-gradient-to-r from-slate-900/90 via-slate-900/70 to-slate-900/40 z-10"></div>
+          {/* Subtle Grid Pattern Overlay */}
+          <div className="absolute inset-0 bg-[url('https://www.transparenttextures.com/patterns/carbon-fibre.png')] opacity-20 z-10"></div>
+        </div>
+
+        <div className="container mx-auto px-6 relative z-20">
+          <div className="max-w-4xl">
+            <motion.div
+              initial={{ opacity: 0, y: 30 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.8, ease: "easeOut" }}
+              className="space-y-8"
+            >
+              <div className="inline-flex items-center gap-2 px-4 py-2 bg-white/10 backdrop-blur-md border border-white/20 rounded-full">
+                <span className="relative flex h-2 w-2">
+                  <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-primary-400 opacity-75"></span>
+                  <span className="relative inline-flex rounded-full h-2 w-2 bg-primary-500"></span>
+                </span>
+                <span className="text-[11px] font-bold text-white uppercase tracking-[0.2em]">Next-Gen E-Learning Platform</span>
               </div>
-            </div>
+
+              <h1 className="text-5xl md:text-8xl font-bold text-white leading-[1.1] tracking-tight">
+                Learn Skills That <br />
+                <span className="bg-clip-text text-transparent bg-gradient-to-r from-primary-400 to-blue-400">
+                  Build Your Future
+                </span>
+              </h1>
+
+              <p className="text-xl md:text-2xl text-slate-200 leading-relaxed max-w-2xl font-medium drop-shadow-lg">
+                Master industry-leading technologies with interactive courses, real-time mentoring, and a global community of learners.
+              </p>
+
+              <div className="flex flex-col sm:flex-row gap-5 pt-6">
+                <motion.button
+                  whileHover={{ scale: 1.05 }}
+                  whileTap={{ scale: 0.98 }}
+                  onClick={() => navigate('/register')}
+                  className="px-10 py-5 bg-primary-600 text-white rounded-xl font-bold text-sm flex items-center justify-center gap-3 group shadow-2xl shadow-primary-600/30 hover:bg-primary-500 transition-all"
+                >
+                  Start Learning
+                  <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
+                </motion.button>
+                
+                <motion.button
+                  whileHover={{ scale: 1.05 }}
+                  whileTap={{ scale: 0.98 }}
+                  onClick={() => document.getElementById('courses').scrollIntoView({ behavior: 'smooth' })}
+                  className="px-10 py-5 bg-white/10 backdrop-blur-xl text-white border border-white/30 rounded-xl font-bold text-sm hover:bg-white/20 transition-all flex items-center justify-center gap-3"
+                >
+                  Explore Courses
+                  <PlayCircle className="w-5 h-5 opacity-70" />
+                </motion.button>
+              </div>
+
+              {/* Trust Indicators */}
+              <div className="pt-12 flex flex-wrap items-center gap-8 opacity-70 grayscale hover:grayscale-0 transition-all">
+                <div className="flex items-center gap-2">
+                  <div className="w-10 h-10 rounded-lg bg-white/10 flex items-center justify-center">
+                    <Users className="text-white w-5 h-5" />
+                  </div>
+                  <div>
+                    <p className="text-white text-sm font-bold">50k+</p>
+                    <p className="text-slate-400 text-[10px] uppercase font-bold tracking-widest">Learners</p>
+                  </div>
+                </div>
+                <div className="flex items-center gap-2">
+                  <div className="w-10 h-10 rounded-lg bg-white/10 flex items-center justify-center">
+                    <Award className="text-white w-5 h-5" />
+                  </div>
+                  <div>
+                    <p className="text-white text-sm font-bold">100%</p>
+                    <p className="text-slate-400 text-[10px] uppercase font-bold tracking-widest">Verified</p>
+                  </div>
+                </div>
+              </div>
+            </motion.div>
           </div>
         </div>
+
+        {/* Bottom Fade */}
+        <div className="absolute bottom-0 left-0 w-full h-32 bg-gradient-to-t from-white to-transparent z-10"></div>
       </section>
 
       {/* Stats Section */}
-      <section className="py-12 border-y border-slate-100 bg-white">
+      <section className="py-12 bg-white border-b border-slate-100" id="about">
         <div className="container mx-auto px-6">
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-8 md:gap-12">
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-8">
             {stats.map((stat, idx) => (
-              <div key={idx} className="flex flex-col items-center md:items-start text-center md:text-left group">
-                <div className="mb-4 p-3 rounded-2xl bg-blue-50 text-blue-600 group-hover:bg-blue-600 group-hover:text-white transition-colors duration-300">
+              <div key={idx} className="flex items-center gap-4 group">
+                <div className="w-10 h-10 rounded bg-slate-50 flex items-center justify-center text-slate-400 group-hover:text-primary-600 border border-slate-100 transition-colors">
                   {stat.icon}
                 </div>
-                <div className="text-3xl font-bold text-slate-900">{stat.value}</div>
-                <div className="text-slate-500 font-medium">{stat.label}</div>
+                <div>
+                  <div className="text-xl font-bold text-slate-900">{stat.value}</div>
+                  <div className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">{stat.label}</div>
+                </div>
               </div>
             ))}
           </div>
@@ -208,22 +346,20 @@ const LandingPage = () => {
       </section>
 
       {/* Features Section */}
-      <section className="py-24 bg-white" id="about">
+      <section className="py-24 bg-white">
         <div className="container mx-auto px-6">
-          <div className="text-center max-w-3xl mx-auto mb-20 space-y-4">
-            <h2 className="text-blue-600 font-bold tracking-wider uppercase text-sm">Why Choose Learnify</h2>
-            <h3 className="text-4xl md:text-5xl font-extrabold text-slate-900">Education designed for the future of work</h3>
-            <p className="text-lg text-slate-600">Everything you need to master new skills and advance your professional career in one comprehensive platform.</p>
-          </div>
-          
-          <div className="grid md:grid-cols-3 gap-8">
+          <div className="grid md:grid-cols-3 gap-12">
             {features.map((feature, idx) => (
-              <div key={idx} className="p-8 rounded-2xl border border-slate-100 hover:border-blue-100 hover:shadow-xl hover:shadow-blue-50 transition-all duration-300 group">
-                <div className="w-14 h-14 rounded-xl bg-blue-50 flex items-center justify-center mb-6 group-hover:bg-blue-600 group-hover:text-white transition-colors">
-                  {React.cloneElement(feature.icon, { className: 'w-7 h-7' })}
+              <div key={idx} className="space-y-6 group">
+                <div className="w-14 h-14 bg-primary-50 rounded-2xl flex items-center justify-center text-primary-600 group-hover:bg-primary-600 group-hover:text-white transition-all duration-300">
+                  {feature.icon}
                 </div>
-                <h4 className="text-xl font-bold text-slate-900 mb-3">{feature.title}</h4>
-                <p className="text-slate-600 leading-relaxed">{feature.description}</p>
+                <div className="space-y-3">
+                  <h3 className="text-xl font-bold text-slate-900">{feature.title}</h3>
+                  <p className="text-slate-500 text-sm leading-relaxed font-medium">
+                    {feature.description}
+                  </p>
+                </div>
               </div>
             ))}
           </div>
@@ -233,122 +369,80 @@ const LandingPage = () => {
       {/* Featured Courses */}
       <section className="py-24 bg-slate-50" id="courses">
         <div className="container mx-auto px-6">
-          <div className="flex flex-col md:flex-row md:items-end justify-between mb-16 gap-6">
-            <div className="space-y-4">
-              <h2 className="text-blue-600 font-bold tracking-wider uppercase text-sm">Popular Courses</h2>
-              <h3 className="text-4xl font-extrabold text-slate-900">Pick a course to get started</h3>
+          <div className="flex flex-col md:flex-row md:items-end justify-between mb-16 gap-6 border-b border-slate-200 pb-8">
+            <div className="space-y-2">
+              <h3 className="text-xs font-bold text-primary-600 uppercase tracking-widest">Trending Now</h3>
+              <h2 className="text-3xl font-bold text-slate-900">Explore Professional Programs</h2>
             </div>
-            <button className="text-blue-600 font-bold flex items-center gap-2 hover:gap-3 transition-all">
-              Explore all courses <ArrowRight className="w-5 h-5" />
+            <button onClick={() => navigate('/register')} className="text-xs font-bold uppercase tracking-widest text-primary-600 flex items-center gap-2 hover:text-primary-700 transition-colors">
+              Browse Full Catalog <ArrowRight className="w-4 h-4" />
             </button>
           </div>
           
           <div className="grid md:grid-cols-3 gap-8">
             {loadingCourses ? (
               [1, 2, 3].map(i => (
-                <div key={i} className="bg-white rounded-2xl h-96 animate-pulse border border-slate-100"></div>
+                <div key={i} className="card h-96 animate-pulse bg-white"></div>
               ))
             ) : featuredCourses.length > 0 ? featuredCourses.map((course) => (
-              <div key={course._id} className="bg-white rounded-2xl overflow-hidden border border-slate-200 hover:border-blue-300 hover:shadow-2xl transition-all group">
-                <div className="relative aspect-video overflow-hidden">
+              <div key={course._id} className="card group bg-white hover:shadow-2xl transition-all">
+                <div className="relative aspect-video overflow-hidden bg-slate-100">
                   <img src={course.thumbnail} alt={course.title} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" />
-                  <div className="absolute top-4 left-4 bg-white/90 backdrop-blur-sm px-3 py-1 rounded-lg text-xs font-bold text-slate-900 shadow-sm uppercase tracking-wider">
+                  <div className="absolute top-3 left-3 bg-white/90 backdrop-blur-sm px-2 py-1 rounded text-[9px] font-bold uppercase tracking-widest border border-slate-200 text-slate-900">
                     {course.category}
                   </div>
                 </div>
                 <div className="p-6 space-y-4">
-                  <div className="flex items-center gap-2">
-                    <div className="flex items-center text-yellow-400">
-                      <Star className="w-4 h-4 fill-current" />
-                      <span className="ml-1 text-slate-900 font-bold text-sm">4.9</span>
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center text-warning-500">
+                      <Star className="w-3 h-3 fill-current" />
+                      <span className="ml-1 text-slate-900 font-bold text-xs">{course.rating || 0}</span>
                     </div>
-                    <span className="text-slate-400 text-sm">({course.enrolledCount || 0} students)</span>
+                    <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">{course.enrolledStudentsCount || 0} Students</span>
                   </div>
-                  <h4 className="text-xl font-bold text-slate-900 leading-tight hover:text-blue-600 cursor-pointer transition-colors line-clamp-2 h-14">
+                  <h4 className="text-lg font-bold text-slate-900 leading-tight h-14 line-clamp-2">
                     {course.title}
                   </h4>
-                  <p className="text-slate-500 text-sm font-medium">By <span className="text-slate-900">{course.instructor?.name || 'Expert Instructor'}</span></p>
                   <div className="flex items-center justify-between pt-4 border-t border-slate-50">
-                    <div className="flex items-center gap-4 text-slate-500 text-sm">
-                      <div className="flex items-center gap-1.5">
-                        <Clock className="w-4 h-4" />
-                        {course.lessonsCount || course.lessons?.length || 0} Lessons
-                      </div>
+                    <div>
+                      <p className="text-[9px] font-bold text-slate-400 uppercase tracking-widest">Program Fee</p>
+                      <p className="text-lg font-bold text-primary-600">₹{course.price?.toLocaleString()}</p>
                     </div>
-                    <div className="text-2xl font-black text-blue-600">₹{course.price}</div>
+                    <button onClick={() => handleEnrollClick(course._id)} className="px-6 py-2 bg-primary-600 text-white rounded font-bold text-xs hover:bg-primary-700 transition-colors shadow-lg shadow-primary-600/20">
+                      Enroll
+                    </button>
                   </div>
-                  <button onClick={() => navigate(`/course-details/${course._id}`)} className="w-full py-3 bg-slate-50 text-slate-900 font-bold rounded-xl hover:bg-blue-600 hover:text-white transition-all active:scale-[0.98]">
-                    Enroll Now
-                  </button>
                 </div>
               </div>
             )) : (
-              <div className="col-span-full text-center py-12">
-                <p className="text-slate-500 italic">No courses published yet.</p>
-              </div>
+              <div className="col-span-full py-12 text-center text-slate-400 italic text-sm">No courses currently available. Check back soon!</div>
             )}
           </div>
         </div>
       </section>
 
-
-
-      {/* Upcoming Live Classes */}
-      <section className="py-24 bg-slate-50">
-        <div className="container mx-auto px-6">
-          <div className="text-center max-w-2xl mx-auto mb-16 space-y-4">
-            <h2 className="text-blue-600 font-bold tracking-wider uppercase text-sm">Live Learning</h2>
-            <h3 className="text-4xl font-extrabold text-slate-900">Upcoming Live Classes</h3>
-          </div>
-          
-          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {[1, 2, 3].map((i) => (
-              <div key={i} className="bg-white p-6 rounded-2xl border border-slate-200 hover:shadow-lg transition-all flex gap-5 items-start group">
-                <div className="flex-shrink-0 w-16 h-16 rounded-xl bg-red-50 flex flex-col items-center justify-center border border-red-100 group-hover:bg-red-600 group-hover:text-white transition-colors">
-                  <span className="text-xs font-bold uppercase">May</span>
-                  <span className="text-xl font-black">{12 + i}</span>
-                </div>
-                <div className="space-y-3">
-                  <div className="inline-block px-2 py-0.5 rounded-md bg-green-50 text-green-700 text-[10px] font-bold uppercase tracking-widest border border-green-100">
-                    Live Session
-                  </div>
-                  <h4 className="font-bold text-slate-900 group-hover:text-blue-600 transition-colors cursor-pointer line-clamp-1">
-                    {i === 1 ? 'Mastering Advanced React Patterns' : i === 2 ? 'Figma for Enterprise Design' : 'Machine Learning Foundations'}
-                  </h4>
-                  <div className="flex items-center gap-3 text-slate-500 text-sm">
-                    <div className="flex items-center gap-1.5"><Clock className="w-4 h-4" /> 04:00 PM</div>
-                    <div className="flex items-center gap-1.5"><Users className="w-4 h-4" /> 245 Joined</div>
-                  </div>
-                </div>
-              </div>
-            ))}
-          </div>
-        </div>
-      </section>
-
       {/* Testimonials */}
-      <section className="py-24 bg-white" id="mentors">
+      <section className="py-24 bg-white" id="testimonials">
         <div className="container mx-auto px-6">
-          <div className="text-center max-w-2xl mx-auto mb-20 space-y-4">
-            <h2 className="text-blue-600 font-bold tracking-wider uppercase text-sm">Testimonials</h2>
-            <h3 className="text-4xl font-extrabold text-slate-900">What our students say</h3>
+          <div className="text-center max-w-2xl mx-auto mb-16 space-y-2">
+            <h3 className="text-xs font-bold text-primary-600 uppercase tracking-widest">Success Stories</h3>
+            <h2 className="text-3xl font-bold text-slate-900">Trusted by Professional Learners</h2>
           </div>
           
           <div className="grid md:grid-cols-3 gap-8">
             {testimonials.map((t, idx) => (
-              <div key={idx} className="bg-slate-50 p-10 rounded-3xl relative group hover:-translate-y-2 transition-transform duration-300">
-                <div className="absolute top-10 right-10 opacity-10">
-                  <MessageSquare className="w-12 h-12 text-blue-600" />
+              <div key={idx} className="card p-8 bg-slate-50 space-y-6 border-none shadow-sm hover:shadow-md transition-shadow">
+                <div className="flex items-center gap-1 text-warning-500">
+                  {[1, 2, 3, 4, 5].map(i => <Star key={i} size={14} className="fill-current" />)}
                 </div>
-                <div className="flex items-center gap-1 mb-6 text-yellow-400">
-                  {[1, 2, 3, 4, 5].map(i => <Star key={i} className="w-4 h-4 fill-current" />)}
-                </div>
-                <p className="text-slate-700 text-lg italic leading-relaxed mb-8">"{t.content}"</p>
-                <div className="flex items-center gap-4">
-                  <img src={t.avatar} alt={t.name} className="w-14 h-14 rounded-full border-2 border-white shadow-sm" />
+                <p className="text-slate-600 text-sm leading-relaxed italic font-medium">"{t.quote}"</p>
+                <div className="flex items-center gap-3 pt-4 border-t border-slate-200">
+                  <div className="w-10 h-10 rounded-full bg-primary-100 flex-shrink-0 flex items-center justify-center text-primary-600 font-bold text-xs uppercase">
+                    {t.name.charAt(0)}
+                  </div>
                   <div>
-                    <h5 className="font-bold text-slate-900">{t.name}</h5>
-                    <p className="text-sm text-slate-500">{t.role}</p>
+                    <h5 className="font-bold text-slate-900 text-xs">{t.name}</h5>
+                    <p className="text-[10px] text-slate-400 font-bold uppercase">{t.role}</p>
                   </div>
                 </div>
               </div>
@@ -358,97 +452,62 @@ const LandingPage = () => {
       </section>
 
       {/* Final CTA */}
-      <section className="py-24">
-        <div className="container mx-auto px-6">
-          <div className="bg-blue-600 rounded-[2.5rem] p-12 md:p-24 text-center text-white relative overflow-hidden">
-            <div className="absolute -top-24 -left-24 w-96 h-96 bg-blue-500 rounded-full opacity-50 blur-3xl"></div>
-            <div className="absolute -bottom-24 -right-24 w-96 h-96 bg-blue-700 rounded-full opacity-50 blur-3xl"></div>
-            
-            <div className="relative z-10 space-y-10 max-w-3xl mx-auto">
-              <h3 className="text-4xl md:text-6xl font-black leading-tight">Ready to start your learning journey?</h3>
-              <p className="text-xl text-blue-100 max-w-xl mx-auto">
-                Join over 25,000+ students already learning on Learnify. Get unlimited access to 850+ courses today.
-              </p>
-              <div className="flex flex-col sm:flex-row gap-6 justify-center items-center">
-                <button 
-                  onClick={() => navigate('/register')}
-                  className="px-10 py-5 bg-white text-blue-600 rounded-2xl font-bold text-xl hover:bg-blue-50 shadow-2xl transition-all active:scale-95"
-                >
-                  Get Started for Free
-                </button>
-                <button className="px-10 py-5 bg-blue-700 text-white border border-blue-500 rounded-2xl font-bold text-xl hover:bg-blue-800 transition-all">
-                  Contact Sales
-                </button>
-              </div>
-              <div className="flex items-center justify-center gap-8 pt-4">
-                <div className="flex items-center gap-2"><CheckCircle2 className="w-5 h-5 text-blue-200" /> <span className="text-sm font-medium">No credit card required</span></div>
-                <div className="flex items-center gap-2"><ShieldCheck className="w-5 h-5 text-blue-200" /> <span className="text-sm font-medium">14-day free trial</span></div>
-              </div>
-            </div>
+      <section className="py-24 bg-slate-900 text-white relative overflow-hidden">
+        <div className="absolute top-0 right-0 w-96 h-96 bg-primary-600/20 rounded-full filter blur-[100px] -mr-48 -mt-48"></div>
+        <div className="absolute bottom-0 left-0 w-96 h-96 bg-blue-600/10 rounded-full filter blur-[100px] -ml-48 -mb-48"></div>
+        
+        <div className="container mx-auto px-6 text-center space-y-10 relative z-10">
+          <h3 className="text-4xl md:text-6xl font-bold tracking-tight max-w-4xl mx-auto">Ready to Advance Your <span className="text-primary-400">Professional Journey?</span></h3>
+          <p className="text-slate-400 max-w-xl mx-auto text-lg leading-relaxed font-medium">
+            Join thousands of professionals already mastering new industry standards on the Learnify platform.
+          </p>
+          <div className="flex flex-col sm:flex-row gap-4 justify-center items-center pt-4">
+            <button 
+              onClick={() => navigate('/register')}
+              className="px-12 py-4 bg-primary-600 text-white rounded font-bold text-sm hover:bg-primary-700 shadow-xl shadow-primary-600/20 transition-all transform hover:-translate-y-1"
+            >
+              Start Learning Now
+            </button>
+            <button onClick={() => navigate('/instructor/login')} className="px-12 py-4 bg-transparent text-white border border-slate-700 rounded font-bold text-sm hover:bg-slate-800 transition-all">
+              Become an Instructor
+            </button>
           </div>
         </div>
       </section>
 
       {/* Footer */}
-      <footer className="pt-24 pb-12 bg-slate-50 border-t border-slate-200">
+      <footer className="pt-24 pb-12 bg-white border-t border-slate-100">
         <div className="container mx-auto px-6">
-          <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-5 gap-12 mb-20">
-            <div className="col-span-2 lg:col-span-2 space-y-6">
+          <div className="grid grid-cols-1 md:grid-cols-4 lg:grid-cols-5 gap-12 mb-20">
+            <div className="md:col-span-2 space-y-6">
               <div className="flex items-center gap-2">
-                <div className="bg-blue-600 p-2 rounded-lg">
-                  <BookOpen className="text-white w-6 h-6" />
+                <div className="bg-primary-600 p-1.5 rounded">
+                  <BookOpen className="text-white w-5 h-5" />
                 </div>
-                <span className="text-2xl font-bold tracking-tight text-slate-900">Learnify</span>
+                <span className="text-xl font-bold tracking-tight text-slate-900">Learnify</span>
               </div>
-              <p className="text-slate-500 max-w-xs leading-relaxed">
-                Empowering learners worldwide with accessible, high-quality education from industry experts.
+              <p className="text-slate-500 max-w-xs text-sm leading-relaxed font-medium">
+                The leading platform for professional skill development, mentor-led courses, and verified industry accreditation.
               </p>
-              <div className="flex gap-4">
-                {['fb', 'tw', 'ln', 'ig'].map(s => (
-                  <div key={s} className="w-10 h-10 rounded-full bg-white border border-slate-200 flex items-center justify-center text-slate-400 hover:text-blue-600 hover:border-blue-600 cursor-pointer transition-all">
-                    <Globe className="w-5 h-5" />
-                  </div>
-                ))}
-              </div>
             </div>
             
-            <div>
-              <h6 className="font-bold text-slate-900 mb-6">Platform</h6>
-              <ul className="space-y-4 text-slate-500 font-medium">
-                <li><a href="#" className="hover:text-blue-600 transition-colors">Courses</a></li>
-                <li><a href="#" className="hover:text-blue-600 transition-colors">Mentors</a></li>
-                <li><a href="#" className="hover:text-blue-600 transition-colors">Live Classes</a></li>
-                <li><a href="#" className="hover:text-blue-600 transition-colors">Pricing</a></li>
-              </ul>
-            </div>
-
-            <div>
-              <h6 className="font-bold text-slate-900 mb-6">Company</h6>
-              <ul className="space-y-4 text-slate-500 font-medium">
-                <li><a href="#" className="hover:text-blue-600 transition-colors">About Us</a></li>
-                <li><a href="#" className="hover:text-blue-600 transition-colors">Careers</a></li>
-                <li><a href="#" className="hover:text-blue-600 transition-colors">Blog</a></li>
-                <li><a href="#" className="hover:text-blue-600 transition-colors">Contact</a></li>
-              </ul>
-            </div>
-
-            <div>
-              <h6 className="font-bold text-slate-900 mb-6">Support</h6>
-              <ul className="space-y-4 text-slate-500 font-medium">
-                <li><a href="#" className="hover:text-blue-600 transition-colors">Help Center</a></li>
-                <li><a href="#" className="hover:text-blue-600 transition-colors">Terms of Service</a></li>
-                <li><a href="#" className="hover:text-blue-600 transition-colors">Privacy Policy</a></li>
-                <li><a href="#" className="hover:text-blue-600 transition-colors">Sitemap</a></li>
-              </ul>
-            </div>
+            {['Catalog', 'Company', 'Legal'].map((title, idx) => (
+              <div key={idx}>
+                <h6 className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-6">{title}</h6>
+                <ul className="space-y-4 text-xs font-bold text-slate-600">
+                  <li><a href="#courses" className="hover:text-primary-600 transition-colors uppercase">Browse Courses</a></li>
+                  <li><a href="#about" className="hover:text-primary-600 transition-colors uppercase">About Platform</a></li>
+                  <li><a href="/instructor/login" className="hover:text-primary-600 transition-colors uppercase">Instructor Portal</a></li>
+                </ul>
+              </div>
+            ))}
           </div>
           
-          <div className="pt-12 border-t border-slate-200 flex flex-col md:flex-row justify-between items-center gap-6">
-            <p className="text-slate-500 text-sm">© 2026 Learnify Education. All rights reserved.</p>
-            <div className="flex gap-8 text-sm font-medium text-slate-500">
-              <a href="#" className="hover:text-blue-600">Privacy Policy</a>
-              <a href="#" className="hover:text-blue-600">Terms of Service</a>
-              <a href="#" className="hover:text-blue-600">Cookie Policy</a>
+          <div className="pt-12 border-t border-slate-50 flex flex-col md:flex-row justify-between items-center gap-6">
+            <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest font-medium">© 2026 Learnify Ecosystem. Built for Professionals.</p>
+            <div className="flex gap-8 text-[10px] font-bold text-slate-400 uppercase tracking-widest">
+              <a href="#" className="hover:text-primary-600 transition-colors">Privacy Policy</a>
+              <a href="#" className="hover:text-primary-600 transition-colors">Terms of Service</a>
             </div>
           </div>
         </div>

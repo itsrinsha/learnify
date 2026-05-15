@@ -3,10 +3,12 @@ import { Link, useNavigate } from "react-router-dom";
 import { useFormik } from "formik";
 import * as Yup from "yup";
 import { Eye, EyeOff, Mail, Lock, ArrowRight, ShieldCheck } from "lucide-react";
-import authIllustration from "../../../assets/auth_illustration.png";
+
 import { useDispatch } from "react-redux";
 import { loginUser } from "../../../features/auth/authThunk";
-import { logout } from "../../../features/auth/authSlice";
+import { logout, setCredentials } from "../../../features/auth/authSlice";
+import { GoogleLogin } from "@react-oauth/google";
+import axiosInstance from "../../../features/axiosInstance";
 
 function AdminLogin() {
   const navigate = useNavigate();
@@ -89,9 +91,9 @@ function AdminLogin() {
             Access powerful tools to monitor performance, manage users, and ensure the quality of educational content across the platform.
           </p>
           <img
-            src={authIllustration}
+            src="https://images.unsplash.com/photo-1460925895917-afdab827c52f?q=80&w=2015&auto=format&fit=crop"
             alt="Admin Illustration"
-            className="w-full h-auto drop-shadow-2xl rounded-2xl transform hover:scale-[1.02] transition-transform duration-500 border border-slate-100"
+            className="w-full h-auto shadow-2xl rounded-3xl object-cover min-h-[400px] border border-slate-200 brightness-[0.9] hover:brightness-100 transition-all duration-700"
           />
         </div>
         {/* Abstract shapes */}
@@ -218,6 +220,46 @@ function AdminLogin() {
               {!isLoading && <ArrowRight size={18} className="group-hover:translate-x-1 transition-transform" />}
             </button>
           </form>
+
+          <div className="relative my-8">
+            <div className="absolute inset-0 flex items-center">
+              <div className="w-full border-t border-slate-200"></div>
+            </div>
+            <div className="relative flex justify-center text-sm">
+              <span className="px-4 bg-white text-slate-500 uppercase tracking-widest text-[10px] font-bold">Admin Verification</span>
+            </div>
+          </div>
+
+          <div className="flex justify-center">
+            <GoogleLogin
+              theme="outline"
+              size="large"
+              shape="pill"
+              width="350"
+              onSuccess={async (response) => {
+                const token = response.credential;
+                try {
+                  const res = await axiosInstance.post("/auth/google", {
+                    token,
+                    role: "admin",
+                  });
+                  const user = res.data;
+                  if (user.role !== "admin") {
+                    setApiError("Access denied. Not an administrator account.");
+                    return;
+                  }
+                  dispatch(setCredentials(user));
+                  navigate("/admin/dashboard");
+                } catch (error) {
+                  console.log("Google login error", error);
+                  setApiError("Google authentication failed.");
+                }
+              }}
+              onError={() => {
+                setApiError("Google Login Failed");
+              }}
+            />
+          </div>
 
           <div className="text-center mt-12">
             <p className="text-xs text-slate-400 uppercase tracking-widest font-bold mb-4">

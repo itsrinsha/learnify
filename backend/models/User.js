@@ -68,6 +68,21 @@ const userSchema = new mongoose.Schema(
         ref: "Course",
       },
     ],
+    isBlocked: {
+      type: Boolean,
+      default: false,
+    },
+    blockedReason: {
+      type: String,
+      default: "",
+    },
+    blockedAt: {
+      type: Date,
+    },
+    blockedBy: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "User",
+    },
     },
     {timestamps:true}
 );

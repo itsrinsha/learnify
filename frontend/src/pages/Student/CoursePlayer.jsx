@@ -31,6 +31,7 @@ const CoursePlayer = () => {
     dispatch(fetchCourseThunk(id));
   }, [dispatch, id]);
 
+  const modules = selectedCourse?.modules || [];
   const lessons = selectedCourse?.lessons || [];
   const currentLesson = lessons.find((lesson) => lesson._id === currentLessonId) || lessons[0] || null;
 
@@ -42,22 +43,6 @@ const CoursePlayer = () => {
       </div>
     );
   }
-
-  // Group lessons into modules (for now, we'll treat all lessons as one module if not structured)
-  const modules = [
-    {
-      id: 1,
-      title: 'Course Content',
-      duration: selectedCourse?.duration || 'Unknown',
-      lessons: lessons.map((l, idx) => ({
-        id: l._id || idx,
-        title: l.title,
-        duration: l.duration || '00:00',
-        status: currentLesson?._id === l._id ? 'current' : 'pending',
-        videoUrl: l.videoUrl
-      })) || []
-    }
-  ];
 
   return (
     <div className="h-[calc(100vh-140px)] flex flex-col lg:flex-row bg-white rounded-[2.5rem] border border-slate-200 shadow-sm overflow-hidden">
@@ -91,16 +76,38 @@ const CoursePlayer = () => {
               </div>
             </div>
           </div>
-          <img 
-            src={selectedCourse?.thumbnail || "https://images.unsplash.com/photo-1633356122544-f134324a6cee?auto=format&fit=crop&w=1200&q=80"} 
-            className="w-full h-full object-cover opacity-40" 
-            alt="Video Placeholder" 
-          />
-          <div className="absolute inset-0 flex items-center justify-center">
-            <div className="w-24 h-24 bg-blue-600 rounded-full flex items-center justify-center text-white shadow-2xl animate-pulse">
-              <Play size={40} fill="currentColor" className="ml-1" />
-            </div>
-          </div>
+          {currentLesson?.videoUrl ? (
+            <video
+              key={currentLesson._id}
+              src={currentLesson.videoUrl}
+              controls
+              autoPlay
+              className="w-full h-full object-contain"
+              onEnded={() => {
+                const idx = selectedCourse?.lessons?.findIndex(l => l._id === currentLesson?._id);
+                if (idx < selectedCourse.lessons.length - 1) setCurrentLessonId(selectedCourse.lessons[idx + 1]._id);
+              }}
+            >
+              Your browser does not support the video tag.
+            </video>
+          ) : (
+            <>
+              <img 
+                src={selectedCourse?.thumbnail || "https://images.unsplash.com/photo-1633356122544-f134324a6cee?auto=format&fit=crop&w=1200&q=80"} 
+                className="w-full h-full object-cover opacity-40" 
+                alt="Video Placeholder" 
+              />
+              <div className="absolute inset-0 flex items-center justify-center">
+                <div className="w-24 h-24 bg-blue-600 rounded-full flex items-center justify-center text-white shadow-2xl animate-pulse cursor-pointer">
+                  <Play size={40} fill="currentColor" className="ml-1" />
+                </div>
+              </div>
+              <div className="absolute bottom-10 left-10 text-white z-20">
+                <p className="text-sm font-bold opacity-80 uppercase tracking-widest">No video available</p>
+                <h3 className="text-2xl font-black">{currentLesson?.title}</h3>
+              </div>
+            </>
+          )}
         </div>
 
         {/* Video Bottom Info */}
