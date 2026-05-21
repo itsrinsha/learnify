@@ -50,10 +50,76 @@ export const checkExamEligibility = async (examId) => {
   }
 };
 
+export const getInstructorExams = async () => {
+  try {
+    const response = await axiosInstance.get('/exams/instructor');
+    return response.data;
+  } catch (error) {
+    console.error('Error fetching instructor exams:', error);
+    throw error;
+  }
+};
+
+export const createExam = async (examData) => {
+  try {
+    const response = await axiosInstance.post('/exams', examData);
+    return response.data;
+  } catch (error) {
+    console.error('Error creating exam:', error);
+    throw error;
+  }
+};
+
+export const updateExam = async (examId, examData) => {
+  try {
+    const response = await axiosInstance.put(`/exams/${examId}`, examData);
+    return response.data;
+  } catch (error) {
+    console.error('Error updating exam:', error);
+    throw error;
+  }
+};
+
+export const deleteExam = async (examId) => {
+  try {
+    const response = await axiosInstance.delete(`/exams/${examId}`);
+    return response.data;
+  } catch (error) {
+    console.error('Error deleting exam:', error);
+    throw error;
+  }
+};
+
+export const getInstructorAttemptRequests = async () => {
+  try {
+    const response = await axiosInstance.get('/exams/requests');
+    return response.data;
+  } catch (error) {
+    console.error('Error fetching attempt requests:', error);
+    throw error;
+  }
+};
+
+export const handleAttemptRequest = async (requestId, status, fineAmount) => {
+  try {
+    const response = await axiosInstance.put(`/exams/requests/${requestId}`, { status, fineAmount });
+    return response.data;
+  } catch (error) {
+    console.error('Error handling attempt request:', error);
+    throw error;
+  }
+};
+
 export default {
   getStudentExams,
   getExamHistory,
   submitExamAttempt,
   requestExtraAttempt,
-  checkExamEligibility
+  checkExamEligibility,
+  getInstructorExams,
+  createExam,
+  updateExam,
+  deleteExam,
+  getInstructorAttemptRequests,
+  handleAttemptRequest
 };

@@ -20,14 +20,10 @@ const InstructorPendingApproval = () => {
     dispatch(fetchProfile());
   };
 
-  React.useEffect(() => {
-    if (user?.approvalStatus === 'approved') {
-      const timer = setTimeout(() => {
-        navigate('/instructor/dashboard');
-      }, 3000); // Give them 3 seconds to see the "Approved" message
-      return () => clearTimeout(timer);
-    }
-  }, [user, navigate]);
+  const handleLogout = () => {
+    dispatch(logout());
+    navigate('/instructor/login');
+  };
 
   if (user?.approvalStatus === 'approved') {
     return (
@@ -51,54 +47,30 @@ const InstructorPendingApproval = () => {
 
   if (user?.approvalStatus === 'rejected') {
     return (
-      <div className="min-h-screen bg-slate-50 flex items-center justify-center p-6 font-sans">
-        <div className="bg-white rounded-[3rem] p-10 md:p-16 max-w-2xl w-full text-center shadow-2xl border border-slate-100 relative overflow-hidden">
-          {/* Rejection header decoration */}
-          <div className="absolute top-0 left-0 w-full h-2 bg-red-500"></div>
-          
-          <div className="w-24 h-24 bg-red-100 text-red-600 rounded-[2rem] flex items-center justify-center mx-auto mb-8 rotate-3">
-            <AlertCircle size={48} />
-          </div>
-          
-          <h1 className="text-3xl md:text-4xl font-black text-slate-900 mb-4 tracking-tight">Application Rejected</h1>
-          <p className="text-slate-500 mb-8 text-lg">Your instructor verification was rejected by admin.</p>
-          
-          {/* Rejection Details Card */}
-          <div className="bg-slate-50 border border-slate-100 rounded-[2rem] p-8 mb-10 text-left max-w-lg mx-auto">
-            <h3 className="text-slate-900 font-bold mb-4 flex items-center gap-2">
-              <AlertCircle size={18} className="text-red-500" />
-              Possible Rejection Reasons:
-            </h3>
-            <ul className="space-y-3">
-              {[
-                "Invalid or blurry identity documents",
-                "Incomplete professional information",
-                "Verification details mismatch",
-                "Insufficient expertise description"
-              ].map((reason, i) => (
-                <li key={i} className="flex items-start gap-3 text-slate-600 text-sm">
-                  <div className="w-1.5 h-1.5 bg-red-400 rounded-full mt-1.5 shrink-0" />
-                  {reason}
-                </li>
-              ))}
-            </ul>
-          </div>
-
-          <div className="flex flex-col gap-4">
-            <button 
-              onClick={() => navigate('/instructor/verify')}
-              className="w-full py-5 bg-slate-900 text-white rounded-2xl font-bold hover:bg-black transition-all shadow-xl shadow-slate-200 active:scale-[0.98] flex items-center justify-center gap-2"
-            >
-              <RefreshCcw size={20} />
-              Resubmit Verification
-            </button>
-            <p className="text-slate-400 text-xs">
-              Please ensure all details are accurate before resubmitting.
-            </p>
+        <div className="min-h-screen bg-slate-50 flex items-center justify-center p-6">
+          <div className="bg-white rounded-[3rem] p-12 max-w-2xl w-full text-center shadow-xl border border-slate-100">
+            <div className="w-24 h-24 bg-red-100 text-red-600 rounded-full flex items-center justify-center mx-auto mb-8">
+              <AlertCircle size={48} />
+            </div>
+            <h1 className="text-3xl font-black text-slate-900 mb-4">Application Rejected</h1>
+            <p className="text-slate-500 mb-10 text-lg">Unfortunately, your application was not approved at this time. You can review your details and resubmit for verification.</p>
+            <div className="flex flex-col sm:flex-row gap-4 justify-center">
+                <button 
+                onClick={() => navigate('/instructor/verify')}
+                className="px-8 py-4 bg-blue-600 text-white rounded-2xl font-bold hover:bg-blue-700 transition-all shadow-xl shadow-blue-100"
+                >
+                Update & Resubmit
+                </button>
+                <button 
+                onClick={handleLogout}
+                className="px-8 py-4 bg-white border border-slate-200 text-slate-600 rounded-2xl font-bold hover:bg-slate-50 transition-all"
+                >
+                Logout
+                </button>
+            </div>
           </div>
         </div>
-      </div>
-    );
+      );
   }
 
   return (
@@ -152,10 +124,17 @@ const InstructorPendingApproval = () => {
                 <button 
                   onClick={handleRefresh}
                   disabled={loading}
-                  className="w-full max-w-[280px] py-4 bg-slate-900 text-white rounded-2xl font-bold flex items-center justify-center gap-2 hover:bg-slate-800 transition-all active:scale-95 disabled:opacity-50"
+                  className="flex-1 max-w-[200px] py-4 bg-slate-900 text-white rounded-2xl font-bold flex items-center justify-center gap-2 hover:bg-slate-800 transition-all active:scale-95 disabled:opacity-50"
                 >
                   <RefreshCcw size={18} className={loading ? 'animate-spin' : ''} />
-                  Check Application Status
+                  Check Status
+                </button>
+                <button 
+                  onClick={handleLogout}
+                  className="flex-1 max-w-[200px] py-4 bg-white border border-slate-200 text-slate-600 rounded-2xl font-bold flex items-center justify-center gap-2 hover:bg-slate-50 transition-all active:scale-95"
+                >
+                  <LogOut size={18} />
+                  Logout
                 </button>
               </div>
             </div>

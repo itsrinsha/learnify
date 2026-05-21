@@ -54,131 +54,109 @@ const StudentDashboard = () => {
     {
       label: "Courses Completed",
       value: dashboardData?.completedCourses || 0,
-      icon: <CheckCircle2 className="text-green-600" />,
-      bg: "bg-green-50",
+      icon: <CheckCircle2 className="text-success-500" />,
+      bg: "bg-slate-50",
     },
     {
-      label: "Courses Enrolled",
+      label: "Enrolled Courses",
       value: dashboardData?.totalCourses || 0,
-      icon: <Clock className="text-yellow-600" />,
-      bg: "bg-yellow-50",
+      icon: <Clock className="text-primary-600" />,
+      bg: "bg-slate-50",
     },
     {
-      label: "Courses Pending",
+      label: "Active Lessons",
       value: dashboardData?.pendingCourses || 0,
-      icon: <PlayCircle className="text-blue-600" />,
-      bg: "bg-blue-50",
+      icon: <PlayCircle className="text-primary-600" />,
+      bg: "bg-slate-50",
     },
   ];
 
   return (
     <div className="space-y-8">
-
       {/* Welcome Header */}
       <div>
         <h2 className="text-2xl font-bold text-slate-900">
-          Welcome back, {dashboardData?.studentName || "Student"} 👋
+          Welcome back, {dashboardData?.studentName || "Student"}!
         </h2>
-
-        <p className="text-slate-500">
-          Keep learning and complete your courses.
+        <p className="text-slate-500 mt-1">
+          Track your progress and continue your learning journey.
         </p>
       </div>
 
       {/* Summary Cards */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-
         {summaryCards.map((card, idx) => (
-
           <div
             key={idx}
-            className="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm hover:shadow-md transition-all flex items-center gap-5"
+            className="card p-6 flex items-center gap-5"
           >
-
-            <div
-              className={`w-14 h-14 ${card.bg} rounded-2xl flex items-center justify-center shrink-0`}
-            >
+            <div className={`w-12 h-12 ${card.bg} rounded flex items-center justify-center shrink-0 border border-slate-100`}>
               {card.icon}
             </div>
-
             <div>
-              <p className="text-sm font-medium text-slate-500">
+              <p className="text-xs font-semibold text-slate-500 uppercase tracking-wider">
                 {card.label}
               </p>
-              <p className="text-3xl font-black text-slate-900 mt-0.5">
+              <p className="text-2xl font-bold text-slate-900 mt-0.5">
                 {card.value}
               </p>
             </div>
-
           </div>
         ))}
-
       </div>
 
       <div className="grid lg:grid-cols-3 gap-8">
-
         {/* Continue Learning */}
         <div className="lg:col-span-2 space-y-6">
-
-          <div className="flex items-center justify-between">
-
-            <h3 className="text-xl font-bold text-slate-900">
-              Your Learning Journey
+          <div className="flex items-center justify-between border-b border-slate-200 pb-4">
+            <h3 className="text-lg font-bold text-slate-900">
+              Continue Learning
             </h3>
-
-            <button onClick={() => navigate('/student/courses')} className="text-blue-600 text-sm font-bold flex items-center gap-1 hover:underline">
-              View All Enrolled <ChevronRight size={16} />
+            <button onClick={() => navigate('/student/courses')} className="text-primary-600 text-sm font-semibold flex items-center gap-1 hover:text-primary-700 transition-colors">
+              View All <ChevronRight size={16} />
             </button>
-
           </div>
 
           {/* Courses */}
           <div className="grid sm:grid-cols-2 gap-6">
-
             {dashboardData?.enrolledCourses?.length > 0 ? (
               dashboardData.enrolledCourses.map((item, index) => {
                 const course = item.course || item;
-
                 return (
                   <div
                     key={index}
-                    className="bg-white rounded-[2rem] overflow-hidden border border-slate-200 shadow-sm hover:border-blue-300 transition-all group"
+                    className="card group flex flex-col"
                   >
-                    <div className="relative aspect-video">
+                    <div className="relative aspect-video overflow-hidden">
                       <img
                         src={course.thumbnail || "https://images.unsplash.com/photo-1498050108023-c5249f4df085?auto=format&fit=crop&w=600&q=80"}
                         alt={course.title}
-                        className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                        className="w-full h-full object-cover"
                       />
-                      <div className="absolute inset-0 bg-slate-900/40 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-all">
-                        <div className="w-12 h-12 bg-white/20 backdrop-blur-md rounded-full flex items-center justify-center text-white">
-                          <PlayCircle size={32} fill="currentColor" />
-                        </div>
-                      </div>
                     </div>
 
-                    <div className="p-6 space-y-5">
+                    <div className="p-5 flex-1 flex flex-col space-y-4">
                       <div>
-                        <h4 className="font-bold text-slate-900 group-hover:text-blue-600 transition-colors line-clamp-1">
+                        <h4 className="font-bold text-slate-900 line-clamp-1 group-hover:text-primary-600 transition-colors">
                           {course.title}
                         </h4>
-                        <p className="text-xs text-slate-500 font-medium mt-1">
-                          Instructor: {course.instructor?.name || "Expert"}
+                        <p className="text-xs text-slate-500 mt-1">
+                          By {course.instructor?.name || "Expert"}
                         </p>
                       </div>
 
-                      <div className="space-y-3">
-                        <div className="flex justify-between text-xs font-bold">
-                          <span className="text-blue-600">
-                            {item.progress || 0}% Completed
+                      <div className="mt-auto space-y-2">
+                        <div className="flex justify-between text-[11px] font-bold">
+                          <span className="text-primary-600">
+                            {item.progress || 0}% Complete
                           </span>
-                          <span className="text-slate-400">
+                          <span className="text-slate-400 uppercase tracking-tighter">
                             {course.lessonsCount || course.lessons?.length || 0} Lessons
                           </span>
                         </div>
-                        <div className="h-2 bg-slate-100 rounded-full overflow-hidden">
+                        <div className="h-1.5 bg-slate-100 rounded-full overflow-hidden">
                           <div
-                            className="h-full bg-blue-600 rounded-full transition-all duration-500"
+                            className="h-full bg-primary-600 transition-all duration-500"
                             style={{ width: `${item.progress || 0}%` }}
                           ></div>
                         </div>
@@ -186,89 +164,78 @@ const StudentDashboard = () => {
 
                       <button 
                         onClick={() => navigate(`/student/player/${course._id}`)}
-                        className="w-full py-3 bg-slate-900 text-white rounded-xl text-sm font-bold hover:bg-blue-600 transition-all active:scale-95 shadow-lg shadow-slate-100"
+                        className="btn-primary w-full py-2.5 text-sm"
                       >
-                        Continue Learning
+                        Resume Course
                       </button>
                     </div>
                   </div>
                 );
               })
             ) : (
-              <div className="col-span-full py-12 text-center bg-slate-50 rounded-3xl border border-dashed border-slate-300">
-                <p className="text-slate-500 font-medium italic">You haven't enrolled in any courses yet.</p>
+              <div className="col-span-full py-16 text-center bg-white border border-dashed border-slate-300 rounded-lg">
+                <p className="text-slate-500 font-medium">You haven't enrolled in any courses yet.</p>
                 <button 
                   onClick={() => navigate('/student/buy-courses')}
-                  className="mt-4 text-blue-600 font-bold hover:underline"
+                  className="mt-4 btn-primary"
                 >
                   Explore Courses
                 </button>
               </div>
             )}
-
           </div>
-
         </div>
 
-        {/* Sidebar */}
-        <div className="space-y-8">
-
-          {/* Quick Stats / Info */}
-          <div className="bg-blue-600 rounded-[2rem] p-8 text-white relative overflow-hidden shadow-2xl shadow-blue-200">
-            <div className="absolute top-0 right-0 w-32 h-32 bg-white/10 rounded-full -mr-16 -mt-16 blur-2xl"></div>
-            <div className="relative z-10 space-y-6">
-              <div className="flex items-center gap-3">
-                <div className="w-10 h-10 bg-white/20 backdrop-blur-md rounded-xl flex items-center justify-center">
-                  <Award size={20} />
-                </div>
-                <span className="text-xs font-black uppercase tracking-[0.2em]">Learning Goal</span>
+        {/* Sidebar Info */}
+        <div className="space-y-6">
+          <div className="bg-primary-900 rounded-lg p-6 text-white space-y-6 shadow-sm">
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 bg-primary-800 rounded flex items-center justify-center">
+                <Award size={20} className="text-primary-100" />
               </div>
-              <div>
-                <h4 className="text-xl font-bold leading-tight">
-                  You're doing great! Keep going to earn your first certificate.
-                </h4>
-                <p className="text-blue-100 text-sm mt-3 opacity-80 leading-relaxed">
-                  Completing courses consistently improves your skill rating and visibility to recruiters.
-                </p>
-              </div>
-              <button 
-                onClick={() => navigate('/student/courses')}
-                className="w-full py-3 bg-white text-blue-600 rounded-xl font-bold text-sm hover:bg-blue-50 transition-all shadow-xl shadow-blue-900/20"
-              >
-                My Certifications
-              </button>
+              <span className="text-xs font-bold uppercase tracking-widest">Achieve Your Goals</span>
             </div>
+            <div>
+              <h4 className="text-lg font-bold leading-tight text-white">
+                Complete your courses to earn industry-recognized certificates.
+              </h4>
+              <p className="text-primary-200 text-xs mt-3 leading-relaxed">
+                Adding certificates to your profile increases your credibility and helps you stand out to employers.
+              </p>
+            </div>
+            <button 
+              onClick={() => navigate('/student/certificates')}
+              className="w-full py-2.5 bg-white text-primary-900 rounded font-bold text-sm hover:bg-primary-50 transition-colors shadow-sm"
+            >
+              View My Certificates
+            </button>
           </div>
 
-          {/* Tips for Students */}
-          <div className="bg-white p-8 rounded-[2rem] border border-slate-200 shadow-sm space-y-6">
+          <div className="card p-6 space-y-6">
             <h3 className="font-bold text-slate-900 flex items-center gap-2">
-              <PlayCircle size={20} className="text-blue-600" />
-              Pro Tips
+              <PlayCircle size={18} className="text-primary-600" />
+              Learning Tips
             </h3>
             <div className="space-y-5">
               {[
-                { title: "Schedule Study Time", desc: "Set aside 30 mins daily." },
-                { title: "Take Notes", desc: "Helps in long-term retention." },
-                { title: "Practice Coding", desc: "Apply what you learn immediately." }
+                { title: "Consistent Practice", desc: "Spend at least 30 minutes every day to build a habit." },
+                { title: "Active Note-taking", desc: "Summarize key concepts in your own words." },
+                { title: "Hands-on Projects", desc: "Build real projects to apply what you've learned." }
               ].map((tip, i) => (
                 <div key={i} className="flex gap-4">
-                  <div className="w-8 h-8 rounded-lg bg-slate-50 flex items-center justify-center text-blue-600 font-bold text-xs shrink-0">
+                  <div className="w-8 h-8 rounded bg-slate-50 flex items-center justify-center text-primary-600 font-bold text-xs shrink-0 border border-slate-100">
                     {i + 1}
                   </div>
                   <div>
                     <h5 className="text-xs font-bold text-slate-900">{tip.title}</h5>
-                    <p className="text-[10px] text-slate-500 mt-0.5 leading-relaxed">{tip.desc}</p>
+                    <p className="text-[11px] text-slate-500 mt-0.5 leading-relaxed">{tip.desc}</p>
                   </div>
                 </div>
               ))}
             </div>
           </div>
-
         </div>
-
       </div>
-
     </div>
   );
 };

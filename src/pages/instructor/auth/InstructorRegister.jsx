@@ -8,8 +8,7 @@ import { useDispatch, useSelector } from "react-redux";
 import { User, Mail, Lock, Eye, EyeOff, ShieldCheck, ArrowRight, CheckCircle2, Briefcase } from "lucide-react";
 import { FcGoogle } from "react-icons/fc";
 import { FaGithub } from "react-icons/fa";
-import authIllustration from "../../../assets/auth_illustration.png";
-
+import { toast } from 'react-hot-toast';
 function InstructorRegister() {
   const navigate = useNavigate();
   const dispatch = useDispatch();
@@ -67,17 +66,21 @@ function InstructorRegister() {
 
     onSubmit: async (values) => {
       try {
-        await dispatch(registerUser({
+        const result = await dispatch(registerUser({
           name: values.name,
           email: values.email,
           password: values.password,
           role: "instructor",
-        })).unwrap();
+        }));
 
-        alert("Instructor Registration successful! Please complete your verification.");
-        navigate("/instructor/verify");
+        if (result.type === "auth/register/fulfilled") {
+          toast.success("Instructor Registration successful! Please complete your verification.");
+          navigate("/instructor/login");
+        } else {
+          toast.error(result.payload || "Registration failed. Please try again.");
+        }
       } catch (err) {
-        setError(err || "Registration failed. Please try again.");
+        setError(err.response?.data?.message || "Registration failed. Please try again.");
       }
     },
   });
@@ -167,9 +170,9 @@ function InstructorRegister() {
             Create an instructor account and start sharing your knowledge with students from around the globe.
           </p>
           <img
-            src={authIllustration}
+            src="https://images.unsplash.com/photo-1524178232363-1fb28f74b671?q=80&w=2070&auto=format&fit=crop"
             alt="Instructor Illustration"
-            className="w-full h-auto drop-shadow-2xl rounded-2xl transform hover:scale-[1.02] transition-transform duration-500"
+            className="w-full h-auto shadow-2xl rounded-3xl object-cover min-h-[400px]"
           />
         </div>
         {/* Abstract shapes */}

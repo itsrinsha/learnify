@@ -6,6 +6,7 @@ import { Eye, EyeOff, Mail, Lock, ArrowRight, Briefcase } from "lucide-react";
 import { useDispatch } from "react-redux";
 import { loginUser } from "../../../features/auth/authThunk";
 import { GoogleLogin } from "@react-oauth/google";
+import { toast } from 'react-hot-toast';
 import axiosInstance from "../../../features/axiosInstance";
 import { setCredentials } from "../../../features/auth/authSlice";
 
@@ -45,14 +46,18 @@ function InstructorLogin() {
         })).unwrap();
 
         if (user.role !== "instructor" && user.role !== "admin") {
-            setApiError("Access denied. You are not registered as an instructor.");
-            return;
+          const errorMsg = "Access denied. You are not registered as an instructor.";
+          toast.error(errorMsg);
+          setApiError(errorMsg);
+          return;
         }
 
-        alert("Welcome back, Instructor!");
+        toast.success("Welcome back, Instructor!");
         navigate("/instructor/dashboard");
       } catch (err) {
-        setApiError(err || "Something went wrong. Please try again.");
+        const errorMsg = typeof err === 'string' ? err : (err.message || "Invalid credentials");
+        toast.error(errorMsg);
+        setApiError(errorMsg);
       } finally {
         setIsLoading(false);
       }
@@ -76,9 +81,9 @@ function InstructorLogin() {
             Empower learners worldwide. Manage your courses, track student progress, and grow your teaching brand.
           </p>
           <img
-            src="/auth_illustration.png" // Ensure this path is correct or use the imported variable
-            alt="Instructor Illustration"
-            className="w-full h-auto drop-shadow-2xl rounded-2xl transform hover:scale-[1.02] transition-transform duration-500"
+            src="https://images.unsplash.com/photo-1516321318423-f06f85e504b3?q=80&w=2070&auto=format&fit=crop"
+            alt="Instructor Learning Environment"
+            className="w-full h-auto shadow-2xl rounded-3xl object-cover min-h-[400px] border border-slate-100 hover:scale-[1.01] transition-all duration-700"
           />
         </div>
         {/* Abstract shapes */}
@@ -200,6 +205,10 @@ function InstructorLogin() {
 
           <div className="flex justify-center">
             <GoogleLogin
+              theme="outline"
+              size="large"
+              shape="pill"
+              width="350"
               onSuccess={async (response) => {
                 const token = response.credential;
                 try {

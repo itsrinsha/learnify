@@ -83,15 +83,15 @@ const Exams = () => {
   return (
     <div className="space-y-10 pb-20">
       <div>
-        <h2 className="text-2xl font-bold text-slate-900">Reviews & Exams</h2>
-        <p className="text-slate-500">Track your exam schedules, attempt history, and results for your purchased courses.</p>
+        <h2 className="text-2xl font-bold text-slate-900">Assessment Center</h2>
+        <p className="text-slate-500 mt-1">Track your course exams, attempt history, and official results.</p>
       </div>
 
       <div className="grid gap-8">
         {exams.length === 0 ? (
-          <div className="bg-slate-50 border border-dashed border-slate-200 rounded-[2.5rem] p-20 text-center flex flex-col items-center gap-4">
-            <FileText size={64} className="text-slate-200" />
-            <p className="text-slate-500 font-medium text-lg">No reviews or exams scheduled for your courses yet.</p>
+          <div className="card border-dashed p-20 text-center flex flex-col items-center gap-4 bg-slate-50">
+            <FileText size={48} className="text-slate-200" />
+            <p className="text-slate-500 font-medium italic">No assessments scheduled for your courses yet.</p>
           </div>
         ) : (
           exams.map((exam) => {
@@ -99,41 +99,41 @@ const Exams = () => {
             const isPassed = exam.latestResult === 'pass';
             
             return (
-              <div key={exam._id} className={`bg-white rounded-3xl border ${isFailed ? 'border-red-100' : 'border-slate-200'} shadow-sm overflow-hidden`}>
+              <div key={exam._id} className={`card ${isFailed ? 'border-error-500 bg-error-50/10' : ''}`}>
                 {/* Header */}
-                <div className="p-8 border-b border-slate-100 flex flex-col lg:flex-row justify-between gap-6 bg-slate-50/30">
-                  <div className="flex gap-5">
-                    <div className={`w-14 h-14 rounded-2xl flex items-center justify-center shadow-lg ${
-                      isPassed ? 'bg-green-600 text-white shadow-green-100' : 
-                      isFailed ? 'bg-red-600 text-white shadow-red-100' : 
-                      'bg-blue-600 text-white shadow-blue-100'
+                <div className="p-6 border-b border-slate-100 flex flex-col lg:flex-row justify-between gap-6 bg-slate-50/50">
+                  <div className="flex gap-4">
+                    <div className={`w-12 h-12 rounded flex items-center justify-center ${
+                      isPassed ? 'bg-success-500 text-white' : 
+                      isFailed ? 'bg-error-500 text-white' : 
+                      'bg-primary-600 text-white'
                     }`}>
-                      <FileText size={28} />
+                      <FileText size={24} />
                     </div>
                     <div className="space-y-1">
-                      <h3 className="text-xl font-bold text-slate-900">{exam.course?.title}</h3>
-                      <div className="flex flex-wrap items-center gap-4 text-sm font-medium text-slate-500">
+                      <h3 className="text-lg font-bold text-slate-900">{exam.course?.title}</h3>
+                      <div className="flex flex-wrap items-center gap-4 text-xs font-semibold text-slate-500">
                         <span className="flex items-center gap-1.5"><User size={14} /> {exam.instructor?.name}</span>
-                        <span className="flex items-center gap-1.5 text-blue-600">
+                        <span className="flex items-center gap-1.5 text-primary-600">
                           <Calendar size={14} /> 
-                          {new Date(exam.scheduledDate).toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })}
+                          {new Date(exam.scheduledDate).toLocaleDateString()}
                         </span>
-                        <span className="flex items-center gap-1.5"><Clock size={14} /> {exam.duration} Minutes</span>
+                        <span className="flex items-center gap-1.5"><Clock size={14} /> {exam.duration}m</span>
                       </div>
                     </div>
                   </div>
                   
                   <div className="flex flex-wrap items-center gap-4">
-                    <div className="px-4 py-2 bg-white rounded-xl border border-slate-200 text-sm">
+                    <div className="px-3 py-1 bg-white rounded border border-slate-200 text-[11px] font-bold uppercase tracking-wider">
                       <span className="text-slate-500">Attempts: </span>
-                      <span className={`font-bold ${exam.attemptCount >= exam.maxAttempts ? 'text-red-600' : 'text-slate-900'}`}>
+                      <span className={exam.attemptCount >= exam.maxAttempts ? 'text-error-500' : 'text-slate-900'}>
                         {exam.attemptCount}/{exam.maxAttempts}
                       </span>
                     </div>
-                    <div className={`px-4 py-2 rounded-xl text-sm font-bold border capitalize ${
-                      isPassed ? 'bg-green-50 text-green-700 border-green-100' : 
-                      isFailed ? 'bg-red-50 text-red-700 border-red-100' : 
-                      'bg-yellow-50 text-yellow-700 border-yellow-100'
+                    <div className={`px-3 py-1 rounded text-[11px] font-bold border uppercase tracking-wider ${
+                      isPassed ? 'bg-success-50 text-success-500 border-success-500' : 
+                      isFailed ? 'bg-error-50 text-error-500 border-error-500' : 
+                      'bg-warning-50 text-warning-500 border-warning-500'
                     }`}>
                       {isPassed ? 'Passed' : isFailed ? 'Failed' : exam.status}
                     </div>
@@ -142,104 +142,94 @@ const Exams = () => {
 
                 <div className="grid lg:grid-cols-2 divide-y lg:divide-y-0 lg:divide-x divide-slate-100">
                   {/* Left Side: Info & Topics */}
-                  <div className="p-8 space-y-8">
+                  <div className="p-6 space-y-6">
                     <div className="space-y-4">
-                      <h4 className="font-bold text-slate-900 flex items-center gap-2">
-                        <AlertCircle size={18} className="text-blue-600" />
-                        Review Content & Topics
+                      <h4 className="text-xs font-bold text-slate-500 uppercase tracking-widest flex items-center gap-2">
+                        Exam Topics
                       </h4>
                       <div className="flex flex-wrap gap-2">
                         {exam.topics?.map((topic, i) => (
-                          <span key={i} className="px-3 py-1.5 bg-slate-100 text-slate-600 text-xs font-bold rounded-lg border border-slate-200">
+                          <span key={i} className="px-2.5 py-1 bg-slate-100 text-slate-600 text-[10px] font-bold rounded border border-slate-200 uppercase">
                             {topic}
                           </span>
                         ))}
                       </div>
                     </div>
 
-                    <div className="p-5 bg-blue-50 rounded-2xl border border-dashed border-blue-200">
-                      <div className="flex items-start gap-3">
-                        <LinkIcon size={18} className="text-blue-600 mt-1" />
-                        <div>
-                          <h5 className="text-sm font-bold text-blue-900 underline cursor-pointer">
-                            {exam.attachment ? 'View Review Guidelines & Material.pdf' : 'No material attached'}
-                          </h5>
-                          <p className="text-xs text-blue-700 mt-1">Please download and review before your attempt.</p>
-                        </div>
+                    <div className="p-4 bg-primary-50 rounded border border-primary-100 flex items-start gap-3">
+                      <LinkIcon size={16} className="text-primary-600 mt-0.5" />
+                      <div>
+                        <h5 className="text-xs font-bold text-primary-900 underline cursor-pointer">
+                          {exam.attachment ? 'Review Guidelines.pdf' : 'No material attached'}
+                        </h5>
+                        <p className="text-[10px] text-primary-700 mt-1">Please review the material before starting.</p>
                       </div>
                     </div>
 
                     {exam.attemptCount < exam.maxAttempts && !isPassed && (
                       <button 
                         onClick={() => {/* logic to start exam */}}
-                        className="w-full py-4 bg-slate-900 text-white rounded-2xl font-bold text-sm hover:bg-blue-600 transition-all flex items-center justify-center gap-2 shadow-xl shadow-slate-200"
+                        className="btn-primary w-full py-3 text-sm flex items-center justify-center gap-2"
                       >
-                        Start Next Attempt
-                        <ChevronRight size={18} />
+                        Start Assessment
+                        <ChevronRight size={16} />
                       </button>
                     )}
                     {isFailed && (
                       <div className="space-y-4">
-                        <div className="p-4 bg-red-50 text-red-700 rounded-2xl text-xs font-bold flex items-center gap-2 border border-red-100">
-                          <AlertTriangle size={16} /> All attempts used. You need instructor approval for another attempt.
+                        <div className="p-3 bg-error-50 text-error-500 rounded text-[11px] font-bold flex items-center gap-2 border border-error-500">
+                          <AlertTriangle size={14} /> All attempts used.
                         </div>
-                        <button className="w-full py-4 bg-white text-red-600 border-2 border-red-600 rounded-2xl font-bold text-sm hover:bg-red-50 transition-all flex items-center justify-center gap-2">
+                        <button className="w-full py-3 bg-white text-error-500 border border-error-500 rounded font-bold text-sm hover:bg-error-50 transition-colors flex items-center justify-center gap-2">
                           Request Extra Attempt
-                          <ArrowRight size={18} />
                         </button>
                       </div>
                     )}
                   </div>
 
                   {/* Right Side: History */}
-                  <div className="p-8 space-y-6">
+                  <div className="p-6 space-y-5">
                     <div className="flex items-center justify-between">
-                      <h4 className="font-bold text-slate-900 flex items-center gap-2">
-                        <History size={18} className="text-blue-600" />
-                        Attempt History
+                      <h4 className="text-xs font-bold text-slate-500 uppercase tracking-widest flex items-center gap-2">
+                        Recent Attempts
                       </h4>
                       <button 
                         onClick={() => fetchHistory(exam._id)}
-                        className="text-xs font-bold text-blue-600 hover:underline"
+                        className="text-xs font-bold text-primary-600 hover:text-primary-700"
                       >
-                        Refresh History
+                        Refresh
                       </button>
                     </div>
                     
-                    <div className="space-y-4">
+                    <div className="space-y-3">
                       {examHistory[exam._id]?.map((h) => (
-                        <div key={h._id} className="p-4 rounded-2xl border border-slate-100 hover:border-blue-100 hover:shadow-sm transition-all group">
-                          <div className="flex justify-between items-start mb-3">
+                        <div key={h._id} className="p-3 rounded border border-slate-100 hover:border-primary-100 bg-slate-50/30 transition-all group">
+                          <div className="flex justify-between items-center">
                             <div className="flex items-center gap-3">
-                              <div className={`w-8 h-8 rounded-lg flex items-center justify-center font-bold text-xs ${
-                                h.result === 'pass' ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'
+                              <div className={`w-8 h-8 rounded flex items-center justify-center font-bold text-[10px] ${
+                                h.result === 'pass' ? 'bg-success-50 text-success-500 border border-success-500' : 'bg-error-50 text-error-500 border border-error-500'
                               }`}>
                                 #{h.attemptNumber}
                               </div>
                               <div>
-                                <span className={`text-xs font-bold uppercase tracking-wider capitalize ${
-                                  h.result === 'pass' ? 'text-green-600' : 'text-red-600'
+                                <span className={`text-[10px] font-bold uppercase tracking-wider ${
+                                  h.result === 'pass' ? 'text-success-500' : 'text-error-500'
                                 }`}>
                                   {h.result} • {h.score}%
                                 </span>
-                                <p className="text-[10px] text-slate-500 font-medium">
+                                <p className="text-[10px] text-slate-400 font-semibold">
                                   {new Date(h.attemptedAt).toLocaleDateString()}
                                 </p>
                               </div>
                             </div>
-                            {h.result === 'pass' ? <CheckCircle2 size={16} className="text-green-500" /> : <XCircle size={16} className="text-red-400" />}
+                            {h.result === 'pass' ? <CheckCircle2 size={14} className="text-success-500" /> : <XCircle size={14} className="text-error-500" />}
                           </div>
-                          {h.feedback && (
-                            <p className="text-xs text-slate-600 leading-relaxed italic border-l-2 border-slate-200 pl-3">"{h.feedback}"</p>
-                          )}
                         </div>
                       ))}
                       {(!examHistory[exam._id] || examHistory[exam._id].length === 0) && (
-                        <div className="py-10 text-center space-y-3">
-                          <div className="w-12 h-12 bg-slate-50 rounded-full flex items-center justify-center mx-auto text-slate-300">
-                            <History size={24} />
-                          </div>
-                          <p className="text-xs text-slate-400 font-medium">No attempts recorded yet.</p>
+                        <div className="py-8 text-center space-y-2">
+                          <History size={32} className="mx-auto text-slate-100" />
+                          <p className="text-[10px] text-slate-400 font-bold uppercase tracking-widest">No history found</p>
                         </div>
                       )}
                     </div>

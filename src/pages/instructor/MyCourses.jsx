@@ -6,7 +6,6 @@ import {
   Filter, 
   MoreVertical, 
   Users, 
-  Star, 
   Video, 
   Edit3, 
   Trash2,
@@ -20,6 +19,8 @@ import {
 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { fetchInstructorDashboard } from '../../features/instructor/instructorThunk';
+import { deleteCourse } from '../../services/instructorCourseService';
+import { toast } from 'react-hot-toast';
 
 const MyCourses = () => {
   const navigate = useNavigate();
@@ -30,9 +31,29 @@ const MyCourses = () => {
     dispatch(fetchInstructorDashboard());
   }, [dispatch]);
 
-  const courses = dashboardData?.courses || [];
+  const [activeTab, setActiveTab] = React.useState('approved');
+  const coursesList = dashboardData?.courses || [];
 
-  if (loading && courses.length === 0) {
+  const approvedCourses = coursesList.filter(c => c.approvalStatus === 'approved');
+  const pendingCourses = coursesList.filter(c => c.approvalStatus === 'pending');
+  const rejectedCourses = coursesList.filter(c => c.approvalStatus === 'rejected');
+
+  const displayedCourses = activeTab === 'approved' ? approvedCourses : activeTab === 'pending' ? pendingCourses : rejectedCourses;
+
+  const handleDelete = async (courseId) => {
+    if (!window.confirm("Are you sure you want to delete this course? This action cannot be undone.")) return;
+    
+    const loadingToast = toast.loading("Deleting course...");
+    try {
+      await deleteCourse(courseId);
+      toast.success("Course deleted successfully", { id: loadingToast });
+      dispatch(fetchInstructorDashboard()); // Refresh list
+    } catch (error) {
+      toast.error("Failed to delete course", { id: loadingToast });
+    }
+  };
+
+  if (loading && coursesList.length === 0) {
     return (
       <div className="flex flex-col items-center justify-center min-h-[60vh] space-y-4">
         <Loader2 className="w-12 h-12 text-blue-600 animate-spin" />
@@ -44,124 +65,120 @@ const MyCourses = () => {
   return (
     <div className="space-y-10 pb-20">
       {/* Header */}
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
+      <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 border-b border-slate-200 pb-8">
         <div>
-          <h2 className="text-3xl font-black text-slate-900 tracking-tight">My Course Catalog</h2>
-          <p className="text-slate-500 mt-1 font-medium">Manage your courses, track approvals, and update your content.</p>
+          <h2 className="text-2xl font-bold text-slate-900">Course Management</h2>
+          <p className="text-slate-500 mt-1 font-medium">Create, edit, and track the performance of your educational content.</p>
         </div>
         <button 
           onClick={() => navigate('/instructor/add-course')}
-          className="px-8 py-4 bg-blue-600 text-white rounded-2xl font-bold text-sm shadow-xl shadow-blue-100 hover:bg-blue-700 transition-all flex items-center gap-3 active:scale-95"
+          className="btn-primary flex items-center gap-2"
         >
           <Plus size={20} />
           Create New Course
         </button>
       </div>
 
-      {/* Filters & Search Placeholder */}
-      <div className="flex flex-col lg:flex-row gap-4">
-        <div className="relative flex-1">
-          <span className="absolute inset-y-0 left-0 pl-4 flex items-center text-slate-400">
-            <Search size={18} />
-          </span>
-          <input
-            type="text"
-            placeholder="Search your courses..."
-            className="w-full pl-12 pr-4 py-4 bg-white border border-slate-200 rounded-2xl text-sm focus:ring-2 focus:ring-blue-500 shadow-sm transition-all"
-          />
-        </div>
-        <div className="flex gap-4">
-          <button className="px-6 py-4 bg-white border border-slate-200 rounded-2xl flex items-center gap-3 text-sm font-bold text-slate-600 hover:bg-slate-50 shadow-sm transition-all">
-            <Filter size={18} />
-            Filters
+      {/* Tabs */}
+      <div className="flex items-center gap-8 border-b border-slate-100">
+        {[
+          { id: 'approved', label: 'Approved', count: approvedCourses.length },
+          { id: 'pending', label: 'Pending Approval', count: pendingCourses.length },
+          { id: 'rejected', label: 'Rejected', count: rejectedCourses.length }
+        ].map(tab => (
+          <button
+            key={tab.id}
+            onClick={() => setActiveTab(tab.id)}
+            className={`pb-4 text-sm font-bold transition-all relative ${activeTab === tab.id ? 'text-primary-600' : 'text-slate-400 hover:text-slate-600'}`}
+          >
+            {tab.label}
+            <span className="ml-2 px-2 py-0.5 bg-slate-100 rounded-full text-[10px]">{tab.count}</span>
+            {activeTab === tab.id && <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-primary-600" />}
           </button>
-        </div>
+        ))}
       </div>
 
       {/* Course List */}
-      <div className="grid gap-8">
-        {courses.length > 0 ? courses.map((course) => (
-          <div key={course._id} className="bg-white rounded-[2.5rem] border border-slate-200 overflow-hidden shadow-sm hover:shadow-2xl transition-all group">
+      <div className="grid gap-6">
+        {displayedCourses.length > 0 ? displayedCourses.map((course) => (
+          <div key={course._id} className="card group overflow-hidden hover:border-primary-300 transition-all">
             <div className="flex flex-col lg:flex-row">
               {/* Thumbnail Area */}
-              <div className="lg:w-80 h-64 lg:h-auto relative overflow-hidden flex-shrink-0">
-                <img src={course.thumbnail} alt={course.title} className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700" />
-                <div className="absolute top-4 left-4 bg-white/90 backdrop-blur-md px-3 py-1.5 rounded-xl flex items-center gap-2 shadow-lg">
-                  <div className={`w-2 h-2 rounded-full ${
-                    course.status === 'published' ? 'bg-green-500' : 
-                    course.status === 'draft' ? 'bg-yellow-500' : 'bg-red-500'
-                  }`}></div>
-                  <span className="text-[10px] font-black uppercase tracking-widest text-slate-900">{course.status === 'published' ? 'Approved' : 'Draft'}</span>
+              <div className="lg:w-72 h-48 lg:h-auto relative overflow-hidden flex-shrink-0 bg-slate-100 border-r border-slate-100">
+                <img src={course.thumbnail} alt={course.title} className="w-full h-full object-cover" />
+                <div className="absolute top-3 left-3 flex flex-col gap-2">
+                  <div className="bg-white px-2 py-1 rounded shadow-sm flex items-center gap-2 border border-slate-200">
+                    <div className={`w-1.5 h-1.5 rounded-full ${
+                      course.status === 'published' ? 'bg-success-500' : 'bg-warning-500'
+                    }`}></div>
+                    <span className="text-[9px] font-bold uppercase tracking-widest text-slate-700">{course.status}</span>
+                  </div>
+                  {course.isHidden && (
+                    <div className="bg-slate-900 text-white px-2 py-1 rounded shadow-sm flex items-center gap-2">
+                      <span className="text-[9px] font-bold uppercase tracking-widest">Hidden</span>
+                    </div>
+                  )}
                 </div>
               </div>
 
               {/* Info Area */}
-              <div className="flex-1 p-8 lg:p-10 flex flex-col justify-between">
-                <div className="space-y-6">
+              <div className="flex-1 p-6 flex flex-col justify-between">
+                <div className="space-y-4">
                   <div className="flex flex-col md:flex-row md:items-start justify-between gap-4">
-                    <div className="space-y-2">
-                      <p className="text-blue-600 font-black text-[10px] uppercase tracking-widest">{course.category}</p>
-                      <h3 className="text-2xl font-black text-slate-900 leading-tight group-hover:text-blue-600 transition-colors cursor-pointer" onClick={() => navigate(`/instructor/edit-course/${course._id}`)}>{course.title}</h3>
+                    <div className="space-y-1">
+                      <p className="text-primary-600 font-bold text-[10px] uppercase tracking-widest">{course.category}</p>
+                      <h3 className="text-lg font-bold text-slate-900 leading-tight group-hover:text-primary-600 transition-colors cursor-pointer" onClick={() => navigate(`/instructor/edit-course/${course._id}`)}>{course.title}</h3>
+                      {course.approvalStatus === 'pending' && (
+                        <div className="flex items-center gap-1.5 text-amber-600 text-[10px] font-bold uppercase mt-1">
+                          <Clock size={12} /> Under Review
+                        </div>
+                      )}
+                      {course.approvalStatus === 'rejected' && (
+                        <div className="flex items-center gap-1.5 text-red-600 text-[10px] font-bold uppercase mt-1">
+                          <AlertCircle size={12} /> Needs Changes
+                        </div>
+                      )}
                     </div>
-                    <div className="flex items-center gap-4">
-                      <div className="text-right">
-                        <p className="text-2xl font-black text-slate-900">₹{course.price?.toLocaleString()}</p>
-                      </div>
-                      <button className="p-3 bg-slate-50 text-slate-400 rounded-xl hover:bg-slate-100 transition-all border border-slate-100">
-                        <MoreVertical size={20} />
-                      </button>
+                    <div className="text-right">
+                      <p className="text-lg font-bold text-slate-900 tracking-tight">₹{course.price?.toLocaleString() || 0}</p>
                     </div>
                   </div>
 
-                  <div className="flex flex-wrap items-center gap-8 py-6 border-y border-slate-50">
-                    <div className="flex items-center gap-2.5">
-                      <div className="w-10 h-10 bg-blue-50 text-blue-600 rounded-xl flex items-center justify-center">
-                        <Users size={18} />
-                      </div>
-                      <div>
-                        <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Students</p>
-                        <p className="text-sm font-black text-slate-900">{course.enrolledCount || 0}</p>
-                      </div>
+                  <div className="flex flex-wrap items-center gap-6 py-4 border-y border-slate-50">
+                    <div className="flex items-center gap-2">
+                      <Users size={14} className="text-slate-400" />
+                      <span className="text-xs font-bold text-slate-700">{course.enrolledStudentsCount || 0} Students</span>
                     </div>
-                    <div className="flex items-center gap-2.5">
-                      <div className="w-10 h-10 bg-yellow-50 text-yellow-600 rounded-xl flex items-center justify-center">
-                        <Star size={18} fill="currentColor" />
-                      </div>
-                      <div>
-                        <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Rating</p>
-                        <p className="text-sm font-black text-slate-900">{course.rating || '4.9'}</p>
-                      </div>
-                    </div>
-                    <div className="flex items-center gap-2.5">
-                      <div className="w-10 h-10 bg-purple-50 text-purple-600 rounded-xl flex items-center justify-center">
-                        <Video size={18} />
-                      </div>
-                      <div>
-                        <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Lessons</p>
-                        <p className="text-sm font-black text-slate-900">{course.lessonsCount || course.lessons?.length || 0}</p>
-                      </div>
+                    <div className="flex items-center gap-2">
+                      <BookOpen size={14} className="text-slate-400" />
+                      <span className="text-xs font-bold text-slate-700">
+                        {course.duration || '0h'} duration
+                      </span>
                     </div>
                   </div>
                 </div>
 
                 {/* Actions */}
-                <div className="flex flex-col sm:flex-row items-center gap-4 pt-10 mt-auto">
+                <div className="flex items-center gap-4 pt-6 mt-auto">
                   <button 
                     onClick={() => navigate(`/instructor/edit-course/${course._id}`)}
-                    className="w-full sm:w-auto px-6 py-3.5 bg-slate-900 text-white rounded-2xl font-bold text-sm hover:bg-blue-600 transition-all flex items-center justify-center gap-2 active:scale-95 shadow-xl shadow-slate-100"
+                    className="btn-primary py-2 px-6 text-xs flex items-center gap-2"
                   >
-                    <Edit3 size={18} />
-                    Edit Details
+                    <Edit3 size={14} />
+                    {course.approvalStatus === 'approved' ? 'Edit & Resubmit' : 'Edit Course'}
                   </button>
                   <button 
                     onClick={() => navigate(`/instructor/students/${course._id}`)}
-                    className="w-full sm:w-auto px-6 py-3.5 bg-blue-50 text-blue-600 rounded-2xl font-bold text-sm hover:bg-blue-600 hover:text-white transition-all flex items-center justify-center gap-2"
+                    className="px-6 py-2 bg-slate-50 text-slate-600 border border-slate-200 rounded font-bold text-xs hover:bg-slate-100 transition-colors flex items-center gap-2"
                   >
-                    <Users size={18} />
-                    View Students
+                    <Users size={14} />
+                    Roster
                   </button>
                   <div className="flex-1"></div>
-                  <button className="text-slate-400 font-bold text-sm hover:text-red-500 flex items-center gap-2 p-3">
+                  <button 
+                    onClick={() => handleDelete(course._id)}
+                    className="text-slate-400 hover:text-error-500 transition-colors p-2"
+                  >
                     <Trash2 size={18} />
                   </button>
                 </div>
@@ -169,37 +186,36 @@ const MyCourses = () => {
             </div>
           </div>
         )) : (
-          <div className="py-20 text-center bg-white rounded-[3rem] border border-dashed border-slate-300">
-            <div className="w-20 h-20 bg-slate-50 rounded-3xl flex items-center justify-center text-slate-300 mx-auto mb-6">
-              <BookOpen size={40} />
-            </div>
-            <h3 className="text-xl font-bold text-slate-900">No courses yet</h3>
-            <p className="text-slate-500 mt-2">Start sharing your knowledge by creating your first course.</p>
-            <button 
-              onClick={() => navigate('/instructor/add-course')}
-              className="mt-8 px-8 py-3 bg-blue-600 text-white rounded-xl font-bold shadow-lg shadow-blue-100"
-            >
-              Create Course
-            </button>
+          <div className="card border-dashed py-20 text-center bg-slate-50">
+            <BookOpen size={40} className="mx-auto text-slate-200 mb-4" />
+            <h3 className="text-lg font-bold text-slate-900 uppercase tracking-widest">No Courses Found</h3>
+            <p className="text-slate-500 mt-1 text-xs">You don't have any courses in the {activeTab} status.</p>
+            {activeTab === 'approved' && (
+              <button 
+                onClick={() => navigate('/instructor/add-course')}
+                className="mt-8 btn-primary px-10"
+              >
+                Get Started
+              </button>
+            )}
           </div>
         )}
       </div>
 
       {/* Stats Summary Footer */}
-      <div className="bg-slate-900 rounded-[2.5rem] p-10 text-white relative overflow-hidden">
-        <div className="absolute bottom-0 right-0 w-96 h-96 bg-blue-600 rounded-full -mr-32 -mb-32 opacity-30 blur-3xl"></div>
-        <div className="relative z-10 grid md:grid-cols-3 gap-12 text-center md:text-left">
-          <div className="space-y-2">
-            <p className="text-slate-400 font-bold text-xs uppercase tracking-widest">Total Courses</p>
-            <h4 className="text-4xl font-black">{dashboardData?.stats?.totalCourses || 0}</h4>
+      <div className="bg-primary-900 rounded-lg p-8 text-white relative overflow-hidden shadow-sm">
+        <div className="relative z-10 grid md:grid-cols-3 gap-8 text-center md:text-left">
+          <div className="space-y-1">
+            <p className="text-primary-400 font-bold text-[10px] uppercase tracking-widest">Lifetime Courses</p>
+            <h4 className="text-3xl font-bold">{dashboardData?.stats?.totalCourses || 0}</h4>
           </div>
-          <div className="space-y-2">
-            <p className="text-slate-400 font-bold text-xs uppercase tracking-widest">Total Students</p>
-            <h4 className="text-4xl font-black">{dashboardData?.stats?.totalStudents || 0}</h4>
+          <div className="space-y-1 border-y md:border-y-0 md:border-x border-primary-800 py-6 md:py-0 md:px-8">
+            <p className="text-primary-400 font-bold text-[10px] uppercase tracking-widest">Total Active Students</p>
+            <h4 className="text-3xl font-bold">{dashboardData?.stats?.totalStudents || 0}</h4>
           </div>
-          <div className="space-y-2">
-            <p className="text-slate-400 font-bold text-xs uppercase tracking-widest">Earnings</p>
-            <h4 className="text-4xl font-black">₹{dashboardData?.stats?.totalEarnings || 0}</h4>
+          <div className="space-y-1">
+            <p className="text-primary-400 font-bold text-[10px] uppercase tracking-widest">Aggregate Revenue</p>
+            <h4 className="text-3xl font-bold">₹{dashboardData?.stats?.totalEarnings?.toLocaleString() || 0}</h4>
           </div>
         </div>
       </div>

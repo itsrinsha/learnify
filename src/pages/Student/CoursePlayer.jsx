@@ -1,9 +1,11 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
-import { useParams } from 'react-router-dom';
+import { useParams, useNavigate } from 'react-router-dom';
+import { motion, AnimatePresence } from 'framer-motion';
 import { fetchCourseById as fetchCourseThunk } from '../../features/courses/courseThunk';
+import VideoPlayer from '../../components/student/VideoPlayer';
+import CourseProgress from '../../components/student/CourseProgress';
 import { 
-  Play, 
   CheckCircle2, 
   ChevronDown, 
   ChevronUp, 
@@ -11,218 +13,381 @@ import {
   MessageCircle, 
   ChevronRight, 
   ChevronLeft,
-  Settings,
-  Maximize2,
-  Volume2,
   Clock,
   BookOpen,
-  Loader2
+  Loader2,
+  Bookmark,
+  Share2,
+  FileText,
+  PlayCircle,
+  Trophy,
+  User,
+  MoreVertical,
+  Layout,
+  Circle
 } from 'lucide-react';
+import { toast } from 'react-hot-toast';
+import { getCourseProgress, markLessonCompleted } from '../../services/progressService';
+import axiosInstance from '../../features/axiosInstance';
 
 const CoursePlayer = () => {
   const { id } = useParams();
+  const navigate = useNavigate();
   const dispatch = useDispatch();
   const { selectedCourse, loading } = useSelector((state) => state.courses);
   
   const [expandedModule, setExpandedModule] = useState(0);
   const [currentLessonId, setCurrentLessonId] = useState(null);
+  const [isTheaterMode, setIsTheaterMode] = useState(false);
+  const [activeTab, setActiveTab] = useState('overview');
+  const [completedLessons, setCompletedLessons] = useState([]);
+  const [progressLoading, setProgressLoading] = useState(true);
 
   useEffect(() => {
     dispatch(fetchCourseThunk(id));
+    fetchProgress();
   }, [dispatch, id]);
 
-  const lessons = selectedCourse?.lessons || [];
-  const currentLesson = lessons.find((lesson) => lesson._id === currentLessonId) || lessons[0] || null;
+  const fetchProgress = async () => {
+    try {
+      setProgressLoading(true);
+      const data = await getCourseProgress(id);
+      if (data.success) {
+        setCompletedLessons(data.progress.completedLessons || []);
+      }
+    } catch (err) {
+      console.error("Failed to fetch progress:", err);
+    } finally {
+      setProgressLoading(false);
+    }
+  };
+
+  const fetchMyInstructors = async () => {
+    const response = await axiosInstance.get('/user/my-instructors');
+    return response.data;
+  };
+
+  const openInstructorChatForCourse = async (courseId) => {
+    try {
+      const instructors = await fetchMyInstructors();
+      const instructor = instructors.find(item => item.course._id === courseId);
+      
+      if (!instructor) {
+        throw new Error('Instructor for this course not found');
+      }
+
+      navigate(`/student/messages?userId=${instructor._id}&name=${encodeURIComponent(instructor.name)}`);
+    } catch (error) {
+      toast.error(error.message || 'Failed to open instructor chat');
+    }
+  };
+
+  const modules = selectedCourse?.modules || [];
+  
+  // Flatten all lessons from modules for easier navigation
+  const allLessons = useMemo(() => {
+    return modules.flatMap(m => m.lessons.map(l => ({ ...l, moduleId: m._id })));
+  }, [modules]);
+
+  // Find current lesson or default to first
+  const currentLesson = useMemo(() => {
+    return allLessons.find((lesson) => lesson._id === currentLessonId) || allLessons[0] || null;
+  }, [allLessons, currentLessonId]);
+
+  useEffect(() => {
+    if (currentLesson && !currentLessonId) {
+      setCurrentLessonId(currentLesson._id);
+      // Auto-expand the module containing the current lesson
+      const mIdx = modules.findIndex(m => m._id === currentLesson.moduleId);
+      if (mIdx !== -1) setExpandedModule(mIdx);
+    }
+  }, [currentLesson, currentLessonId, modules]);
+
+  const handleLessonEnd = async () => {
+    if (currentLesson && !completedLessons.includes(currentLesson._id)) {
+      await handleToggleComplete(currentLesson._id);
+    }
+    
+    const idx = allLessons.findIndex(l => l._id === currentLesson?._id);
+    if (idx < allLessons.length - 1) {
+      setCurrentLessonId(allLessons[idx + 1]._id);
+      toast.success("Moving to next lesson...");
+    } else {
+      toast.success("Section completed!");
+    }
+  };
+
+  const handleToggleComplete = async (lessonId) => {
+    try {
+      const data = await markLessonCompleted(id, lessonId);
+      if (data.success) {
+        setCompletedLessons(prev => 
+          prev.includes(lessonId) ? prev.filter(id => id !== lessonId) : [...prev, lessonId]
+        );
+        toast.success(data.message || "Progress updated!");
+      }
+    } catch (err) {
+      toast.error("Failed to update progress.");
+    }
+  };
 
   if (loading && !selectedCourse) {
     return (
-      <div className="flex flex-col items-center justify-center min-h-[60vh] space-y-4 bg-white rounded-[2.5rem]">
-        <Loader2 className="w-12 h-12 text-blue-600 animate-spin" />
-        <p className="text-slate-500 font-medium">Loading your classroom...</p>
+      <div className="flex flex-col items-center justify-center min-h-[80vh] space-y-6 bg-slate-50">
+        <Loader2 className="w-16 h-16 text-blue-600 animate-spin" />
+        <div className="text-center">
+          <p className="text-slate-900 font-black text-xl">Entering Classroom</p>
+          <p className="text-slate-500 font-medium">Syncing your progress...</p>
+        </div>
       </div>
     );
   }
 
-  // Group lessons into modules (for now, we'll treat all lessons as one module if not structured)
-  const modules = [
-    {
-      id: 1,
-      title: 'Course Content',
-      duration: selectedCourse?.duration || 'Unknown',
-      lessons: lessons.map((l, idx) => ({
-        id: l._id || idx,
-        title: l.title,
-        duration: l.duration || '00:00',
-        status: currentLesson?._id === l._id ? 'current' : 'pending',
-        videoUrl: l.videoUrl
-      })) || []
-    }
-  ];
-
   return (
-    <div className="h-[calc(100vh-140px)] flex flex-col lg:flex-row bg-white rounded-[2.5rem] border border-slate-200 shadow-sm overflow-hidden">
-      {/* Video Area */}
-      <div className="flex-1 flex flex-col bg-slate-900 overflow-hidden">
-        <div className="flex-1 relative group bg-black flex items-center justify-center">
-          {/* Main Video Overlay */}
-          <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-black/40 opacity-0 group-hover:opacity-100 transition-all z-10 p-8 flex flex-col justify-between">
-            <div className="flex justify-between items-center">
-              <h2 className="text-white font-bold">{currentLesson?.title || 'Select a lesson'}</h2>
-              <button className="p-2 bg-white/20 backdrop-blur-md rounded-xl text-white hover:bg-white/30 transition-all">
-                <Settings size={20} />
-              </button>
-            </div>
-            
-            <div className="space-y-6">
-              <div className="flex items-center gap-4 text-white">
-                <button className="p-4 bg-blue-600 rounded-full hover:scale-110 transition-transform">
-                  <Play size={24} fill="currentColor" />
-                </button>
-                <div className="flex-1 h-1.5 bg-white/20 rounded-full overflow-hidden">
-                  <div className="h-full bg-blue-600 w-0"></div>
-                </div>
-                <span className="text-xs font-bold">00:00 / {currentLesson?.duration || '00:00'}</span>
-              </div>
-              <div className="flex justify-between items-center">
-                <div className="flex gap-4">
-                  <button className="text-white hover:text-blue-400 transition-colors"><Volume2 size={20} /></button>
-                </div>
-                <button className="text-white hover:text-blue-400 transition-colors"><Maximize2 size={20} /></button>
-              </div>
-            </div>
-          </div>
-          <img 
-            src={selectedCourse?.thumbnail || "https://images.unsplash.com/photo-1633356122544-f134324a6cee?auto=format&fit=crop&w=1200&q=80"} 
-            className="w-full h-full object-cover opacity-40" 
-            alt="Video Placeholder" 
-          />
-          <div className="absolute inset-0 flex items-center justify-center">
-            <div className="w-24 h-24 bg-blue-600 rounded-full flex items-center justify-center text-white shadow-2xl animate-pulse">
-              <Play size={40} fill="currentColor" className="ml-1" />
-            </div>
-          </div>
-        </div>
-
-        {/* Video Bottom Info */}
-        <div className="bg-white p-8 border-t border-slate-100 flex flex-col md:flex-row items-center justify-between gap-6">
-          <div className="space-y-4 flex-1">
-            <div className="flex items-center gap-3">
-              <h1 className="text-2xl font-bold text-slate-900">{currentLesson?.title}</h1>
-              <span className="px-3 py-1 bg-blue-50 text-blue-600 text-[10px] font-black uppercase tracking-widest rounded-lg border border-blue-100">Now Playing</span>
-            </div>
-            <div className="flex flex-wrap items-center gap-6 text-sm font-medium text-slate-500">
-              <span className="flex items-center gap-1.5"><Clock size={16} /> {currentLesson?.duration} Duration</span>
-              <span className="flex items-center gap-1.5"><BookOpen size={16} /> {selectedCourse?.title}</span>
-              <button className="text-blue-600 font-bold hover:underline flex items-center gap-1.5">
-                <Download size={16} /> Resources (0)
-              </button>
-            </div>
-          </div>
-          <div className="flex items-center gap-3">
-            <button 
-              onClick={() => {
-                const idx = selectedCourse?.lessons?.findIndex(l => l._id === currentLesson?._id);
-                if (idx > 0) setCurrentLessonId(selectedCourse.lessons[idx - 1]._id);
-              }}
-              disabled={!selectedCourse?.lessons || selectedCourse.lessons.indexOf(currentLesson) === 0}
-              className="px-6 py-3 bg-slate-50 text-slate-500 rounded-2xl font-bold text-sm hover:bg-slate-100 disabled:opacity-50 transition-all flex items-center gap-2 border border-slate-100"
-            >
-              <ChevronLeft size={18} /> Previous
-            </button>
-            <button 
-              onClick={() => {
-                const idx = selectedCourse?.lessons?.findIndex(l => l._id === currentLesson?._id);
-                if (idx < selectedCourse.lessons.length - 1) setCurrentLessonId(selectedCourse.lessons[idx + 1]._id);
-              }}
-              disabled={!selectedCourse?.lessons || selectedCourse.lessons.indexOf(currentLesson) === selectedCourse.lessons.length - 1}
-              className="px-8 py-3 bg-blue-600 text-white rounded-2xl font-bold text-sm hover:bg-blue-700 disabled:opacity-50 transition-all shadow-xl shadow-blue-100 flex items-center gap-2"
-            >
-              Next Lesson <ChevronRight size={18} />
-            </button>
-          </div>
-        </div>
-      </div>
-
-      {/* Sidebar - Lesson List */}
-      <aside className="w-full lg:w-96 border-l border-slate-100 flex flex-col bg-slate-50/30 overflow-hidden">
-        <div className="p-6 bg-white border-b border-slate-100">
-          <div className="flex items-center justify-between mb-6">
-            <h3 className="font-bold text-slate-900">Course Content</h3>
-            <span className="text-xs font-bold text-blue-600 bg-blue-50 px-2 py-1 rounded-lg">65% Done</span>
-          </div>
-          <div className="space-y-2">
-            <div className="h-2 bg-slate-100 rounded-full overflow-hidden">
-              <div className="h-full bg-blue-600 rounded-full transition-all duration-1000" style={{ width: '65%' }}></div>
-            </div>
-            <div className="flex justify-between text-[10px] font-bold text-slate-400 uppercase tracking-widest">
-              <span>Progress</span>
-              <span>12/18 Lessons</span>
-            </div>
-          </div>
-        </div>
-
-        <div className="flex-1 overflow-y-auto divide-y divide-slate-100">
-          {modules.map((module) => (
-            <div key={module.id} className="bg-white">
-              <button 
-                onClick={() => setExpandedModule(expandedModule === module.id ? null : module.id)}
-                className="w-full p-6 flex items-center justify-between hover:bg-slate-50 transition-all"
-              >
-                <div className="text-left">
-                  <h4 className="text-sm font-bold text-slate-900 leading-tight">{module.title}</h4>
-                  <p className="text-[10px] text-slate-500 font-medium mt-1">{module.duration} • {module.lessons.length} Lessons</p>
-                </div>
-                {expandedModule === module.id ? <ChevronUp size={20} className="text-slate-400" /> : <ChevronDown size={20} className="text-slate-400" />}
-              </button>
-
-              {expandedModule === module.id && (
-                <div className="bg-slate-50/50">
-                  {module.lessons.map((lesson) => (
-                    <div 
-                      key={lesson.id} 
-                      onClick={() => {
-                        const target = selectedCourse.lessons.find(l => l._id === lesson.id);
-                        if (target) setCurrentLessonId(target._id);
-                      }}
-                      className={`p-4 pl-12 flex items-center gap-4 cursor-pointer hover:bg-blue-50/50 transition-all relative ${
-                        currentLesson?._id === lesson.id ? 'bg-blue-50 border-r-4 border-blue-600' : ''
-                      }`}
-                    >
-                      {lesson.status === 'completed' && <CheckCircle2 size={18} className="text-green-500" />}
-                      {currentLesson?._id === lesson.id ? (
-                        <Play size={18} className="text-blue-600 fill-blue-600" />
-                      ) : (
-                        <div className="w-[18px] h-[18px] rounded-full border-2 border-slate-300"></div>
-                      )}
-                      
-                      <div className="flex-1 min-w-0">
-                        <p className={`text-xs font-bold truncate ${
-                          currentLesson?._id === lesson.id ? 'text-blue-600' : 'text-slate-700'
-                        }`}>
-                          {lesson.title}
-                        </p>
-                        <div className="flex items-center gap-3 mt-1">
-                          <span className="text-[10px] text-slate-400 font-medium flex items-center gap-1">
-                            <Clock size={10} /> {lesson.duration}
-                          </span>
-                        </div>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              )}
-            </div>
-          ))}
-        </div>
-
-        {/* Support Section */}
-        <div className="p-6 bg-white border-t border-slate-100">
-          <button className="w-full py-4 bg-slate-50 text-slate-700 rounded-2xl font-bold text-xs hover:bg-blue-600 hover:text-white transition-all flex items-center justify-center gap-2 border border-slate-100">
-            <MessageCircle size={16} />
-            Discuss with Instructor
+    <div className={`min-h-screen bg-slate-50 flex flex-col transition-all duration-500 ${isTheaterMode ? 'pt-0' : 'pt-0'}`}>
+      {/* Immersive Header (Floating) */}
+      {!isTheaterMode && (
+        <div className="absolute top-6 left-8 z-50">
+          <button 
+            onClick={() => navigate('/student/courses')}
+            className="group flex items-center gap-3 bg-white/80 backdrop-blur-md px-5 py-3 rounded-2xl border border-slate-200 shadow-xl hover:bg-slate-900 hover:text-white transition-all active:scale-95"
+          >
+            <ChevronLeft size={18} className="group-hover:-translate-x-1 transition-transform" />
+            <span className="text-xs font-black uppercase tracking-widest">Back to Courses</span>
           </button>
         </div>
-      </aside>
+      )}
+
+      {/* Main Container */}
+      <div className={`flex-1 flex flex-col lg:flex-row gap-6 max-w-[1920px] mx-auto w-full transition-all duration-500 ${isTheaterMode ? 'px-0' : 'px-4 lg:px-8'}`}>
+        
+        {/* Left Side: Video & Details */}
+        <div className={`flex-1 flex flex-col transition-all duration-500 ${isTheaterMode ? 'w-full' : ''}`}>
+          
+          {/* Video Player Section */}
+          <motion.div 
+            layout
+            className={`relative overflow-hidden bg-black transition-all duration-500 ease-in-out ${
+              isTheaterMode 
+                ? 'h-[80vh] w-full' 
+                : 'rounded-[2rem] shadow-2xl border border-slate-200 aspect-video'
+            }`}
+          >
+            <VideoPlayer 
+              src={currentLesson?.videoUrl} 
+              onEnded={handleLessonEnd}
+              title={currentLesson?.title}
+              isTheater={isTheaterMode}
+              onToggleTheater={() => setIsTheaterMode(!isTheaterMode)}
+            />
+          </motion.div>
+
+          {/* Lesson Header & Info */}
+          <div className={`mt-8 space-y-8 transition-all duration-500 ${isTheaterMode ? 'px-8 pb-20' : 'pb-20'}`}>
+            <div className="flex flex-col md:flex-row md:items-start justify-between gap-6">
+              <div className="space-y-4">
+                <div className="flex items-center gap-3">
+                  <span className="px-3 py-1 bg-blue-600 text-white text-[10px] font-black uppercase tracking-widest rounded-full shadow-lg shadow-blue-200">
+                    Now Playing
+                  </span>
+                  <span className="text-slate-400 font-bold text-xs uppercase tracking-tighter">
+                    {selectedCourse?.title}
+                  </span>
+                </div>
+                <h1 className="text-3xl md:text-4xl font-black text-slate-900 leading-tight">
+                  {currentLesson?.title}
+                </h1>
+                <div className="flex flex-wrap items-center gap-6 text-sm font-bold text-slate-500">
+                  <span className="flex items-center gap-2 bg-white px-4 py-2 rounded-xl border border-slate-100 shadow-sm">
+                    <Clock size={16} className="text-blue-500" /> {currentLesson?.duration}
+                  </span>
+                  <span className="flex items-center gap-2 bg-white px-4 py-2 rounded-xl border border-slate-100 shadow-sm">
+                    <BookOpen size={16} className="text-green-500" /> Lesson {allLessons.findIndex(l => l._id === currentLesson?._id) + 1} of {allLessons.length}
+                  </span>
+                </div>
+              </div>
+
+              <div className="flex items-center gap-3">
+                <button 
+                  onClick={() => handleToggleComplete(currentLesson?._id)}
+                  className={`flex items-center gap-2 px-6 py-4 rounded-2xl font-black text-sm shadow-xl transition-all active:scale-95 ${
+                    completedLessons.includes(currentLesson?._id)
+                      ? 'bg-green-100 text-green-700 border border-green-200 shadow-green-100'
+                      : 'bg-white text-slate-900 border border-slate-200 hover:bg-slate-50 shadow-slate-100'
+                  }`}
+                >
+                  <CheckCircle2 size={18} className={completedLessons.includes(currentLesson?._id) ? 'text-green-600' : 'text-slate-300'} />
+                  {completedLessons.includes(currentLesson?._id) ? 'Completed' : 'Mark as Done'}
+                </button>
+                <button className="p-4 bg-white text-slate-400 border border-slate-100 rounded-2xl hover:text-blue-600 transition-all active:scale-95 shadow-sm">
+                  <Bookmark size={20} />
+                </button>
+                <button className="flex items-center gap-2 px-6 py-4 bg-slate-900 text-white rounded-2xl font-black text-sm shadow-xl shadow-slate-200 hover:bg-slate-800 transition-all active:scale-95">
+                  <Download size={18} /> Download
+                </button>
+              </div>
+            </div>
+
+            {/* Tabs */}
+            <div className="border-b border-slate-200 flex items-center gap-10 overflow-x-auto no-scrollbar">
+              {['Overview', 'Notes', 'Resources'].map((tab) => (
+                <button
+                  key={tab}
+                  onClick={() => setActiveTab(tab.toLowerCase())}
+                  className={`pb-4 text-sm font-black uppercase tracking-widest transition-all relative ${
+                    activeTab === tab.toLowerCase() ? 'text-blue-600' : 'text-slate-400 hover:text-slate-600'
+                  }`}
+                >
+                  {tab}
+                  {activeTab === tab.toLowerCase() && (
+                    <motion.div layoutId="tab-underline" className="absolute bottom-0 left-0 right-0 h-1 bg-blue-600 rounded-full" />
+                  )}
+                </button>
+              ))}
+            </div>
+
+            <div className="bg-white p-10 rounded-[2.5rem] border border-slate-100 shadow-sm">
+              {activeTab === 'overview' && (
+                <div className="space-y-6">
+                  <h3 className="text-xl font-black text-slate-900">About this lesson</h3>
+                  <p className="text-slate-600 leading-relaxed font-medium">
+                    {currentLesson?.description || "In this lesson, we explore core concepts and practical applications of the topic."}
+                  </p>
+                </div>
+              )}
+              {activeTab === 'notes' && <div className="text-center py-10 text-slate-400 font-bold uppercase tracking-widest text-xs">Notes feature coming soon</div>}
+              {activeTab === 'resources' && <div className="text-center py-10 text-slate-400 font-bold uppercase tracking-widest text-xs">No resources attached to this lesson</div>}
+            </div>
+          </div>
+        </div>
+
+        {/* Right Side: Sidebar - Lesson List */}
+        <aside className={`transition-all duration-500 flex flex-col gap-6 ${
+          isTheaterMode ? 'w-full lg:w-full mt-10 pb-20' : 'w-full lg:w-[450px] pb-20'
+        }`}>
+          
+          <CourseProgress 
+            completedLessons={completedLessons.length} 
+            totalLessons={allLessons.length} 
+            lastLessonTitle={allLessons.find(l => !completedLessons.includes(l._id))?.title || "Course Completed!"}
+          />
+
+          <div className={`flex-1 overflow-hidden flex flex-col bg-white rounded-[2.5rem] border border-slate-200 shadow-sm ${isTheaterMode ? 'max-h-none' : 'max-h-[800px]'}`}>
+            <div className="flex-1 overflow-y-auto no-scrollbar">
+              {modules.map((module, mIdx) => (
+                <div key={module._id} className="border-b border-slate-100 last:border-none">
+                  <button 
+                    onClick={() => setExpandedModule(expandedModule === mIdx ? null : mIdx)}
+                    className={`w-full p-8 flex items-center justify-between transition-all ${
+                      expandedModule === mIdx ? 'bg-slate-50/50' : 'hover:bg-slate-50'
+                    }`}
+                  >
+                    <div className="text-left space-y-1">
+                      <div className="flex items-center gap-3">
+                        <span className="text-[10px] font-black text-blue-600 bg-blue-50 px-2 py-0.5 rounded-lg uppercase">Section {mIdx + 1}</span>
+                        <h4 className="text-sm font-black text-slate-900 uppercase tracking-tight">{module.title}</h4>
+                      </div>
+                      <p className="text-[10px] text-slate-400 font-bold uppercase tracking-widest">
+                        {module.lessons.length} Lessons • {module.duration}
+                      </p>
+                    </div>
+                    <div className={`p-2 rounded-xl transition-all ${expandedModule === mIdx ? 'bg-blue-600 text-white shadow-lg shadow-blue-100' : 'text-slate-300'}`}>
+                      {expandedModule === mIdx ? <ChevronUp size={16} /> : <ChevronDown size={16} />}
+                    </div>
+                  </button>
+
+                  <AnimatePresence>
+                    {expandedModule === mIdx && (
+                      <motion.div 
+                        initial={{ height: 0, opacity: 0 }}
+                        animate={{ height: 'auto', opacity: 1 }}
+                        exit={{ height: 0, opacity: 0 }}
+                        className="overflow-hidden"
+                      >
+                        <div className="px-4 pb-4 space-y-2">
+                          {module.lessons.map((lesson) => {
+                            const isCurrent = currentLesson?._id === lesson._id;
+                            const isCompleted = completedLessons.includes(lesson._id);
+                            
+                            return (
+                              <div key={lesson._id} className="relative">
+                                <button 
+                                  onClick={() => setCurrentLessonId(lesson._id)}
+                                  className={`w-full p-4 rounded-2xl flex items-center gap-4 transition-all group ${
+                                    isCurrent ? 'bg-blue-600 text-white shadow-xl shadow-blue-100' : 'hover:bg-slate-50'
+                                  }`}
+                                >
+                                  <div className={`w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0 transition-all ${
+                                    isCurrent ? 'bg-white/20' : isCompleted ? 'bg-green-50 text-green-500' : 'bg-slate-100 text-slate-400 group-hover:bg-blue-50 group-hover:text-blue-500'
+                                  }`}>
+                                    {isCurrent ? (
+                                      <motion.div 
+                                        animate={{ scale: [1, 1.2, 1] }} 
+                                        transition={{ repeat: Infinity, duration: 2 }}
+                                      >
+                                        <PlayCircle size={20} fill="white" />
+                                      </motion.div>
+                                    ) : isCompleted ? (
+                                      <CheckCircle2 size={18} />
+                                    ) : (
+                                      <PlayCircle size={18} />
+                                    )}
+                                  </div>
+                                  
+                                  <div className="text-left flex-1 min-w-0">
+                                    <p className={`text-xs font-black truncate uppercase tracking-tight ${
+                                      isCurrent ? 'text-white' : isCompleted ? 'text-slate-400' : 'text-slate-900'
+                                    }`}>
+                                      {lesson.title}
+                                    </p>
+                                    <div className="flex items-center gap-3 mt-1">
+                                      <span className={`text-[10px] font-bold uppercase tracking-widest ${
+                                        isCurrent ? 'text-blue-100' : 'text-slate-400'
+                                      }`}>
+                                        {lesson.duration}
+                                      </span>
+                                      {isCurrent && (
+                                        <span className="text-[8px] font-black text-white bg-white/20 px-1.5 py-0.5 rounded uppercase tracking-widest animate-pulse">Playing</span>
+                                      )}
+                                    </div>
+                                  </div>
+                                </button>
+                                
+                                {/* Completion Toggle Icon */}
+                                <button 
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    handleToggleComplete(lesson._id);
+                                  }}
+                                  className={`absolute right-6 top-1/2 -translate-y-1/2 p-2 rounded-lg transition-all ${
+                                    isCurrent ? 'text-white/40 hover:text-white' : 'text-slate-200 hover:text-green-500'
+                                  }`}
+                                >
+                                  {isCompleted ? <CheckCircle2 size={16} /> : <Circle size={16} />}
+                                </button>
+                              </div>
+                            );
+                          })}
+                        </div>
+                      </motion.div>
+                    )}
+                  </AnimatePresence>
+                </div>
+              ))}
+            </div>
+
+            <div className="p-8 bg-slate-50/50 border-t border-slate-100">
+              <button 
+                onClick={() => openInstructorChatForCourse(id)}
+                className="w-full py-4 bg-white text-slate-900 rounded-[1.5rem] font-black text-[10px] uppercase tracking-widest hover:bg-slate-900 hover:text-white transition-all shadow-sm border border-slate-200 flex items-center justify-center gap-2"
+              >
+                <MessageCircle size={16} />
+                Discuss with Instructor
+              </button>
+            </div>
+          </div>
+        </aside>
+      </div>
     </div>
   );
 };

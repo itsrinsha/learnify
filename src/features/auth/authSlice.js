@@ -9,8 +9,7 @@ import {
 } from "./authThunk";
 
 const initialState = {
-  user: null,
-  isAuthenticated: false,
+  user: JSON.parse(localStorage.getItem("user") || "null"),
   loading: false,
   error: null,
   success: false,
@@ -23,16 +22,16 @@ const authSlice = createSlice({
   reducers: {
     logout: (state) => {
       state.user = null;
-      state.isAuthenticated = false;
       localStorage.removeItem("token");
+      localStorage.removeItem("user");
     },
     setCredentials: (state, action) => {
       state.user = action.payload;
-      state.isAuthenticated = true;
       state.success = true;
       if (action.payload?.token) {
         localStorage.setItem("token", action.payload.token);
       }
+      localStorage.setItem("user", JSON.stringify(action.payload));
     },
     clearState: (state) => {
       state.error = null;
@@ -48,12 +47,12 @@ const authSlice = createSlice({
       .addCase(registerUser.fulfilled, (state, action) => {
         state.loading = false;
         state.user = action.payload;
-        state.isAuthenticated = true;
         state.success = true;
         state.otpSent = false;
         if (action.payload?.token) {
           localStorage.setItem("token", action.payload.token);
         }
+        localStorage.setItem("user", JSON.stringify(action.payload));
       })
       .addCase(registerUser.rejected, (state, action) => {
         state.loading = false;
@@ -67,8 +66,11 @@ const authSlice = createSlice({
       .addCase(loginUser.fulfilled, (state, action) => {
         state.loading = false;
         state.user = action.payload;
-        state.isAuthenticated = true;
         state.success = true;
+        if (action.payload?.token) {
+          localStorage.setItem("token", action.payload.token);
+        }
+        localStorage.setItem("user", JSON.stringify(action.payload));
       })
       .addCase(loginUser.rejected, (state, action) => {
         state.loading = false;

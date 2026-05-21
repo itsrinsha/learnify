@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { 
   Plus, 
   Video, 
@@ -22,11 +22,23 @@ import {
   Loader2,
   AlertCircle
 } from 'lucide-react';
-import { useNavigate } from 'react-router-dom';
-import { createCourseDraft, addModule, addLesson, publishCourse } from '../../services/instructorCourseService';
+import { useNavigate, useParams } from 'react-router-dom';
+import { toast } from 'react-hot-toast';
+import { 
+  createCourseDraft, 
+  addModule, 
+  addLesson, 
+  publishCourse,
+  uploadThumbnail,
+  uploadVideo,
+  getCourseDetails,
+  updateCourse,
+  updateLesson
+} from '../../services/instructorCourseService';
 
 const CreateCourse = () => {
   const navigate = useNavigate();
+  const { id } = useParams();
   const [step, setStep] = useState(1);
   const [loading, setLoading] = useState(false);
   const [courseId, setCourseId] = useState(null);
@@ -41,7 +53,11 @@ const CreateCourse = () => {
     language: 'English',
     price: '',
     discountPrice: '',
+    thumbnail: '',
   });
+
+  const [thumbnailPreview, setThumbnailPreview] = useState(null);
+  const [uploadingThumbnail, setUploadingThumbnail] = useState(false);
 
   const [modules, setModules] = useState([
     { title: 'Introduction', lessons: [{ title: 'Welcome to the course', duration: '5:00', isPreviewFree: true }] }
@@ -51,6 +67,44 @@ const CreateCourse = () => {
     examRequired: false,
     certificateEligibility: true,
   });
+
+  useEffect(() => {
+    if (id) {
+      const fetchCourse = async () => {
+        try {
+          setLoading(true);
+          const result = await getCourseDetails(id);
+          const course = result.course;
+          setCourseId(course._id);
+          setCourseData({
+            title: course.title,
+            subtitle: course.subtitle || '',
+            description: course.description || '',
+            category: course.category,
+            level: course.level,
+            language: course.language || 'English',
+            price: course.price,
+            discountPrice: course.discountPrice || '',
+            thumbnail: course.thumbnail,
+          });
+          setThumbnailPreview(course.thumbnail);
+          setModules(course.modules.length > 0 ? course.modules : [
+            { title: 'Introduction', lessons: [{ title: 'Welcome to the course', duration: '5:00', isPreviewFree: true }] }
+          ]);
+          setSettings({
+            examRequired: course.examRequired,
+            certificateEligibility: course.certificateEligibility,
+          });
+        } catch (error) {
+          console.error("Error fetching course:", error);
+          toast.error("Failed to load course details.");
+        } finally {
+          setLoading(false);
+        }
+      };
+      fetchCourse();
+    }
+  }, [id]);
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
@@ -63,8 +117,64 @@ const CreateCourse = () => {
 
   const handleAddLesson = (moduleIndex) => {
     const newModules = [...modules];
-    newModules[moduleIndex].lessons.push({ title: 'New Lesson', duration: '10:00', isPreviewFree: false });
+    newModules[moduleIndex].lessons.push({ 
+      title: 'New Lesson', 
+      duration: '10:00', 
+      isPreviewFree: false,
+      videoUrl: '',
+      uploading: false
+    });
     setModules(newModules);
+  };
+
+  const handleThumbnailUpload = async (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+
+    // Local preview
+    const reader = new FileReader();
+    reader.onloadend = () => setThumbnailPreview(reader.result);
+    reader.readAsDataURL(file);
+
+    try {
+      setUploadingThumbnail(true);
+      const result = await uploadThumbnail(file);
+      setCourseData(prev => ({ ...prev, thumbnail: result.url }));
+      toast.success("Thumbnail uploaded!");
+    } catch (error) {
+      console.error("Thumbnail upload failed:", error);
+      toast.error("Failed to upload thumbnail.");
+    } finally {
+      setUploadingThumbnail(false);
+    }
+  };
+
+  const handleVideoUpload = async (moduleIndex, lessonIndex, e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+
+    const uploadToast = toast.loading("Uploading video...");
+    try {
+      const newModules = [...modules];
+      newModules[moduleIndex].lessons[lessonIndex].uploading = true;
+      setModules(newModules);
+
+      const result = await uploadVideo(file);
+      
+      const updatedModules = [...modules];
+      updatedModules[moduleIndex].lessons[lessonIndex].videoUrl = result.url;
+      updatedModules[moduleIndex].lessons[lessonIndex].uploading = false;
+      setModules(updatedModules);
+      
+      toast.success("Video uploaded successfully!", { id: uploadToast });
+    } catch (error) {
+      console.error("Video upload failed:", error);
+      toast.error("Failed to upload video.", { id: uploadToast });
+      
+      const resetModules = [...modules];
+      resetModules[moduleIndex].lessons[lessonIndex].uploading = false;
+      setModules(resetModules);
+    }
   };
 
   const handleNextStep = async () => {
@@ -72,7 +182,12 @@ const CreateCourse = () => {
       setLoading(true);
       if (step === 1) {
         if (!courseData.title.trim()) {
-          alert("Please enter a course title.");
+          toast.error("Please enter a course title.");
+          return;
+        }
+
+        if (!courseData.description) {
+          toast.error("Please enter a course description.");
           return;
         }
 
@@ -85,29 +200,79 @@ const CreateCourse = () => {
           };
           const result = await createCourseDraft(payload);
           setCourseId(result.course._id);
+          toast.success("Course draft created!");
         }
         setStep(2);
       } else if (step === 2) {
-        // Save Modules & Lessons (In a real app, you might save these one by one, but here we'll simulate the flow)
-        // We'll iterate and call the API for each module and lesson
-        for (const mod of modules) {
-          const modResult = await addModule(courseId, { title: mod.title });
-          for (const lesson of mod.lessons) {
-            await addLesson(courseId, modResult.module._id, lesson);
+        // Save Modules & Lessons
+        const loadingToast = toast.loading("Saving content...");
+        try {
+          for (const mod of modules) {
+            let currentModId = mod._id;
+            
+            // 1. Create Module if it doesn't exist
+            if (!currentModId) {
+              const modResult = await addModule(courseId, { title: mod.title });
+              currentModId = modResult.module._id;
+            }
+            
+            // 2. Create or Update Lessons for this module
+            for (const lesson of mod.lessons) {
+              const lessonPayload = {
+                ...lesson,
+                resources: lesson.resourceUrl ? [{ name: 'Resource Link', url: lesson.resourceUrl }] : []
+              };
+
+              if (!lesson._id) {
+                // Create new lesson
+                await addLesson(courseId, currentModId, lessonPayload);
+              } else {
+                // Update existing lesson (to save resources/links)
+                await updateLesson(courseId, lesson._id, lessonPayload);
+              }
+            }
           }
+          toast.success("Content saved successfully!", { id: loadingToast });
+          setStep(3);
+        } catch (err) {
+          toast.error("Failed to save content.", { id: loadingToast });
+          throw err;
         }
-        setStep(3);
       } else if (step === 3) {
-        setStep(4);
+        // Save Pricing
+        const savingToast = toast.loading("Saving pricing...");
+        try {
+          const price = parseFloat(courseData.price) || 0;
+          const discountPrice = parseFloat(courseData.discountPrice) || 0;
+
+          await updateCourse(courseId, {
+            price: price,
+            discountPrice: discountPrice
+          });
+          toast.success("Pricing saved!", { id: savingToast });
+          setStep(4);
+        } catch (err) {
+          toast.error("Failed to save pricing.", { id: savingToast });
+          throw err;
+        }
       } else if (step === 4) {
-        // Final Publish
-        await publishCourse(courseId);
-        alert('Congratulations! Your course is now published.');
-        navigate('/instructor/courses');
+        // Save Settings & Final Publish
+        const finalToast = toast.loading("Finalizing course...");
+        try {
+          await updateCourse(courseId, {
+            ...settings
+          });
+          await publishCourse(courseId);
+          toast.success('Congratulations! Your course is now published.', { id: finalToast });
+          navigate('/instructor/courses');
+        } catch (err) {
+          toast.error("Failed to publish course.", { id: finalToast });
+          throw err;
+        }
       }
     } catch (error) {
       console.error("Error saving step:", error);
-      alert(error.response?.data?.message || "Something went wrong. Please try again.");
+      toast.error(error.response?.data?.message || "Something went wrong. Please try again.");
     } finally {
       setLoading(false);
     }
@@ -219,14 +384,44 @@ const CreateCourse = () => {
 
             <div className="space-y-4">
               <label className="text-sm font-black text-slate-900 uppercase tracking-widest">Course Thumbnail</label>
-              <div className="border-4 border-dashed border-slate-100 rounded-[2.5rem] p-12 text-center space-y-4 hover:border-blue-200 transition-all cursor-pointer group">
-                <div className="w-20 h-20 bg-blue-50 rounded-3xl flex items-center justify-center mx-auto text-blue-600 group-hover:scale-110 transition-transform">
-                  <Upload size={32} />
-                </div>
-                <div>
-                  <p className="text-sm font-bold text-slate-900">Click to upload or drag and drop</p>
-                  <p className="text-xs text-slate-400 mt-1">PNG, JPG or WEBP (Recommended 1200x675)</p>
-                </div>
+              <div className="relative">
+                <input 
+                  type="file" 
+                  id="thumbnail-upload"
+                  className="hidden"
+                  accept="image/*"
+                  onChange={handleThumbnailUpload}
+                />
+                <label 
+                  htmlFor="thumbnail-upload"
+                  className={`border-4 border-dashed rounded-[2.5rem] p-12 text-center space-y-4 hover:border-blue-200 transition-all cursor-pointer group flex flex-col items-center justify-center min-h-[300px] overflow-hidden ${
+                    uploadingThumbnail ? 'bg-slate-50 border-blue-200' : 'border-slate-100 bg-white'
+                  }`}
+                >
+                  {uploadingThumbnail ? (
+                    <div className="flex flex-col items-center gap-4">
+                      <Loader2 size={40} className="text-blue-600 animate-spin" />
+                      <p className="text-sm font-bold text-slate-600">Uploading to Cloudinary...</p>
+                    </div>
+                  ) : thumbnailPreview ? (
+                    <img src={thumbnailPreview} alt="Thumbnail Preview" className="absolute inset-0 w-full h-full object-cover rounded-[2.2rem]" />
+                  ) : (
+                    <>
+                      <div className="w-20 h-20 bg-blue-50 rounded-3xl flex items-center justify-center text-blue-600 group-hover:scale-110 transition-transform">
+                        <Upload size={32} />
+                      </div>
+                      <div>
+                        <p className="text-sm font-bold text-slate-900">Click to upload or drag and drop</p>
+                        <p className="text-xs text-slate-400 mt-1">PNG, JPG or WEBP (Recommended 1200x675)</p>
+                      </div>
+                    </>
+                  )}
+                  {thumbnailPreview && !uploadingThumbnail && (
+                    <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
+                      <p className="text-white font-bold text-sm bg-blue-600 px-6 py-2 rounded-xl">Change Thumbnail</p>
+                    </div>
+                  )}
+                </label>
               </div>
             </div>
           </div>
@@ -272,8 +467,11 @@ const CreateCourse = () => {
                     {m.lessons.map((l, lIdx) => (
                       <div key={lIdx} className="p-4 bg-white border border-slate-100 rounded-2xl flex items-center justify-between group hover:border-blue-200 transition-all">
                         <div className="flex items-center gap-4">
-                          <div className="p-2 bg-slate-50 text-slate-400 rounded-lg group-hover:text-blue-600 group-hover:bg-blue-50 transition-all">
-                            <PlayCircle size={18} />
+                          <div className="flex items-center gap-3">
+                            <span className="text-[10px] font-black text-slate-400 w-6">{mIdx + 1}.{lIdx + 1}</span>
+                            <div className="p-2 bg-slate-50 text-slate-400 rounded-lg group-hover:text-blue-600 group-hover:bg-blue-50 transition-all">
+                              <PlayCircle size={18} />
+                            </div>
                           </div>
                           <input 
                             type="text"
@@ -286,9 +484,60 @@ const CreateCourse = () => {
                             className="text-sm font-bold text-slate-700 bg-transparent border-none focus:ring-0"
                           />
                         </div>
+                        {l.showResourceInput && (
+                          <div className="flex-1 mx-4">
+                            <input 
+                              type="text"
+                              placeholder="Paste resource link (GitHub, PDF, etc.)"
+                              value={l.resourceUrl || ''}
+                              onChange={(e) => {
+                                const newMods = [...modules];
+                                newMods[mIdx].lessons[lIdx].resourceUrl = e.target.value;
+                                setModules(newMods);
+                              }}
+                              className="w-full px-4 py-2 bg-slate-50 border border-slate-100 rounded-xl text-xs font-medium focus:ring-2 focus:ring-blue-500 outline-none"
+                            />
+                          </div>
+                        )}
                         <div className="flex items-center gap-4">
-                          <button className="p-2 text-slate-400 hover:text-blue-600 transition-all"><LinkIcon size={16} /></button>
-                          <button className="p-2 text-slate-400 hover:text-blue-600 transition-all"><Upload size={16} /></button>
+                          <button 
+                            onClick={() => {
+                              const newMods = [...modules];
+                              newMods[mIdx].lessons[lIdx].showResourceInput = !newMods[mIdx].lessons[lIdx].showResourceInput;
+                              setModules(newMods);
+                            }}
+                            className={`p-2 rounded-lg transition-all ${
+                              l.resourceUrl ? 'text-blue-600 bg-blue-50' : 'text-slate-400 hover:text-blue-600 hover:bg-blue-50'
+                            }`}
+                          >
+                            <LinkIcon size={16} />
+                          </button>
+                          <div className="relative">
+                            <input 
+                              type="file" 
+                              id={`video-upload-${mIdx}-${lIdx}`}
+                              className="hidden"
+                              accept="video/*"
+                              onChange={(e) => handleVideoUpload(mIdx, lIdx, e)}
+                            />
+                            <label 
+                              htmlFor={`video-upload-${mIdx}-${lIdx}`}
+                              className={`p-2 rounded-lg transition-all cursor-pointer flex items-center gap-2 ${
+                                l.videoUrl ? 'text-green-600 bg-green-50' : 'text-slate-400 hover:text-blue-600 hover:bg-blue-50'
+                              }`}
+                            >
+                              {l.uploading ? (
+                                <Loader2 size={16} className="animate-spin" />
+                              ) : l.videoUrl ? (
+                                <CheckCircle2 size={16} />
+                              ) : (
+                                <Upload size={16} />
+                              )}
+                              <span className="text-[10px] font-black uppercase">
+                                {l.uploading ? 'Uploading...' : l.videoUrl ? 'Video Ready' : 'Upload Video'}
+                              </span>
+                            </label>
+                          </div>
                         </div>
                       </div>
                     ))}

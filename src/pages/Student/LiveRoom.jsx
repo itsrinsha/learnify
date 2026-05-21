@@ -18,7 +18,12 @@ import {
 const LiveRoom = () => {
   const [chatMessage, setChatMessage] = useState('');
   
- 
+  const chatMessages = [
+    { id: 1, user: 'Alex Johnson', text: 'Will the recording be available later?', time: '10:02 AM', role: 'student' },
+    { id: 2, user: 'Sarah Jenkins', text: 'Yes, it will be uploaded within 24 hours!', time: '10:03 AM', role: 'instructor', isPinned: true },
+    { id: 3, user: 'Priya Sharma', text: 'The React 19 compiler is so cool!', time: '10:05 AM', role: 'student' },
+    { id: 4, user: 'David Chen', text: 'I have a doubt about the useActionState hook.', time: '10:06 AM', role: 'student' },
+  ];
 
   return (
     <div className="h-[calc(100vh-140px)] flex flex-col lg:flex-row gap-6">
@@ -107,7 +112,25 @@ const LiveRoom = () => {
 
         {/* Chat Messages */}
         <div className="flex-1 overflow-y-auto p-6 space-y-6">
-        
+          {chatMessages.map((msg) => (
+            <div key={msg.id} className="space-y-1 group">
+              <div className="flex items-baseline justify-between">
+                <span className={`text-[10px] font-black uppercase tracking-widest ${
+                  msg.role === 'instructor' ? 'text-blue-600' : 'text-slate-500'
+                }`}>
+                  {msg.user}
+                </span>
+                <span className="text-[9px] text-slate-400 font-bold opacity-0 group-hover:opacity-100 transition-opacity">{msg.time}</span>
+              </div>
+              <div className={`p-4 rounded-2xl text-xs font-medium leading-relaxed shadow-sm border ${
+                msg.role === 'instructor' 
+                ? 'bg-blue-600 text-white border-blue-500 rounded-tl-none' 
+                : 'bg-slate-50 text-slate-700 border-slate-100 rounded-tl-none'
+              }`}>
+                {msg.text}
+              </div>
+            </div>
+          ))}
         </div>
 
         {/* Chat Input */}

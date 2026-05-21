@@ -18,7 +18,8 @@ import {
   Menu,
   X,
   Search,
-  Bell
+  Bell,
+  Award
 } from 'lucide-react';
 import { logout } from '../../features/auth/authSlice';
 
@@ -31,21 +32,19 @@ const InstructorLayout = () => {
 
   const menuItems = [
     { name: 'Dashboard', icon: <LayoutDashboard size={20} />, path: '/instructor/dashboard' },
-    { name: 'My Profile', icon: <UserIcon size={20} />, path: '/instructor/profile' },
     { name: 'My Courses', icon: <BookOpen size={20} />, path: '/instructor/courses' },
-    { name: 'Add Course', icon: <PlusCircle size={20} />, path: '/instructor/add-course' },
-    { name: 'Students', icon: <Users size={20} />, path: '/instructor/students' },
-    { name: 'Reviews / Schedules', icon: <FileText size={20} />, path: '/instructor/reviews' },
+    { name: 'Exams', icon: <Award size={20} />, path: '/instructor/exams' },
     { name: 'Live Classes', icon: <Video size={20} />, path: '/instructor/live-classes' },
-    { name: 'Messages', icon: <MessageSquare size={20} />, path: '/instructor/messages' },
-    { name: 'Attendance', icon: <ClipboardCheck size={20} />, path: '/instructor/attendance' },
-    { name: 'Offers', icon: <Tag size={20} />, path: '/instructor/offers' },
-    { name: 'Payments', icon: <CreditCard size={20} />, path: '/instructor/payments' },
+    { name: 'Students', icon: <Users size={20} />, path: '/instructor/students' },
+    { name: 'Reviews', icon: <FileText size={20} />, path: '/instructor/reviews' },
     { name: 'Earnings', icon: <BarChart3 size={20} />, path: '/instructor/earnings' },
+    { name: 'Messages', icon: <MessageSquare size={20} />, path: '/instructor/messages' },
+    { name: 'Verification', icon: <ClipboardCheck size={20} />, path: '/instructor/verify' },
+    { name: 'Profile', icon: <UserIcon size={20} />, path: '/instructor/profile' },
   ];
 
   const getPageTitle = () => {
-    const item = menuItems.find(item => item.path === location.pathname || location.pathname.startsWith(item.path));
+    const item = menuItems.find(item => item.path === location.pathname || (item.path !== '/instructor/dashboard' && location.pathname.startsWith(item.path)));
     return item ? item.name : 'Instructor Panel';
   };
 
@@ -54,14 +53,8 @@ const InstructorLayout = () => {
     navigate('/instructor/login');
   };
 
-  const DefaultAvatar = () => (
-    <div className="w-full h-full bg-blue-100 flex items-center justify-center text-blue-600 font-bold">
-      <UserIcon size={20} />
-    </div>
-  );
-
   return (
-    <div className="min-h-screen bg-slate-50 flex">
+    <div className="min-h-screen bg-slate-50 flex font-sans">
       {/* Sidebar */}
       <aside 
         className={`fixed inset-y-0 left-0 z-50 w-64 bg-white border-r border-slate-200 transform transition-transform duration-300 ease-in-out md:relative md:translate-x-0 ${
@@ -70,38 +63,52 @@ const InstructorLayout = () => {
       >
         <div className="flex flex-col h-full">
           {/* Logo */}
-          <div className="p-6 flex items-center gap-2 border-b border-slate-50">
-            <div className="bg-blue-600 p-1.5 rounded-lg">
-              <BookOpen className="text-white" size={24} />
-            </div>
-            <span className="text-2xl font-bold tracking-tight text-slate-900">Learnify</span>
+          <div className="h-16 flex items-center px-6 border-b border-slate-100">
+            <Link to="/instructor/dashboard" className="flex items-center gap-2">
+              <div className="bg-primary-600 p-1.5 rounded">
+                <BookOpen className="text-white" size={20} />
+              </div>
+              <span className="text-xl font-bold tracking-tight text-slate-900 uppercase">Learnify</span>
+            </Link>
           </div>
 
           {/* Navigation */}
-          <nav className="flex-1 px-4 py-6 space-y-1 overflow-y-auto custom-scrollbar">
-            {menuItems.map((item) => (
-              <Link
-                key={item.name}
-                to={item.path}
-                className={`flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-semibold transition-all ${
-                  location.pathname === item.path
-                    ? 'bg-blue-600 text-white shadow-lg shadow-blue-100'
-                    : 'text-slate-500 hover:bg-slate-100 hover:text-slate-900'
-                }`}
-              >
-                {item.icon}
-                {item.name}
-              </Link>
-            ))}
+          <nav className="flex-1 py-6 space-y-1">
+            {menuItems.map((item) => {
+              const isActive = location.pathname === item.path || (item.path !== '/instructor/dashboard' && location.pathname.startsWith(item.path));
+              return (
+                <Link
+                  key={item.name}
+                  to={item.path}
+                  className={`sidebar-link ${isActive ? 'sidebar-link-active' : ''}`}
+                >
+                  {item.icon}
+                  <span className="text-sm font-medium">{item.name}</span>
+                </Link>
+              );
+            })}
           </nav>
 
-          {/* Logout */}
+          {/* User Profile Summary in Sidebar */}
           <div className="p-4 border-t border-slate-100">
+            <div className="flex items-center gap-3 p-2">
+              <div className="w-9 h-9 rounded bg-slate-100 flex items-center justify-center text-slate-500 overflow-hidden shrink-0">
+                {user?.profileImage ? (
+                  <img src={user.profileImage} alt="profile" className="w-full h-full object-cover" />
+                ) : (
+                  <UserIcon size={18} />
+                )}
+              </div>
+              <div className="min-w-0">
+                <p className="text-xs font-semibold text-slate-900 truncate">{user?.name || 'Instructor'}</p>
+                <p className="text-[10px] text-slate-500 uppercase tracking-wider">{user?.role || 'Instructor'}</p>
+              </div>
+            </div>
             <button 
               onClick={handleLogout}
-              className="flex items-center gap-3 w-full px-4 py-3 rounded-xl text-sm font-bold text-red-500 hover:bg-red-50 transition-all"
+              className="mt-2 flex items-center gap-3 w-full px-4 py-2.5 rounded-md text-sm font-medium text-slate-500 hover:bg-red-50 hover:text-red-600 transition-colors"
             >
-              <LogOut size={20} />
+              <LogOut size={18} />
               Logout
             </button>
           </div>
@@ -109,68 +116,72 @@ const InstructorLayout = () => {
       </aside>
 
       {/* Main Content */}
-      <div className="flex-1 flex flex-col min-w-0">
+      <div className="flex-1 flex flex-col min-w-0 h-screen overflow-hidden">
         {/* Top Navbar */}
-        <header className="h-20 bg-white border-b border-slate-200 sticky top-0 z-40 px-4 md:px-10 flex items-center justify-between">
+        <header className="h-16 bg-white border-b border-slate-200 flex items-center justify-between px-6 shrink-0">
           <div className="flex items-center gap-4">
             <button 
-              className="md:hidden p-2 text-slate-500 hover:bg-slate-100 rounded-xl"
+              className="md:hidden p-2 text-slate-500 hover:bg-slate-50 rounded-md"
               onClick={() => setIsSidebarOpen(!isSidebarOpen)}
             >
-              {isSidebarOpen ? <X size={24} /> : <Menu size={24} />}
+              {isSidebarOpen ? <X size={20} /> : <Menu size={20} />}
             </button>
-            <h1 className="text-xl font-black text-slate-900 tracking-tight">{getPageTitle()}</h1>
+            <h1 className="text-lg font-semibold text-slate-900">{getPageTitle()}</h1>
           </div>
 
-          <div className="flex items-center gap-4 md:gap-8">
+          <div className="flex items-center gap-4">
             {/* Search */}
-            <div className="relative hidden lg:block w-72">
-              <span className="absolute inset-y-0 left-0 pl-4 flex items-center text-slate-400">
-                <Search size={18} />
+            <div className="relative hidden lg:block w-80">
+              <span className="absolute inset-y-0 left-0 pl-3 flex items-center text-slate-400">
+                <Search size={16} />
               </span>
               <input
                 type="text"
                 placeholder="Search students, courses..."
-                className="w-full pl-12 pr-4 py-3 bg-slate-100 border-none rounded-2xl text-sm focus:ring-2 focus:ring-blue-500 transition-all outline-none"
+                className="w-full pl-10 pr-4 py-1.5 bg-slate-50 border border-slate-200 rounded text-sm focus:ring-1 focus:ring-primary-500 focus:bg-white outline-none transition-all"
               />
             </div>
 
-            {/* Notifications */}
-            <button className="p-2.5 text-slate-500 hover:bg-slate-100 rounded-2xl relative border border-slate-100 transition-all">
-              <Bell size={22} />
-              <span className="absolute top-2 right-2 w-2.5 h-2.5 bg-red-500 rounded-full border-2 border-white"></span>
-            </button>
+            <div className="flex items-center gap-2">
+              <button className="p-2 text-slate-500 hover:bg-slate-50 rounded-md relative">
+                <Bell size={20} />
+                <span className="absolute top-1.5 right-1.5 w-2 h-2 bg-primary-600 rounded-full border-2 border-white"></span>
+              </button>
+            </div>
 
-            {/* Instructor Profile */}
-            <div className="flex items-center gap-4 pl-6 border-l border-slate-200">
-              <div className="text-right hidden sm:block">
-                <p className="text-sm font-black text-slate-900 leading-none">{user?.name || 'Instructor'}</p>
-                <p className="text-[10px] font-bold text-blue-600 uppercase tracking-widest mt-1">
-                  {user?.approvalStatus === 'approved' ? 'Verified Instructor' : 'Pending Approval'}
-                </p>
-              </div>
-              <div className="w-12 h-12 rounded-2xl bg-slate-100 flex items-center justify-center text-slate-400 font-bold border-2 border-white shadow-md overflow-hidden cursor-pointer hover:scale-105 transition-all">
+            {/* User Profile */}
+            <div className="h-8 w-px bg-slate-200 mx-1 hidden sm:block"></div>
+            <Link to="/instructor/profile" className="flex items-center gap-2 group">
+              <div className="w-8 h-8 rounded bg-primary-100 flex items-center justify-center text-primary-700 overflow-hidden group-hover:ring-2 group-hover:ring-primary-500 transition-all">
                 {user?.profileImage ? (
                   <img src={user.profileImage} alt="profile" className="w-full h-full object-cover" />
                 ) : (
-                  <DefaultAvatar />
+                  <UserIcon size={16} />
                 )}
               </div>
-            </div>
+              <div className="hidden sm:block">
+                <p className="text-xs font-semibold text-slate-900 group-hover:text-primary-600 transition-colors">{user?.name}</p>
+                <p className="text-[10px] text-primary-600 font-bold uppercase tracking-tighter">
+                  {user?.approvalStatus === 'approved' ? 'Verified' : 'Pending'}
+                </p>
+              </div>
+            </Link>
           </div>
         </header>
 
         {/* Content Area */}
-        <main className="p-4 md:p-10 max-w-[1600px] mx-auto w-full">
-          <Outlet />
+        <main className="flex-1 overflow-y-auto p-6 bg-[#f8fafc]">
+          <div className="max-w-[1600px] mx-auto">
+            <Outlet />
+          </div>
         </main>
       </div>
 
-      {/* Overlay for mobile sidebar */}
-      {!isSidebarOpen && (
+      {/* Mobile Overlay */}
+      {isSidebarOpen && (
         <div 
-          className="fixed inset-0 bg-slate-900/40 backdrop-blur-sm z-40 md:hidden"
-          onClick={() => setIsSidebarOpen(true)}
+          className="fixed inset-0 bg-slate-900/40 z-40 md:hidden"
+          onClick={() => setIsSidebarOpen(false)}
         ></div>
       )}
     </div>

@@ -3,9 +3,9 @@ import { Link, useNavigate } from "react-router-dom";
 import { useFormik } from "formik";
 import * as Yup from "yup";
 import { Eye, EyeOff, Mail, Lock, ArrowRight } from "lucide-react";
+import { toast } from 'react-hot-toast';
 import { FcGoogle } from "react-icons/fc";
 import { FaGithub } from "react-icons/fa";
-import authIllustration from "../../../assets/auth_illustration.png";
 import { GoogleLogin } from "@react-oauth/google";
 import { useDispatch } from "react-redux";
 import { loginUser } from "../../../features/auth/authThunk";
@@ -43,20 +43,26 @@ function Login() {
       setApiError("");
 
       try {
-        const user = await dispatch(loginUser({
+        const result = await dispatch(loginUser({
           email: values.email,
           password: values.password,
         })).unwrap();
 
-        if (user.role !== "student") {
-          setApiError("Access denied. Please use the correct portal for your account.");
+        if (result.role !== "student") {
+          toast.error("Access denied. Please use the correct portal for your account.");
           return;
         }
 
-        alert("Welcome back!");
+        toast.success("Welcome back!");
         navigate("/student/dashboard");
       } catch (err) {
-        setApiError(err || "Something went wrong. Please try again.");
+        if (err.response) {
+          setApiError(err.response.data.message || "Invalid credentials");
+        } else if (err.request) {
+          setApiError("Unable to connect to server. Please try again later.");
+        } else {
+          setApiError("Something went wrong. Please try again.");
+        }
       } finally {
         setIsLoading(false);
       }
@@ -83,9 +89,9 @@ function Login() {
             Access world-class courses, expert instructors, and a community of passionate learners. Your journey to excellence starts here.
           </p>
           <img
-            src={authIllustration}
-            alt="Learning Illustration"
-            className="w-full h-auto drop-shadow-2xl rounded-2xl transform hover:scale-[1.02] transition-transform duration-500"
+            src="https://images.unsplash.com/photo-1523240795612-9a054b0db644?q=80&w=2070&auto=format&fit=crop"
+            alt="Student Learning Environment"
+            className="w-full h-auto shadow-2xl rounded-3xl object-cover min-h-[400px] hover:scale-[1.01] transition-all duration-700"
           />
         </div>
         {/* Abstract shapes */}
@@ -219,6 +225,10 @@ function Login() {
 
 <div className="flex justify-center">
   <GoogleLogin
+    theme="outline"
+    size="large"
+    shape="pill"
+    width="350"
     onSuccess={async (response) => {
       const token = response.credential;
 
@@ -232,17 +242,19 @@ function Login() {
 
         // ✅ role protection
         if (user.role !== "student") {
-          alert("Access denied. Use correct portal.");
+          toast.error("Access denied. Use correct portal.");
           return;
         }
 
         // ✅ save to redux
         dispatch(setCredentials(user));
+        toast.success("Welcome back!");
 
         // ✅ redirect
         navigate("/student/dashboard");
 
       } catch (error) {
+        toast.error("Google login failed");
         console.log("Google login error", error);
       }
     }}
