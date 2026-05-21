@@ -32,6 +32,18 @@ export const enrollCourse = async (courseId) => {
   return response.data;
 };
 
+// Get course reviews
+export const getCourseReviews = async (courseId) => {
+  const response = await axiosInstance.get(`/courses/${courseId}/reviews`);
+  return response.data;
+};
+
+// Submit course review
+export const submitCourseReview = async (courseId, reviewData) => {
+  const response = await axiosInstance.post(`/courses/${courseId}/reviews`, reviewData);
+  return response.data;
+};
+
 // Get course lessons
 export const getCourseLessons = async (courseId) => {
   const response = await axiosInstance.get(`/courses/${courseId}/lessons`);
@@ -56,6 +68,8 @@ export default {
   getCourseById,
   getEnrolledCourses,
   enrollCourse,
+  getCourseReviews,
+  submitCourseReview,
   getCourseLessons,
   createCourse,
   updateCourse,

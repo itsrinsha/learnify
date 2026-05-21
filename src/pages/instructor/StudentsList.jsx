@@ -25,7 +25,6 @@ const StudentsList = () => {
   
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedCourseId, setSelectedCourseId] = useState(courseIdFromUrl || 'all');
-  const [selectedStatus, setSelectedStatus] = useState('all');
 
   useEffect(() => {
     dispatch(fetchInstructorStudents());
@@ -58,15 +57,11 @@ const StudentsList = () => {
       
       const matchesCourse = selectedCourseId === 'all' || student.courseId === selectedCourseId;
       
-      const matchesStatus = selectedStatus === 'all' || 
-                           (selectedStatus === 'blocked' && student.isBlocked) ||
-                           (selectedStatus === 'active' && !student.isBlocked);
-      
-      return matchesSearch && matchesCourse && matchesStatus;
+      return matchesSearch && matchesCourse;
     });
-  }, [students, searchQuery, selectedCourseId, selectedStatus]);
+  }, [students, searchQuery, selectedCourseId]);
 
-  const activeStudentsCount = filteredStudents.filter(s => !s.isBlocked).length;
+  const activeStudentsCount = filteredStudents.filter(s => s.status === 'Active').length;
 
   return (
     <div className="space-y-10 pb-20">
@@ -117,15 +112,10 @@ const StudentsList = () => {
               <option key={course.id} value={course.id}>{course.name}</option>
             ))}
           </select>
-          <select 
-            value={selectedStatus}
-            onChange={(e) => setSelectedStatus(e.target.value)}
-            className="px-6 py-4 bg-white border border-slate-200 rounded-2xl text-sm font-bold text-slate-600 outline-none shadow-sm cursor-pointer hover:bg-slate-50 transition-all"
-          >
-            <option value="all">All Status</option>
-            <option value="active">Active</option>
-            <option value="blocked">Blocked</option>
-          </select>
+          <button className="px-6 py-4 bg-white border border-slate-200 rounded-2xl flex items-center gap-3 text-sm font-bold text-slate-600 hover:bg-slate-50 shadow-sm transition-all">
+            <Filter size={18} />
+            Filters
+          </button>
         </div>
       </div>
 
@@ -210,21 +200,14 @@ const StudentsList = () => {
 
                     {/* Enrollment Status */}
                     <td className="px-8 py-6">
-                      {student.isBlocked ? (
-                        <div className="inline-flex items-center px-3 py-1.5 rounded-xl text-[10px] font-black uppercase tracking-widest bg-red-50 text-red-600 border border-red-100">
-                          <div className="w-1.5 h-1.5 rounded-full mr-2 bg-red-500"></div>
-                          Blocked
-                        </div>
-                      ) : (
-                        <div className={`inline-flex items-center px-3 py-1.5 rounded-xl text-[10px] font-black uppercase tracking-widest ${
-                          student.status === 'Completed' 
-                            ? 'bg-green-50 text-green-600 border border-green-100' 
-                            : 'bg-blue-50 text-blue-600 border border-blue-100'
-                        }`}>
-                          <div className={`w-1.5 h-1.5 rounded-full mr-2 ${student.status === 'Completed' ? 'bg-green-500' : 'bg-blue-500 animate-pulse'}`}></div>
-                          {student.status}
-                        </div>
-                      )}
+                      <div className={`inline-flex items-center px-3 py-1.5 rounded-xl text-[10px] font-black uppercase tracking-widest ${
+                        student.status === 'Completed' 
+                          ? 'bg-green-50 text-green-600 border border-green-100' 
+                          : 'bg-blue-50 text-blue-600 border border-blue-100'
+                      }`}>
+                        <div className={`w-1.5 h-1.5 rounded-full mr-2 ${student.status === 'Completed' ? 'bg-green-500' : 'bg-blue-500 animate-pulse'}`}></div>
+                        {student.status}
+                      </div>
                     </td>
 
                     {/* Actions */}

@@ -35,27 +35,3 @@ export const fetchReviewHistory = createAsyncThunk(
     }
   }
 );
-
-export const scheduleReviewThunk = createAsyncThunk(
-  "instructor/scheduleReview",
-  async (reviewData, { rejectWithValue }) => {
-    try {
-      const response = await instructorService.scheduleReview(reviewData);
-      return response;
-    } catch (error) {
-      return rejectWithValue(error.response?.data?.message || "Failed to schedule review");
-    }
-  }
-);
-
-export const updateReviewMarkThunk = createAsyncThunk(
-  "instructor/updateReviewMark",
-  async ({ reviewId, updateData }, { rejectWithValue }) => {
-    try {
-      const response = await instructorService.updateReviewMark(reviewId, updateData);
-      return response;
-    } catch (error) {
-      return rejectWithValue(error.response?.data?.message || "Failed to update review mark");
-    }
-  }
-);

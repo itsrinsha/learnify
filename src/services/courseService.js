@@ -57,6 +57,28 @@ export const enrollCourse = async (courseId) => {
   }
 };
 
+// Get course reviews
+export const getCourseReviews = async (courseId) => {
+  try {
+    const response = await axiosInstance.get(`/courses/${courseId}/reviews`);
+    return response.data;
+  } catch (error) {
+    console.error('Error fetching course reviews:', error);
+    throw error;
+  }
+};
+
+// Submit course review
+export const submitCourseReview = async (courseId, reviewData) => {
+  try {
+    const response = await axiosInstance.post(`/courses/${courseId}/reviews`, reviewData);
+    return response.data;
+  } catch (error) {
+    console.error('Error submitting review:', error);
+    throw error;
+  }
+};
+
 // Get course lessons
 export const getCourseLessons = async (courseId) => {
   try {
@@ -90,25 +112,15 @@ export const updateCourse = async (courseId, courseData) => {
   }
 };
 
-// Get reviews assigned to student
-export const getMyEnrolledReviews = async () => {
-  try {
-    const response = await axiosInstance.get('/users/my-reviews');
-    return response.data;
-  } catch (error) {
-    console.error('Error fetching student reviews:', error);
-    throw error;
-  }
-};
-
 export default {
   getAllCourses,
   getFeaturedCourses,
   getCourseById,
   getEnrolledCourses,
   enrollCourse,
+  getCourseReviews,
+  submitCourseReview,
   getCourseLessons,
   createCourse,
   updateCourse,
-  getMyEnrolledReviews,
 };

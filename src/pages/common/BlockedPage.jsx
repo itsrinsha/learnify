@@ -1,7 +1,7 @@
 import React from 'react';
 import { useSelector, useDispatch } from 'react-redux';
 import { useNavigate } from 'react-router-dom';
-import { ShieldAlert, LogOut } from 'lucide-react';
+import { ShieldAlert, LogOut, Mail, MessageCircle } from 'lucide-react';
 import { logout } from '../../features/auth/authSlice';
 
 const BlockedPage = () => {
@@ -36,6 +36,17 @@ const BlockedPage = () => {
             <p className="text-red-700 font-bold leading-relaxed">
               {user?.blockedReason || "Your account has been flagged for violating platform policies. Please contact support for more information."}
             </p>
+          </div>
+
+          <div className="grid grid-cols-2 gap-4">
+            <div className="bg-slate-50 p-4 rounded-2xl border border-slate-100 text-center">
+              <Mail size={20} className="text-slate-400 mx-auto mb-2" />
+              <p className="text-[10px] font-bold text-slate-500 uppercase">Support</p>
+            </div>
+            <div className="bg-slate-50 p-4 rounded-2xl border border-slate-100 text-center">
+              <MessageCircle size={20} className="text-slate-400 mx-auto mb-2" />
+              <p className="text-[10px] font-bold text-slate-500 uppercase">Appeal</p>
+            </div>
           </div>
 
           <div className="pt-4 flex flex-col gap-3">

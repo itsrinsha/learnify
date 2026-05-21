@@ -1,5 +1,5 @@
 import { createSlice } from "@reduxjs/toolkit";
-import { fetchInstructorDashboard, fetchInstructorStudents, fetchReviewHistory, scheduleReviewThunk, updateReviewMarkThunk } from "./instructorThunk";
+import { fetchInstructorDashboard, fetchInstructorStudents, fetchReviewHistory } from "./instructorThunk";
 
 const initialState = {
   dashboardData: null,
@@ -53,37 +53,6 @@ const instructorSlice = createSlice({
         state.reviewHistory = action.payload.history || [];
       })
       .addCase(fetchReviewHistory.rejected, (state, action) => {
-        state.loading = false;
-        state.error = action.payload;
-      })
-      .addCase(scheduleReviewThunk.pending, (state) => {
-        state.loading = true;
-        state.error = null;
-      })
-      .addCase(scheduleReviewThunk.fulfilled, (state, action) => {
-        state.loading = false;
-        if (action.payload?.review) {
-          state.reviewHistory.unshift(action.payload.review);
-        }
-      })
-      .addCase(scheduleReviewThunk.rejected, (state, action) => {
-        state.loading = false;
-        state.error = action.payload;
-      })
-      .addCase(updateReviewMarkThunk.pending, (state) => {
-        state.loading = true;
-        state.error = null;
-      })
-      .addCase(updateReviewMarkThunk.fulfilled, (state, action) => {
-        state.loading = false;
-        if (action.payload?.review) {
-          const index = state.reviewHistory.findIndex(r => r._id === action.payload.review._id);
-          if (index !== -1) {
-            state.reviewHistory[index] = action.payload.review;
-          }
-        }
-      })
-      .addCase(updateReviewMarkThunk.rejected, (state, action) => {
         state.loading = false;
         state.error = action.payload;
       });

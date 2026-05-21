@@ -1,19 +1,11 @@
-import React, { useEffect } from 'react';
+import React from 'react';
 import { Navigate, useLocation } from 'react-router-dom';
-import { useSelector, useDispatch } from 'react-redux';
-import { fetchProfile } from '../../features/auth/authThunk';
+import { useSelector } from 'react-redux';
 
 const ProtectedRoute = ({ children, allowedRoles }) => {
   const { user } = useSelector((state) => state.auth);
   const token = localStorage.getItem('token');
   const location = useLocation();
-  const dispatch = useDispatch();
-
-  useEffect(() => {
-    if (token) {
-      dispatch(fetchProfile());
-    }
-  }, [location.pathname, dispatch, token]);
 
   const getLoginPath = () => {
     if (location.pathname.startsWith('/admin')) return '/admin/login';

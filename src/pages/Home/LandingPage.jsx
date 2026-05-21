@@ -5,6 +5,7 @@ import {
   Users, 
   Award, 
   PlayCircle, 
+  Star, 
   ChevronRight, 
   CheckCircle2, 
   MessageSquare, 
@@ -59,7 +60,23 @@ const LandingPage = () => {
     }
   ];
 
-  
+  const testimonials = [
+    {
+      name: 'Alice Johnson',
+      role: 'Frontend Developer',
+      quote: 'The live reviews and mentor feedback helped me understand exactly where I needed to improve.'
+    },
+    {
+      name: 'Rahul Mehta',
+      role: 'MERN Student',
+      quote: 'The structured courses are easy to follow and the dashboard keeps me motivated every day.'
+    },
+    {
+      name: 'Priya Sharma',
+      role: 'UI Engineer',
+      quote: 'The professional certificate flow and real-world project focus made the learning feel truly career-oriented.'
+    }
+  ];
 
   const [featuredCourses, setFeaturedCourses] = useState([]);
   const [loadingCourses, setLoadingCourses] = useState(true);
@@ -156,7 +173,7 @@ const LandingPage = () => {
                     : 'bg-white text-slate-900 hover:bg-primary-50 shadow-xl shadow-black/10'
                 }`}
               >
-                start learning
+                Dashboard
               </button>
             )}
           </div>
@@ -377,6 +394,10 @@ const LandingPage = () => {
                 </div>
                 <div className="p-6 space-y-4">
                   <div className="flex items-center justify-between">
+                    <div className="flex items-center text-warning-500">
+                      <Star className="w-3 h-3 fill-current" />
+                      <span className="ml-1 text-slate-900 font-bold text-xs">{course.rating || 0}</span>
+                    </div>
                     <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">{course.enrolledStudentsCount || 0} Students</span>
                   </div>
                   <h4 className="text-lg font-bold text-slate-900 leading-tight h-14 line-clamp-2">
@@ -408,7 +429,25 @@ const LandingPage = () => {
             <h2 className="text-3xl font-bold text-slate-900">Trusted by Professional Learners</h2>
           </div>
           
-        
+          <div className="grid md:grid-cols-3 gap-8">
+            {testimonials.map((t, idx) => (
+              <div key={idx} className="card p-8 bg-slate-50 space-y-6 border-none shadow-sm hover:shadow-md transition-shadow">
+                <div className="flex items-center gap-1 text-warning-500">
+                  {[1, 2, 3, 4, 5].map(i => <Star key={i} size={14} className="fill-current" />)}
+                </div>
+                <p className="text-slate-600 text-sm leading-relaxed italic font-medium">"{t.quote}"</p>
+                <div className="flex items-center gap-3 pt-4 border-t border-slate-200">
+                  <div className="w-10 h-10 rounded-full bg-primary-100 flex-shrink-0 flex items-center justify-center text-primary-600 font-bold text-xs uppercase">
+                    {t.name.charAt(0)}
+                  </div>
+                  <div>
+                    <h5 className="font-bold text-slate-900 text-xs">{t.name}</h5>
+                    <p className="text-[10px] text-slate-400 font-bold uppercase">{t.role}</p>
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
         </div>
       </section>
 

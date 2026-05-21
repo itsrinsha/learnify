@@ -15,8 +15,7 @@ import {
   Menu, 
   X, 
   Search, 
-  Bell,
-  Video
+  Bell
 } from 'lucide-react';
 import { logout } from '../../features/auth/authSlice';
 
@@ -32,7 +31,6 @@ const DashboardLayout = () => {
     { name: 'My Courses', icon: <BookOpen size={20} />, path: '/student/courses' },
     { name: 'Exams', icon: <FileText size={20} />, path: '/student/exams' },
     { name: 'Certificates', icon: <Award size={20} />, path: '/student/certificates' },
-    { name: 'Reviews', icon: <Video size={20} />, path: '/student/reviews' },
     { name: 'Messages', icon: <Mail size={20} />, path: '/student/messages' },
     { name: 'Buy Course', icon: <ShoppingBag size={20} />, path: '/student/buy-courses' },
     { name: 'Live Classes', icon: <PlayCircle size={20} />, path: '/student/live-classes' },
@@ -49,16 +47,13 @@ const DashboardLayout = () => {
     navigate('/login');
   };
 
-  const isPlayerRoute = location.pathname.includes('/player/') || location.pathname.includes('/course-player/');
-  const hideLayout = isPlayerRoute;
-
   return (
     <div className="min-h-screen bg-slate-50 flex font-sans">
       {/* Sidebar */}
       <aside 
         className={`fixed inset-y-0 left-0 z-50 w-64 bg-white border-r border-slate-200 transform transition-transform duration-300 ease-in-out md:relative md:translate-x-0 ${
           isSidebarOpen ? 'translate-x-0' : '-translate-x-full'
-        } ${hideLayout ? 'hidden' : ''}`}
+        }`}
       >
         <div className="flex flex-col h-full">
           {/* Logo */}
@@ -117,7 +112,7 @@ const DashboardLayout = () => {
       {/* Main Content */}
       <div className="flex-1 flex flex-col min-w-0 h-screen overflow-hidden">
         {/* Top Navbar */}
-        <header className={`h-16 bg-white border-b border-slate-200 flex items-center justify-between px-6 shrink-0 ${hideLayout ? 'hidden' : ''}`}>
+        <header className="h-16 bg-white border-b border-slate-200 flex items-center justify-between px-6 shrink-0">
           <div className="flex items-center gap-4">
             <button 
               className="md:hidden p-2 text-slate-500 hover:bg-slate-50 rounded-md"
@@ -169,8 +164,8 @@ const DashboardLayout = () => {
         </header>
 
         {/* Content Area */}
-        <main className={`flex-1 overflow-y-auto bg-[#f8fafc] ${hideLayout ? 'p-0' : 'p-6'}`}>
-          <div className={`${hideLayout ? 'max-w-none' : 'max-w-7xl mx-auto'}`}>
+        <main className="flex-1 overflow-y-auto p-6 bg-[#f8fafc]">
+          <div className="max-w-7xl mx-auto">
             <Outlet />
           </div>
         </main>

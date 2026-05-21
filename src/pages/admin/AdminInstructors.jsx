@@ -27,11 +27,12 @@ const AdminInstructors = () => {
   const [instructors, setInstructors] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-  const [selectedStatus, setSelectedStatus] = useState('All Status');
 
   const fetchInstructors = async () => {
     try {
       setLoading(true);
+      // For simplicity, we'll fetch all users and filter for instructors or use the requests endpoint
+      // Let's use the general users endpoint and filter for instructors to show both approved and pending
       const data = await adminService.getAllUsers();
       setInstructors(data.filter(u => u.role === 'instructor'));
       setError(null);
@@ -91,13 +92,7 @@ const AdminInstructors = () => {
                          ins.email.toLowerCase().includes(searchTerm.toLowerCase()) ||
                          ins.verificationDetails?.expertise?.toLowerCase().includes(searchTerm.toLowerCase());
     
-    const matchesStatus = selectedStatus === 'All Status' || 
-                         (selectedStatus === 'Active' && !ins.isBlocked && ins.approvalStatus === 'approved') ||
-                         (selectedStatus === 'Blocked' && ins.isBlocked) ||
-                         (selectedStatus === 'Pending' && ins.approvalStatus === 'pending') ||
-                         (selectedStatus === 'Rejected' && ins.approvalStatus === 'rejected');
-    
-    return matchesSearch && matchesStatus;
+    return matchesSearch;
   });
 
   if (loading) {
@@ -139,20 +134,6 @@ const AdminInstructors = () => {
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
           />
-        </div>
-        <div className="flex items-center gap-2">
-          <Filter className="w-4 h-4 text-slate-400" />
-          <select 
-            className="bg-slate-50 border-none text-sm font-medium text-slate-600 rounded-xl focus:ring-0 px-4 py-2 outline-none cursor-pointer"
-            value={selectedStatus}
-            onChange={(e) => setSelectedStatus(e.target.value)}
-          >
-            <option>All Status</option>
-            <option>Active</option>
-            <option>Blocked</option>
-            <option>Pending</option>
-            <option>Rejected</option>
-          </select>
         </div>
       </div>
 
@@ -224,26 +205,24 @@ const AdminInstructors = () => {
                 <Eye className="w-4 h-4 text-slate-400" /> Details
               </button>
               
-              {(instructor.approvalStatus === 'pending' || instructor.approvalStatus === 'rejected') && (
-                <div className="flex gap-2">
+              {instructor.approvalStatus === 'pending' && (
+                <>
                   <button 
                     onClick={() => handleApprove(instructor._id)}
                     className="px-4 py-2 bg-green-600 text-white rounded-lg text-sm font-bold hover:bg-green-700 transition-colors flex items-center gap-2"
                   >
-                    <UserCheck className="w-4 h-4" /> {instructor.approvalStatus === 'rejected' ? 'Re-Approve' : 'Approve'}
+                    <UserCheck className="w-4 h-4" /> Approve
                   </button>
-                  {instructor.approvalStatus === 'pending' && (
-                    <button 
-                      onClick={() => handleReject(instructor._id)}
-                      className="px-4 py-2 bg-red-50 text-red-600 rounded-lg text-sm font-bold hover:bg-red-100 transition-colors flex items-center gap-2"
-                    >
-                      <XCircle className="w-4 h-4" /> Reject
-                    </button>
-                  )}
-                </div>
+                  <button 
+                    onClick={() => handleReject(instructor._id)}
+                    className="px-4 py-2 bg-red-50 text-red-600 rounded-lg text-sm font-bold hover:bg-red-100 transition-colors flex items-center gap-2"
+                  >
+                    <XCircle className="w-4 h-4" /> Reject
+                  </button>
+                </>
               )}
 
-              {(instructor.approvalStatus === 'approved' || instructor.isBlocked) && (
+              {instructor.approvalStatus === 'approved' && (
                 <button 
                   onClick={() => handleBlockUser(instructor._id, instructor.isBlocked)}
                   className={`px-4 py-2 rounded-lg text-sm font-bold transition-colors flex items-center gap-2 ${instructor.isBlocked ? 'bg-green-600 text-white hover:bg-green-700' : 'bg-red-50 text-red-600 hover:bg-red-100'}`}

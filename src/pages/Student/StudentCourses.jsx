@@ -6,6 +6,7 @@ import {
   PlayCircle, 
   Award, 
   MessageCircle, 
+  Star,
   Users,
   ShieldCheck,
   BookOpen,
@@ -39,6 +40,7 @@ const StudentCourses = () => {
         name: instructor?.name || 'Learnify Instructor',
         avatar: instructor?.profileImage || `https://ui-avatars.com/api/?name=${encodeURIComponent(instructor?.name || 'Instructor')}&background=2563eb&color=fff`,
         expertise: instructor?.verificationDetails?.expertise || 'Certified Instructor',
+        rating: 0,
         students: instructor?.studentsCount || 0,
         courses: []
       };
@@ -116,6 +118,9 @@ const StudentCourses = () => {
                 <p className="text-slate-500 text-sm font-medium">{instructor.expertise}</p>
                 <div className="flex items-center gap-4 mt-3">
                   <div className="flex items-center gap-1.5 text-xs font-bold text-slate-900">
+                    <Star className="text-yellow-400 fill-yellow-400" size={14} /> {instructor.rating}
+                  </div>
+                  <div className="flex items-center gap-1.5 text-xs font-bold text-slate-900">
                     <Users className="text-slate-400" size={14} /> {instructor.students} Students
                   </div>
                 </div>
@@ -123,7 +128,7 @@ const StudentCourses = () => {
             </div>
             <div className="flex items-center gap-3 w-full md:w-auto">
               <button 
-                onClick={() => navigate(`/student/messages?userId=${instructor.id}&name=${encodeURIComponent(instructor.name)}`)}
+                onClick={() => navigate('/student/messages')}
                 className="flex-1 md:flex-none flex items-center justify-center gap-2 px-6 py-3 bg-blue-600 text-white rounded-xl font-bold text-sm hover:bg-blue-700 transition-all shadow-lg shadow-blue-100"
               >
                 <MessageCircle size={18} />

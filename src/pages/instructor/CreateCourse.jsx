@@ -186,11 +186,6 @@ const CreateCourse = () => {
           return;
         }
 
-        if (!courseData.description) {
-          toast.error("Please enter a course description.");
-          return;
-        }
-
         // Create Draft if not already created
         if (!courseId) {
           const payload = {

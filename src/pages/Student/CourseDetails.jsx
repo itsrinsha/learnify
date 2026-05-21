@@ -4,6 +4,7 @@ import { useParams, useNavigate } from 'react-router-dom';
 import { clearSelectedCourse } from '../../features/courses/courseSlice';
 import { fetchCourseById as fetchCourseThunk } from '../../features/courses/courseThunk';
 import { 
+  Star, 
   Users, 
   Clock, 
   BookOpen, 
@@ -26,16 +27,14 @@ const CourseDetails = () => {
 
   useEffect(() => {
     dispatch(fetchCourseThunk(id));
-    return () => {
-      dispatch(clearSelectedCourse());
-    };
+    return () => dispatch(clearSelectedCourse());
   }, [dispatch, id]);
 
-  if (loading || !course) {
+  if (loading) {
     return (
       <div className="flex flex-col items-center justify-center min-h-[60vh] space-y-4">
         <Loader2 className="w-12 h-12 text-blue-600 animate-spin" />
-        <p className="text-slate-500 font-medium">Loading course syllabus...</p>
+        <p className="text-slate-500 font-medium">Loading course details...</p>
       </div>
     );
   }
@@ -57,6 +56,10 @@ const CourseDetails = () => {
     );
   }
 
+  if (!course) return null;
+
+  
+
   return (
     <div className="pb-20 space-y-10">
       <div className="relative rounded-[3rem] bg-slate-900 overflow-hidden text-white min-h-[500px] flex items-center">
@@ -75,6 +78,13 @@ const CourseDetails = () => {
           <p className="text-xl text-slate-300 leading-relaxed max-w-2xl">{course.description}</p>
           
           <div className="flex flex-wrap items-center gap-8 pt-4">
+            <div className="flex items-center gap-3">
+              <div className="flex items-center text-yellow-400">
+                <Star size={20} fill="currentColor" />
+                <span className="ml-2 text-xl font-black">{course.rating || 0}</span>
+              </div>
+              <span className="text-slate-400 text-sm font-medium">({course.reviewsCount || 0} reviews)</span>
+            </div>
             <div className="flex items-center gap-2">
               <Users size={20} className="text-slate-400" />
               <span className="text-slate-300 font-bold">{course.enrolledCount || 'Multiple'} students enrolled</span>
@@ -88,13 +98,6 @@ const CourseDetails = () => {
               <p className="text-base font-bold hover:text-blue-400 cursor-pointer transition-colors">{course.instructor?.name}</p>
             </div>
           </div>
-          <button
-            type="button"
-            onClick={() => navigate(`/student/messages?userId=${course.instructor?._id || course.instructor}&name=${encodeURIComponent(course.instructor?.name || 'Instructor')}`)}
-            className="mt-4 inline-flex items-center justify-center rounded-2xl border border-blue-600 bg-blue-600 px-4 py-3 text-sm font-bold text-white transition hover:bg-blue-700"
-          >
-            Message Instructor
-          </button>
         </div>
       </div>
 

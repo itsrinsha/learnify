@@ -18,8 +18,7 @@ import {
   Menu,
   X,
   Search,
-  Bell,
-  Award
+  Bell
 } from 'lucide-react';
 import { logout } from '../../features/auth/authSlice';
 
@@ -33,10 +32,8 @@ const InstructorLayout = () => {
   const menuItems = [
     { name: 'Dashboard', icon: <LayoutDashboard size={20} />, path: '/instructor/dashboard' },
     { name: 'My Courses', icon: <BookOpen size={20} />, path: '/instructor/courses' },
-    { name: 'Exams', icon: <Award size={20} />, path: '/instructor/exams' },
     { name: 'Live Classes', icon: <Video size={20} />, path: '/instructor/live-classes' },
     { name: 'Students', icon: <Users size={20} />, path: '/instructor/students' },
-    { name: 'Reviews', icon: <FileText size={20} />, path: '/instructor/reviews' },
     { name: 'Earnings', icon: <BarChart3 size={20} />, path: '/instructor/earnings' },
     { name: 'Messages', icon: <MessageSquare size={20} />, path: '/instructor/messages' },
     { name: 'Verification', icon: <ClipboardCheck size={20} />, path: '/instructor/verify' },

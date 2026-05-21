@@ -6,6 +6,7 @@ import {
   Filter, 
   MoreVertical, 
   Users, 
+  Star, 
   Video, 
   Edit3, 
   Trash2,

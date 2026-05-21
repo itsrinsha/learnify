@@ -50,32 +50,10 @@ export const getReviewHistory = async () => {
   }
 };
 
-export const scheduleReview = async (reviewData) => {
-  try {
-    const response = await axiosInstance.post('/instructor/reviews/schedule', reviewData);
-    return response.data;
-  } catch (error) {
-    console.error('Error scheduling review:', error);
-    throw error;
-  }
-};
-
-export const updateReviewMark = async (reviewId, updateData) => {
-  try {
-    const response = await axiosInstance.put(`/instructor/reviews/${reviewId}`, updateData);
-    return response.data;
-  } catch (error) {
-    console.error('Error updating review mark:', error);
-    throw error;
-  }
-};
-
 export default {
   getInstructorDashboard,
   getInstructorCourses,
   publishCourse,
   getInstructorStudents,
   getReviewHistory,
-  scheduleReview,
-  updateReviewMark,
 };

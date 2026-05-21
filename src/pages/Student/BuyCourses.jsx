@@ -3,6 +3,7 @@ import { useDispatch, useSelector } from 'react-redux';
 import { toast } from 'react-hot-toast';
 import { fetchAllCourses, enrollInCourse } from '../../features/courses/courseThunk';
 import { 
+  Star, 
   Users, 
   Clock, 
   BookOpen, 
@@ -14,9 +15,7 @@ import {
   CreditCard,
   ChevronRight,
   Info,
-  Loader2,
-  CheckCircle,
-  AlertCircle
+  Loader2
 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import paymentService from '../../services/paymentService';
@@ -71,12 +70,7 @@ const BuyCourses = () => {
               toast.success('Payment Successful! Enrolling you now...');
               await dispatch(enrollInCourse(selectedCourse._id));
               setShowPayment(false);
-              const instructorId = selectedCourse?.instructor?._id || selectedCourse?.instructor;
-              if (instructorId) {
-                navigate(`/student/messages?userId=${instructorId}`);
-              } else {
-                navigate('/student/courses');
-              }
+              navigate('/student/courses');
             } else {
               toast.error('Payment verification failed. Please contact support.');
             }
@@ -138,6 +132,7 @@ const BuyCourses = () => {
         name: name,
         avatar: typeof instructorData === 'object' ? (instructorData?.profileImage || `https://ui-avatars.com/api/?name=${encodeURIComponent(name)}&background=2563eb&color=fff`) : `https://ui-avatars.com/api/?name=I&background=2563eb&color=fff`,
         expertise: typeof instructorData === 'object' ? (instructorData?.verificationDetails?.expertise || 'Certified Instructor') : 'Certified Instructor',
+        rating: 0, 
         students: typeof instructorData === 'object' ? (instructorData?.studentsCount || 0) : 0,
         courses: []
       };
@@ -220,6 +215,10 @@ const BuyCourses = () => {
               </div>
               <div className="flex flex-wrap justify-center md:justify-start items-center gap-6">
                 <div className="flex items-center gap-2">
+                  <Star size={14} className="text-warning-500 fill-warning-500" />
+                  <span className="text-sm font-semibold text-slate-700">{instructor.rating} Rating</span>
+                </div>
+                <div className="flex items-center gap-2">
                   <Users size={14} className="text-primary-600" />
                   <span className="text-sm font-semibold text-slate-700">{instructor.students.toLocaleString()} Students</span>
                 </div>
@@ -246,6 +245,10 @@ const BuyCourses = () => {
                     <h4 className="text-md font-bold text-slate-900 line-clamp-2 h-12 group-hover:text-primary-600 transition-colors">
                       {course.title}
                     </h4>
+                    <div className="flex items-center gap-2 text-[11px] font-bold text-slate-400">
+                      <Star size={12} className="text-warning-500 fill-warning-500" />
+                      <span>{course.rating || 0} ({course.reviewsCount || 0} reviews)</span>
+                    </div>
                   </div>
 
                   <div className="grid grid-cols-2 gap-4 border-y border-slate-50 py-3">
@@ -271,23 +274,13 @@ const BuyCourses = () => {
                   </div>
 
                   <div className="pt-2 mt-auto">
-                    {course.isEnrolled ? (
-                      <button 
-                        onClick={() => navigate(`/student/course-player/${course._id}`)}
-                        className="w-full flex items-center justify-center gap-2 text-sm px-6 py-3 bg-green-50 text-green-700 border border-green-200 rounded-xl font-bold hover:bg-green-100 transition-all"
-                      >
-                        <CheckCircle className="w-4 h-4" />
-                        Go to Course
-                      </button>
-                    ) : (
-                      <button 
-                        onClick={() => handleBuyClick(course, instructor)}
-                        className="btn-primary w-full flex items-center justify-center gap-2 text-sm"
-                      >
-                        <ShoppingBag size={16} />
-                        Enroll Now
-                      </button>
-                    )}
+                    <button 
+                      onClick={() => handleBuyClick(course, instructor)}
+                      className="btn-primary w-full flex items-center justify-center gap-2 text-sm"
+                    >
+                      <ShoppingBag size={16} />
+                      Enroll Now
+                    </button>
                   </div>
                 </div>
               </div>
@@ -373,7 +366,6 @@ const BuyCourses = () => {
             </div>
           </div>
         </div>
-      )}
       {/* Payment Failure Modal */}
       {showFailureModal && (
         <div className="fixed inset-0 z-[70] flex items-center justify-center p-4">

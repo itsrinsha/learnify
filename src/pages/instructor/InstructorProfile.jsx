@@ -9,6 +9,7 @@ import {
   ShieldCheck, 
   Edit3, 
   Briefcase,
+  Star,
   Users,
   BookOpen,
   Camera,
@@ -34,6 +35,7 @@ const InstructorProfile = () => {
     avatar: user?.profileImage || `https://ui-avatars.com/api/?name=${encodeURIComponent(user?.name || 'I')}&background=random&size=200`,
     isVerified: user?.approvalStatus === 'approved',
     location: user?.location || 'Not set',
+    rating: dashboardData?.averageRating?.toFixed(1) || '0.0',
     students: dashboardData?.totalStudents || 0,
     courses: dashboardData?.totalCourses || 0,
     socialLinks: user?.socialLinks || {}
@@ -83,6 +85,9 @@ const InstructorProfile = () => {
                 </div>
                 <p className="text-slate-500 font-bold text-base md:text-lg">{profile.role}</p>
                 <div className="flex flex-wrap justify-center md:justify-start items-center gap-4 sm:gap-6 pt-2">
+                  <div className="flex items-center gap-2 text-sm font-bold text-slate-500">
+                    <Star className="text-yellow-400 fill-yellow-400" size={16} /> {profile.rating} Rating
+                  </div>
                   <div className="flex items-center gap-2 text-sm font-bold text-slate-500">
                     <Users className="text-blue-500" size={16} /> {profile.students} Students
                   </div>
@@ -217,7 +222,7 @@ const InstructorProfile = () => {
               </div>
               <div>
                 <h4 className="text-xl font-black bg-gradient-to-r from-white to-slate-400 bg-clip-text text-transparent">Trusted Educator</h4>
-                <p className="text-slate-400 text-xs mt-3 leading-relaxed">This badge is awarded to instructors who complete required teaching hours and maintain verified accreditation.</p>
+                <p className="text-slate-400 text-xs mt-3 leading-relaxed">This badge is awarded to instructors who maintain a high rating and complete required teaching hours.</p>
               </div>
             </div>
           </div>

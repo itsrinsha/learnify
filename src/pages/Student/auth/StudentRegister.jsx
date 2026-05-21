@@ -99,20 +99,8 @@ function Register() {
 
   // Send OTP
   const handleSendOtp = async () => {
-    // Touch both fields so validation errors display in the UI
-    await formik.setFieldTouched("name", true, true);
-    await formik.setFieldTouched("email", true, true);
-
     if (!formik.values.email || !formik.values.name) {
       return setError("Please provide your name and email address to receive a code.");
-    }
-
-    // Validate email format before hitting the backend
-    const emailError = await formik.validateField("email");
-    const nameError = await formik.validateField("name");
-
-    if (emailError || nameError) {
-      return setError(emailError || nameError || "Please fix the errors above before continuing.");
     }
 
     try {

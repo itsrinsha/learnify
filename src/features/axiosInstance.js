@@ -37,30 +37,6 @@ axiosInstance.interceptors.response.use(
       window.location.href = "/login";
     }
 
-    // Blocked account checking
-    if (error.response && error.response.status === 403) {
-      const isBlockedError = error.response.data?.message === "Your account has been blocked." || 
-                             error.response.data?.message?.toLowerCase().includes("blocked");
-      
-      if (isBlockedError) {
-        console.log("User is blocked. Redirecting to /blocked page...");
-        const reason = error.response.data?.reason || "Your account has been restricted by an administrator.";
-        const userStr = localStorage.getItem("user");
-        if (userStr) {
-          try {
-            const user = JSON.parse(userStr);
-            user.isBlocked = true;
-            user.blockedReason = reason;
-            localStorage.setItem("user", JSON.stringify(user));
-          } catch (e) {
-            console.error(e);
-          }
-        }
-        localStorage.removeItem("token");
-        window.location.href = "/blocked";
-      }
-    }
-
     return Promise.reject(error);
   }
 );
