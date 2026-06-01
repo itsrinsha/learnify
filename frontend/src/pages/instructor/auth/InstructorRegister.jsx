@@ -73,7 +73,7 @@ function InstructorRegister() {
           role: "instructor",
         }));
 
-        if (result.type === "auth/register/fulfilled") {
+        if (result.type === "auth/registerUser/fulfilled") {
           toast.success("Instructor Registration successful! Please complete your verification.");
           navigate("/instructor/login");
         } else {
@@ -184,11 +184,8 @@ function InstructorRegister() {
       <div className="w-full lg:w-1/2 flex items-center justify-center p-6 sm:p-12">
         <div className="w-full max-w-md">
           {/* Header for Mobile */}
-          <div className="lg:hidden mb-8 flex items-center space-x-2">
-            <div className="w-10 h-10 bg-indigo-600 rounded-xl flex items-center justify-center">
-              <span className="text-white font-bold text-xl">L</span>
-            </div>
-            <h1 className="text-2xl font-bold tracking-tight">Learnify</h1>
+          <div className="lg:hidden mb-8 flex items-center justify-center">
+            <img src="/logo.png" alt="Learnify" className="h-10 w-auto" />
           </div>
 
           <div className="mb-8">

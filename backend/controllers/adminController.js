@@ -9,6 +9,7 @@ import {
   getAllCategoriesService,
   addCategoryService,
   deleteCategoryService,
+  updateCategoryService,
   getAllOffersService,
   addOfferService,
   deleteOfferService,
@@ -150,6 +151,15 @@ export const deleteCategory = async (req, res, next) => {
   }
 };
 
+export const updateCategory = async (req, res, next) => {
+  try {
+    const category = await updateCategoryService(req.params.id, req.body);
+    res.json(category);
+  } catch (error) {
+    next(error);
+  }
+};
+
 // ✅ Offers
 export const getAllOffers = async (req, res, next) => {
   try {
@@ -266,7 +276,36 @@ export const getActivityFeed = async (req, res, next) => {
 
 export const getReportsData = async (req, res, next) => {
   try {
-    const reports = await getReportsDataService();
+    const { fromDate, toDate } = req.query;
+
+    if (fromDate || toDate) {
+      const now = new Date();
+      if (fromDate) {
+        const from = new Date(fromDate);
+        if (isNaN(from.getTime())) {
+          return res.status(400).json({ message: "Invalid From Date format" });
+        }
+        if (from > now) {
+          return res.status(400).json({ message: "From Date cannot be in the future" });
+        }
+      }
+      if (toDate) {
+        const to = new Date(toDate);
+        if (isNaN(to.getTime())) {
+          return res.status(400).json({ message: "Invalid To Date format" });
+        }
+        if (to > now) {
+          return res.status(400).json({ message: "To Date cannot be in the future" });
+        }
+      }
+      if (fromDate && toDate) {
+        if (new Date(fromDate) > new Date(toDate)) {
+          return res.status(400).json({ message: "From Date cannot be after To Date" });
+        }
+      }
+    }
+
+    const reports = await getReportsDataService(fromDate, toDate);
     res.json(reports);
   } catch (error) {
     next(error);

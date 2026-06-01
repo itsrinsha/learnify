@@ -23,14 +23,43 @@ const examAttemptSchema = new mongoose.Schema(
     },
     score: {
       type: Number,
-      required: true,
+      default: 0,
+    },
+    obtainedMarks: {
+      type: Number,
+      default: 0,
     },
     result: {
       type: String,
-      enum: ["pass", "fail"],
-      required: true,
+      enum: ["pass", "fail", "pending"],
+      default: "pending",
     },
+    status: {
+      type: String,
+      enum: ["draft", "submitted", "approved", "rejected", "evaluated"],
+      default: "submitted",
+    },
+    answers: [
+      {
+        questionId: String,
+        questionIndex: Number,
+        answer: mongoose.Schema.Types.Mixed,
+        selectedOption: Number,
+        isCorrect: Boolean,
+        marksAwarded: {
+          type: Number,
+          default: 0,
+        },
+      },
+    ],
+    uploadedFiles: [String],
+    submissionUrl: String,
+    studentNotes: String,
     feedback: String,
+    submittedAt: {
+      type: Date,
+      default: Date.now,
+    },
     attemptedAt: {
       type: Date,
       default: Date.now,

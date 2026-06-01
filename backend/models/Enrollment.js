@@ -26,6 +26,15 @@ const enrollmentSchema = new mongoose.Schema(
       type: Boolean,
       default: false,
     },
+    completionStatus: {
+      type: String,
+      enum: ["in-progress", "completed"],
+      default: "in-progress",
+    },
+    completedAt: {
+      type: Date,
+      default: null,
+    },
   },
   { timestamps: true }
 );

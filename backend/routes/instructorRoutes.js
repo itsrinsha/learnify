@@ -14,12 +14,17 @@ import {
   updateLesson,
   deleteCourse,
   getInstructorStudents,
+  scheduleReviewSession,
+  getInstructorScheduledReviews,
+  getReviewHistory,
+  deleteReviewSession,
+  updateReviewStatus,
+  completeStudentCourse,
 } from "../controllers/instructorController.js";
 
 import { authMiddleware } from "../middleware/authMiddleware.js";
 
 import approvalMiddleware from "../middleware/approvalMiddleware.js";
-import { getReviewHistory } from "../services/instructorService.js";
 
 const router = express.Router();
 
@@ -55,6 +60,14 @@ router.get(
   roleMiddleware("instructor"),
   approvalMiddleware,
   getInstructorStudents
+);
+
+router.post(
+  "/course/:courseId/student/:studentId/complete",
+  authMiddleware,
+  roleMiddleware("instructor"),
+  approvalMiddleware,
+  completeStudentCourse
 );
 
 router.get(
@@ -131,4 +144,68 @@ router.get(
   approvalMiddleware,
   getReviewHistory
 );
+
+router.post(
+  "/schedule-review",
+  authMiddleware,
+  roleMiddleware("instructor"),
+  approvalMiddleware,
+  scheduleReviewSession
+);
+
+router.get(
+  "/scheduled-reviews",
+  authMiddleware,
+  roleMiddleware("instructor"),
+  approvalMiddleware,
+  getInstructorScheduledReviews
+);
+
+import {
+  getPendingCertificates,
+  approveCertificate,
+  rejectCertificate
+} from "../controllers/certificateController.js";
+
+router.delete(
+  "/scheduled-reviews/:id",
+  authMiddleware,
+  roleMiddleware("instructor"),
+  approvalMiddleware,
+  deleteReviewSession
+);
+
+router.patch(
+  "/scheduled-reviews/:id/status",
+  authMiddleware,
+  roleMiddleware("instructor"),
+  approvalMiddleware,
+  updateReviewStatus
+);
+
+// ✅ Certificates approval flow
+router.get(
+  "/certificates/pending",
+  authMiddleware,
+  roleMiddleware("instructor"),
+  approvalMiddleware,
+  getPendingCertificates
+);
+
+router.patch(
+  "/certificates/:id/approve",
+  authMiddleware,
+  roleMiddleware("instructor"),
+  approvalMiddleware,
+  approveCertificate
+);
+
+router.patch(
+  "/certificates/:id/reject",
+  authMiddleware,
+  roleMiddleware("instructor"),
+  approvalMiddleware,
+  rejectCertificate
+);
+
 export default router;

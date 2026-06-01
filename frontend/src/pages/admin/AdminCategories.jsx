@@ -22,6 +22,7 @@ const AdminCategories = () => {
   const [error, setError] = useState(null);
   const [showAddModal, setShowAddModal] = useState(false);
   const [newCategory, setNewCategory] = useState({ name: '', description: '' });
+  const [editingCategory, setEditingCategory] = useState(null);
 
   useEffect(() => {
     fetchCategories();
@@ -60,6 +61,20 @@ const AdminCategories = () => {
       fetchCategories();
     } catch (err) {
       alert('Failed to delete category');
+    }
+  };
+
+  const handleEditCategory = async (e) => {
+    e.preventDefault();
+    try {
+      await adminService.updateCategory(editingCategory._id, {
+        name: editingCategory.name,
+        description: editingCategory.description
+      });
+      setEditingCategory(null);
+      fetchCategories();
+    } catch (err) {
+      alert('Failed to update category');
     }
   };
 
@@ -147,7 +162,11 @@ const AdminCategories = () => {
               </div>
 
               <div className="px-6 py-4 bg-slate-50/50 flex items-center justify-end gap-3 border-t border-slate-100">
-                <button className="p-2 text-slate-400 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-all" title="Edit">
+                <button 
+                  onClick={() => setEditingCategory(category)}
+                  className="p-2 text-slate-400 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-all" 
+                  title="Edit"
+                >
                   <Edit2 className="w-4 h-4" />
                 </button>
                 <button 
@@ -201,6 +220,46 @@ const AdminCategories = () => {
               </div>
               <button type="submit" className="w-full py-4 bg-blue-600 text-white rounded-2xl font-black uppercase tracking-widest hover:bg-blue-700 transition-all shadow-xl shadow-blue-900/20 active:scale-[0.98]">
                 Create Category
+              </button>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* Edit Modal */}
+      {editingCategory && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/40 backdrop-blur-sm">
+          <div className="bg-white w-full max-w-md rounded-[2.5rem] p-8 shadow-2xl animate-in fade-in zoom-in duration-200">
+            <div className="flex justify-between items-center mb-6">
+              <h3 className="text-2xl font-black text-slate-900">Edit Category</h3>
+              <button onClick={() => setEditingCategory(null)} className="p-2 hover:bg-slate-100 rounded-full transition-colors">
+                <X className="w-6 h-6 text-slate-400" />
+              </button>
+            </div>
+            <form onSubmit={handleEditCategory} className="space-y-6">
+              <div>
+                <label className="block text-xs font-black uppercase tracking-widest text-slate-400 mb-2">Category Name</label>
+                <input 
+                  type="text" 
+                  required
+                  className="w-full px-5 py-4 bg-slate-50 border-none rounded-2xl focus:ring-4 focus:ring-blue-500/10 transition-all font-bold"
+                  value={editingCategory.name}
+                  onChange={(e) => setEditingCategory({...editingCategory, name: e.target.value})}
+                  placeholder="e.g. Design"
+                />
+              </div>
+              <div>
+                <label className="block text-xs font-black uppercase tracking-widest text-slate-400 mb-2">Description</label>
+                <textarea 
+                  rows="3"
+                  className="w-full px-5 py-4 bg-slate-50 border-none rounded-2xl focus:ring-4 focus:ring-blue-500/10 transition-all font-bold resize-none"
+                  value={editingCategory.description || ''}
+                  onChange={(e) => setEditingCategory({...editingCategory, description: e.target.value})}
+                  placeholder="What is this category about?"
+                ></textarea>
+              </div>
+              <button type="submit" className="w-full py-4 bg-blue-600 text-white rounded-2xl font-black uppercase tracking-widest hover:bg-blue-700 transition-all shadow-xl shadow-blue-900/20 active:scale-[0.98]">
+                Save Changes
               </button>
             </form>
           </div>

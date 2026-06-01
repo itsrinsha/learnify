@@ -8,6 +8,7 @@ import {
   getInstructorsByStudent,
   getMyEnrolledLiveSessions,
   getMyEnrolledReviews,
+  getStudentScheduledReviews,
 } from "../controllers/userController.js";
 import { authMiddleware } from "../middleware/authMiddleware.js";
 
@@ -33,5 +34,11 @@ router.get("/my-live-sessions", authMiddleware, getMyEnrolledLiveSessions);
 
 // enrolled reviews
 router.get("/my-reviews", authMiddleware, getMyEnrolledReviews);
+
+import { deleteReviewSession } from "../controllers/instructorController.js";
+
+// scheduled reviews (for students)
+router.get("/scheduled-reviews", authMiddleware, getStudentScheduledReviews);
+router.delete("/scheduled-reviews/:id", authMiddleware, deleteReviewSession);
 
 export default router;

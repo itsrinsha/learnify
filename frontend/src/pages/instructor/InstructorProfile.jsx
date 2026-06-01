@@ -1,5 +1,5 @@
-import React from 'react';
-import { useSelector } from 'react-redux';
+import React, { useState, useRef } from 'react';
+import { useSelector, useDispatch } from 'react-redux';
 import { 
   User, 
   Mail, 
@@ -15,13 +15,53 @@ import {
   Camera,
   Clock,
   MapPin,
-  Image as ImageIcon
+  Image as ImageIcon,
+  Loader2
 } from 'lucide-react';
 import { FaTwitter, FaLinkedin, FaGithub, FaGlobe } from 'react-icons/fa';
+import { updateProfile } from '../../features/auth/authSlice';
+import { uploadUserAvatar } from '../../services/userService';
+import { toast } from 'react-hot-toast';
 
 const InstructorProfile = () => {
+  const dispatch = useDispatch();
+  const fileInputRef = useRef(null);
+  const [avatarLoading, setAvatarLoading] = useState(false);
   const { user } = useSelector((state) => state.auth);
   const { dashboardData } = useSelector((state) => state.instructor);
+
+  const handleAvatarClick = () => {
+    fileInputRef.current?.click();
+  };
+
+  const handleFileChange = async (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+
+    if (!file.type.startsWith('image/')) {
+      toast.error("Please upload an image file.");
+      return;
+    }
+
+    if (file.size > 5 * 1024 * 1024) {
+      toast.error("Image size must be less than 5MB.");
+      return;
+    }
+
+    try {
+      setAvatarLoading(true);
+      const res = await uploadUserAvatar(file);
+      if (res && res.url) {
+        await dispatch(updateProfile({ profileImage: res.url })).unwrap();
+        toast.success("Profile picture updated successfully!");
+      }
+    } catch (err) {
+      console.error(err);
+      toast.error(err.response?.data?.message || "Failed to update profile picture");
+    } finally {
+      setAvatarLoading(false);
+    }
+  };
   
   const profile = {
     name: user?.name || 'Instructor',
@@ -43,7 +83,7 @@ const InstructorProfile = () => {
 
   return (
     <div className="space-y-10 pb-20 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mt-8">
-      <div className="flex flex-col lg:flex-row gap-10">
+      <div className="flex flex-col xl:flex-row gap-10">
         {/* Left Column - Main Info */}
         <div className="flex-1 space-y-10">
           {/* Cover & Avatar Section */}
@@ -62,15 +102,36 @@ const InstructorProfile = () => {
             </div>
             
             <div className="px-6 sm:px-10 pb-12 flex flex-col md:flex-row items-center md:items-end gap-6 sm:gap-8 -mt-20 md:-mt-16 relative z-10 text-center md:text-left">
-              <div className="relative group">
-                <img 
-                  src={profile.avatar} 
-                  alt={profile.name} 
-                  className="w-32 h-32 md:w-40 md:h-40 rounded-[2.5rem] border-8 border-white shadow-2xl object-cover bg-white" 
-                />
-                <button className="absolute bottom-2 right-2 p-3 bg-slate-900 text-white rounded-2xl shadow-xl opacity-0 group-hover:opacity-100 transition-all hover:bg-blue-600">
+              <div className="relative group w-32 h-32 md:w-40 md:h-40 rounded-[2.5rem] flex-shrink-0">
+                {avatarLoading ? (
+                  <div className="w-full h-full rounded-[2.5rem] border-8 border-white shadow-2xl bg-slate-50 flex items-center justify-center">
+                    <Loader2 className="w-10 h-10 text-blue-600 animate-spin" />
+                  </div>
+                ) : user?.profileImage ? (
+                  <img 
+                    src={user.profileImage} 
+                    alt={profile.name} 
+                    className="w-full h-full rounded-[2.5rem] border-8 border-white shadow-2xl object-cover bg-white" 
+                  />
+                ) : (
+                  <div className="w-full h-full rounded-[2.5rem] border-8 border-white shadow-2xl bg-slate-100 flex items-center justify-center text-slate-400">
+                    <User size={48} />
+                  </div>
+                )}
+                <button 
+                  onClick={handleAvatarClick}
+                  disabled={avatarLoading}
+                  className="absolute bottom-2 right-2 p-3 bg-slate-900 text-white rounded-2xl shadow-xl opacity-0 group-hover:opacity-100 transition-all hover:bg-blue-600 disabled:cursor-not-allowed"
+                >
                   <Camera size={20} />
                 </button>
+                <input 
+                  type="file" 
+                  ref={fileInputRef} 
+                  onChange={handleFileChange} 
+                  className="hidden" 
+                  accept="image/*" 
+                />
               </div>
               
               <div className="flex-1 pb-2 md:pb-4 space-y-3 w-full">
@@ -148,7 +209,7 @@ const InstructorProfile = () => {
         </div>
 
         {/* Right Column - Stats & Links */}
-        <div className="lg:w-96 space-y-8 sm:space-y-10">
+        <div className="xl:w-96 space-y-8 sm:space-y-10">
           <div className="bg-white p-8 sm:p-10 rounded-[2.5rem] border border-slate-200 shadow-sm space-y-8 sm:space-y-10 hover:shadow-md transition-shadow">
             <h3 className="font-black text-slate-900 uppercase tracking-widest text-sm flex items-center gap-3">
               <Briefcase size={18} className="text-blue-600" />

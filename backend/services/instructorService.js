@@ -3,6 +3,14 @@ import Module from "../models/Module.js";
 import Lesson from "../models/Lesson.js";
 import Enrollment from "../models/Enrollment.js";
 import User from "../models/User.js";
+import Exam from "../models/Exam.js";
+import ExamAttempt from "../models/ExamAttempt.js";
+import Certificate from "../models/Certificate.js";
+import { generateCertificatePDF } from "../utils/pdfGenerator.js";
+import fs from "fs";
+import path from "path";
+import crypto from "crypto";
+
 
 // ✅ Create Basic Course (Draft)
 export const createCourseDraftService = async (instructorId, courseData) => {
@@ -66,37 +74,59 @@ export const publishCourseService = async (instructorId, courseId) => {
     populate: { path: "lessons" }
   });
 
-  if (!course) throw new Error("Course not found");
-  if (course.instructor.toString() !== instructorId) throw new Error("Not authorized");
+  if (!course) {
+    const err = new Error("Course not found");
+    err.statusCode = 404;
+    throw err;
+  }
+  if (course.instructor.toString() !== instructorId) {
+    const err = new Error("Not authorized");
+    err.statusCode = 403;
+    throw err;
+  }
 
   // Validation: Ensure course has content before publishing
   if (!course.thumbnail || course.thumbnail.includes("unsplash.com/photo-1498050108023-c5249f4df085")) {
-    throw new Error("Please upload a professional course thumbnail before publishing.");
+    const err = new Error("Please upload a professional course thumbnail before publishing.");
+    err.statusCode = 400;
+    throw err;
   }
   if (!course.description || course.description.length < 100) {
-    throw new Error("Course description must be at least 100 characters long.");
+    const err = new Error("Course description must be at least 100 characters long.");
+    err.statusCode = 400;
+    throw err;
   }
   if (!course.price || course.price <= 0) {
-    throw new Error("Please set a valid price for the course.");
+    const err = new Error("Please set a valid price for the course.");
+    err.statusCode = 400;
+    throw err;
   }
   if (!course.category) {
-    throw new Error("Course category is required.");
+    const err = new Error("Course category is required.");
+    err.statusCode = 400;
+    throw err;
   }
   
   if (!course.modules || course.modules.length === 0) {
-    throw new Error("Course must have at least one module before publishing.");
+    const err = new Error("Course must have at least one module before publishing.");
+    err.statusCode = 400;
+    throw err;
   }
   
   const hasLessons = course.modules.some(m => m.lessons && m.lessons.length > 0);
   if (!hasLessons) {
-    throw new Error("Each module must have at least one lesson before publishing.");
+    const err = new Error("Each module must have at least one lesson before publishing.");
+    err.statusCode = 400;
+    throw err;
   }
 
   // Ensure all lessons have videos
   for (const module of course.modules) {
     for (const lesson of module.lessons) {
       if (!lesson.videoUrl) {
-        throw new Error(`Lesson "${lesson.title}" in module "${module.title}" is missing a video.`);
+        const err = new Error(`Lesson "${lesson.title}" in module "${module.title}" is missing a video.`);
+        err.statusCode = 400;
+        throw err;
       }
     }
   }
@@ -108,6 +138,30 @@ export const publishCourseService = async (instructorId, courseId) => {
 
   return course;
 };
+const parseDurationToSeconds = (durationStr) => {
+  if (!durationStr || typeof durationStr !== 'string') return 0;
+  const parts = durationStr.split(':').map(Number);
+  if (parts.some(isNaN)) return 0;
+  
+  if (parts.length === 3) {
+    return parts[0] * 3600 + parts[1] * 60 + parts[2];
+  } else if (parts.length === 2) {
+    return parts[0] * 60 + parts[1];
+  } else if (parts.length === 1) {
+    return parts[0] * 60;
+  }
+  return 0;
+};
+
+const formatSecondsToDuration = (totalSeconds) => {
+  const hours = Math.floor(totalSeconds / 3600);
+  const minutes = Math.floor((totalSeconds % 3600) / 60);
+  
+  if (hours > 0) {
+    return `${hours}h ${minutes}m`;
+  }
+  return `${minutes}m`;
+};
 
 // ✅ Get Instructor Courses
 export const getInstructorCoursesService = async (instructorId) => {
@@ -118,12 +172,34 @@ export const getInstructorCoursesService = async (instructorId) => {
     })
     .sort({ createdAt: -1 });
 
+  // Update counts and durations dynamically
+  const updatedCourses = await Promise.all(courses.map(async (course) => {
+    const enrolledCount = await Enrollment.countDocuments({ course: course._id });
+    
+    // Get all lessons for this course
+    const lessons = await Lesson.find({ courseId: course._id });
+    let totalSeconds = 0;
+    lessons.forEach(lesson => {
+      totalSeconds += parseDurationToSeconds(lesson.duration);
+    });
+    const realDuration = formatSecondsToDuration(totalSeconds);
+
+    // Save if changed to persist
+    if (course.enrolledStudentsCount !== enrolledCount || course.duration !== realDuration) {
+      course.enrolledStudentsCount = enrolledCount;
+      course.duration = realDuration;
+      await course.save();
+    }
+
+    return course;
+  }));
+
   return {
-    all: courses,
-    approved: courses.filter(c => c.approvalStatus === "approved"),
-    pending: courses.filter(c => c.approvalStatus === "pending"),
-    rejected: courses.filter(c => c.approvalStatus === "rejected"),
-    drafts: courses.filter(c => c.status === "draft")
+    all: updatedCourses,
+    approved: updatedCourses.filter(c => c.approvalStatus === "approved"),
+    pending: updatedCourses.filter(c => c.approvalStatus === "pending"),
+    rejected: updatedCourses.filter(c => c.approvalStatus === "rejected"),
+    drafts: updatedCourses.filter(c => c.status === "draft")
   };
 };
 
@@ -189,22 +265,39 @@ export const deleteCourseService = async (instructorId, courseId) => {
   // Optionally delete related modules and lessons here
   await Module.deleteMany({ courseId });
   await Lesson.deleteMany({ courseId });
+  await Exam.deleteMany({ course: courseId });
+  await ExamAttempt.deleteMany({ course: courseId });
 
   return { message: "Course deleted successfully" };
 };
 
 // ✅ Get Instructor Dashboard Service
-
-
-
-
 export const getInstructorDashboardService = async (instructorId) => {
   // Get all instructor courses
   const courses = await Course.find({
     instructor: instructorId,
   }).sort({ createdAt: -1 });
 
-  const courseIds = courses.map((course) => course._id);
+  // Update counts and durations dynamically
+  const updatedCourses = await Promise.all(courses.map(async (course) => {
+    const enrolledCount = await Enrollment.countDocuments({ course: course._id });
+    const lessons = await Lesson.find({ courseId: course._id });
+    let totalSeconds = 0;
+    lessons.forEach(lesson => {
+      totalSeconds += parseDurationToSeconds(lesson.duration);
+    });
+    const realDuration = formatSecondsToDuration(totalSeconds);
+
+    if (course.enrolledStudentsCount !== enrolledCount || course.duration !== realDuration) {
+      course.enrolledStudentsCount = enrolledCount;
+      course.duration = realDuration;
+      await course.save();
+    }
+
+    return course;
+  }));
+
+  const courseIds = updatedCourses.map((course) => course._id);
 
   // Get all enrollments for instructor courses
   const enrollments = await Enrollment.find({
@@ -219,27 +312,26 @@ export const getInstructorDashboardService = async (instructorId) => {
   // Total earnings
   let totalEarnings = 0;
   enrollments.forEach((enrollment) => {
-    // Assuming course price is what instructor earned (simplified)
     if (enrollment.course?.price) {
       totalEarnings += enrollment.course.price;
     }
   });
 
   // Recent courses
-  const recentCourses = courses.slice(0, 5);
+  const recentCourses = updatedCourses.slice(0, 5);
 
   // Recent students (unique users)
   const uniqueStudentIds = [...new Set(enrollments.map(e => e.user?._id?.toString()))];
   const totalUniqueStudents = uniqueStudentIds.length;
 
   return {
-    totalCourses: courses.length,
-    publishedCourses: courses.filter(c => c.status === "published").length,
+    totalCourses: updatedCourses.length,
+    publishedCourses: updatedCourses.filter(c => c.status === "published").length,
     totalStudents: totalUniqueStudents,
     enrolledStudents: totalStudents,
     totalEarnings,
     recentCourses,
-    courses // include all courses for detail views
+    courses: updatedCourses
   };
 };
 
@@ -261,8 +353,71 @@ export const getInstructorStudentsService = async (instructorId) => {
     courseName: e.course?.title,
     purchaseDate: e.createdAt,
     progress: e.progress || 0,
-    status: e.completed ? 'Completed' : 'Active'
+    status: (e.completionStatus === 'completed' || e.completed) ? 'Completed' : 'Active',
+    completionStatus: e.completionStatus || (e.completed ? 'completed' : 'in-progress'),
   }));
+};
+
+export const completeStudentCourseService = async (instructorId, courseId, studentId) => {
+  // 1. Fetch course
+  const course = await Course.findById(courseId);
+  if (!course) throw new Error("Course not found");
+
+  // 2. Authorization check: must be owner instructor
+  if (course.instructor.toString() !== instructorId) {
+    throw new Error("You are not authorized to mark completion for this course");
+  }
+
+  // 3. Fetch enrollment
+  const enrollment = await Enrollment.findOne({ user: studentId, course: courseId });
+  if (!enrollment) throw new Error("Enrollment not found");
+
+  // 4. Update enrollment
+  enrollment.completed = true;
+  enrollment.completionStatus = "completed";
+  enrollment.completedAt = new Date();
+  await enrollment.save();
+
+  // 5. Generate certificate data
+  let certificate = await Certificate.findOne({ student: studentId, course: courseId });
+  if (certificate) {
+    // If it already exists, just return it
+    return certificate;
+  }
+
+  // Fetch student info
+  const student = await User.findById(studentId);
+  if (!student) throw new Error("Student not found");
+
+  // Fetch instructor info
+  const instructorObj = await User.findById(instructorId);
+  const instructorName = instructorObj?.name || "Authorized Instructor";
+
+  const certificateNumber = `LERN-${crypto.createHash("md5").update(`${studentId}-${courseId}-${Date.now()}`).digest("hex").toUpperCase().substring(0, 10)}`;
+
+  // Create certificate record
+  certificate = new Certificate({
+    student: studentId,
+    studentId: studentId,
+    course: courseId,
+    courseId: courseId,
+    instructor: instructorId,
+    instructorId: instructorId,
+    certificateId: certificateNumber,
+    certificateCode: certificateNumber,
+    certificateNumber: certificateNumber,
+    issueDate: new Date(),
+    completionDate: new Date(),
+    studentName: student.name,
+    courseTitle: course.title,
+    status: "pending",
+    courseCompleted: true,
+  });
+
+  // Save to database
+  await certificate.save();
+
+  return certificate;
 };
 
 export const getReviewHistory = async (instructorId) => {

@@ -2,6 +2,9 @@ import Course from "../models/Course.js";
 import Enrollment from "../models/Enrollment.js";
 import Module from "../models/Module.js";
 import Lesson from "../models/Lesson.js";
+import Exam from "../models/Exam.js";
+import ExamAttempt from "../models/ExamAttempt.js";
+
 
 // ================= CREATE COURSE =================
 export const createCourseService = async ({
@@ -37,6 +40,7 @@ export const getCoursesService = async (filters = {}) => {
     status: "published",
     approvalStatus: "approved",
     isHidden: { $ne: true },
+    isBlocked: { $ne: true },
     ...queryFilters
   };
 
@@ -68,10 +72,14 @@ export const getCourseByIdService = async (
 
   // Check visibility for public/students
   if (userRole !== "admin" && (course.instructor._id.toString() !== userId)) {
-    if (course.approvalStatus !== "approved" || course.status !== "published" || course.isHidden) {
-      const error = new Error("This course is not available.");
-      error.statusCode = 403;
-      throw error;
+    // If the student is enrolled in the course, they are authorized to view it
+    const isEnrolled = userId ? await Enrollment.exists({ user: userId, course: courseId }) : false;
+    if (!isEnrolled) {
+      if (course.isBlocked || course.approvalStatus !== "approved" || course.status !== "published" || course.isHidden) {
+        const error = new Error("This course is not available.");
+        error.statusCode = 403;
+        throw error;
+      }
     }
   }
 
@@ -233,6 +241,8 @@ export const deleteCourseService = async (
   await Module.deleteMany({ courseId });
   await Lesson.deleteMany({ courseId });
   await Enrollment.deleteMany({ course: courseId });
+  await Exam.deleteMany({ course: courseId });
+  await ExamAttempt.deleteMany({ course: courseId });
 
   // Delete course
   await course.deleteOne();

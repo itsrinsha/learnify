@@ -8,6 +8,8 @@ import { useDispatch, useSelector } from "react-redux";
 import { User, Mail, Lock, Eye, EyeOff, ShieldCheck, ArrowRight, CheckCircle2 } from "lucide-react";
 import { FcGoogle } from "react-icons/fc";
 import { FaGithub } from "react-icons/fa";
+import { toast } from 'react-hot-toast';
+
 function Register() {
   const navigate = useNavigate();
   const dispatch = useDispatch();
@@ -74,9 +76,9 @@ function Register() {
           role: "student",
         }));
         
-        if (result.type === "auth/register/fulfilled") {
+        if (result.type === "auth/registerUser/fulfilled") {
           toast.success("Registration successful! Welcome to Learnify.");
-          navigate("/login");
+          navigate("/student/dashboard");
         } else {
           toast.error(result.payload || "Registration failed. Please try again.");
         }
@@ -184,11 +186,8 @@ function Register() {
       <div className="w-full lg:w-1/2 flex items-center justify-center p-6 sm:p-12">
         <div className="w-full max-w-md">
           {/* Header for Mobile */}
-          <div className="lg:hidden mb-8 flex items-center space-x-2">
-            <div className="w-10 h-10 bg-blue-600 rounded-xl flex items-center justify-center">
-              <span className="text-white font-bold text-xl">L</span>
-            </div>
-            <h1 className="text-2xl font-bold tracking-tight">Learnify</h1>
+          <div className="lg:hidden mb-8 flex items-center justify-center">
+            <img src="/logo.png" alt="Learnify" className="h-10 w-auto" />
           </div>
 
           <div className="mb-8">

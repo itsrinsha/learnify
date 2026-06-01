@@ -13,7 +13,8 @@ export const getInstructorDashboard = async () => {
 export const getInstructorCourses = async () => {
   try {
     const response = await axiosInstance.get('/instructor/courses');
-    return response.data;
+    const data = response.data;
+    return data?.courses || data?.data || data;
   } catch (error) {
     console.error('Error fetching instructor courses:', error);
     throw error;
@@ -50,10 +51,21 @@ export const getReviewHistory = async () => {
   }
 };
 
+export const completeStudentCourse = async (courseId, studentId) => {
+  try {
+    const response = await axiosInstance.post(`/instructor/course/${courseId}/student/${studentId}/complete`);
+    return response.data;
+  } catch (error) {
+    console.error('Error completing student course:', error);
+    throw error;
+  }
+};
+
 export default {
   getInstructorDashboard,
   getInstructorCourses,
   publishCourse,
   getInstructorStudents,
   getReviewHistory,
+  completeStudentCourse,
 };

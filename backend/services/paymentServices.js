@@ -110,6 +110,8 @@ export const verifyPaymentService = async ({
       course: courseId,
       instructor: course.instructor,
     });
+    course.enrolledStudentsCount = (course.enrolledStudentsCount || 0) + 1;
+    await course.save();
   }
 
   return {

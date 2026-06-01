@@ -11,6 +11,7 @@ import {
   getAllCategories,
   addCategory,
   deleteCategory,
+  updateCategory,
   getAllOffers,
   addOffer,
   deleteOffer,
@@ -69,8 +70,9 @@ router.patch(
 );
 
 // Categories
-router.get("/categories", authMiddleware, roleMiddleware("admin"), getAllCategories);
+router.get("/categories", authMiddleware, roleMiddleware("admin", "instructor", "student"), getAllCategories);
 router.post("/categories", authMiddleware, roleMiddleware("admin"), addCategory);
+router.put("/categories/:id", authMiddleware, roleMiddleware("admin"), updateCategory);
 router.delete("/categories/:id", authMiddleware, roleMiddleware("admin"), deleteCategory);
 
 // Offers

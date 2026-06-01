@@ -35,6 +35,7 @@ import {
   updateCourse,
   updateLesson
 } from '../../services/instructorCourseService';
+import adminService from '../../services/adminService';
 
 const CreateCourse = () => {
   const navigate = useNavigate();
@@ -42,6 +43,7 @@ const CreateCourse = () => {
   const [step, setStep] = useState(1);
   const [loading, setLoading] = useState(false);
   const [courseId, setCourseId] = useState(null);
+  const [categories, setCategories] = useState([]);
   
   // Form States
   const [courseData, setCourseData] = useState({
@@ -67,6 +69,18 @@ const CreateCourse = () => {
     examRequired: false,
     certificateEligibility: true,
   });
+
+  useEffect(() => {
+    const fetchCategories = async () => {
+      try {
+        const data = await adminService.getAllCategories();
+        setCategories(data);
+      } catch (error) {
+        console.error("Error fetching categories:", error);
+      }
+    };
+    fetchCategories();
+  }, []);
 
   useEffect(() => {
     if (id) {
@@ -355,10 +369,18 @@ const CreateCourse = () => {
                     onChange={handleInputChange}
                     className="w-full px-6 py-4 bg-slate-50 border border-slate-100 rounded-2xl text-sm focus:ring-2 focus:ring-blue-500 outline-none transition-all font-bold text-slate-600"
                   >
-                    <option>Web Development</option>
-                    <option>Data Science</option>
-                    <option>Mobile App Dev</option>
-                    <option>UI/UX Design</option>
+                    {categories.length > 0 ? (
+                      categories.map((cat) => (
+                        <option key={cat._id} value={cat.name}>{cat.name}</option>
+                      ))
+                    ) : (
+                      <>
+                        <option>Web Development</option>
+                        <option>Data Science</option>
+                        <option>Mobile App Dev</option>
+                        <option>UI/UX Design</option>
+                      </>
+                    )}
                   </select>
                 </div>
                 <div className="space-y-2">

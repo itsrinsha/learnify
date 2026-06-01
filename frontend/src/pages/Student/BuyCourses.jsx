@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { toast } from 'react-hot-toast';
 import { fetchAllCourses, enrollInCourse } from '../../features/courses/courseThunk';
@@ -15,14 +15,18 @@ import {
   CreditCard,
   ChevronRight,
   Info,
-  Loader2
+  Loader2,
+  AlertCircle,
+  Search
 } from 'lucide-react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 import paymentService from '../../services/paymentService';
+import adminService from '../../services/adminService';
 
 const BuyCourses = () => {
   const dispatch = useDispatch();
   const navigate = useNavigate();
+  const location = useLocation();
   const { courses, loading, error } = useSelector((state) => state.courses);
   const { user } = useSelector((state) => state.auth);
   const [selectedCourse, setSelectedCourse] = useState(null);
@@ -31,15 +35,57 @@ const BuyCourses = () => {
   const [orderId, setOrderId] = useState("");
   const [showFailureModal, setShowFailureModal] = useState(false);
   const [failureReason, setFailureReason] = useState("");
+  const [sortMode, setSortMode] = useState('all'); // 'all' | 'popular' | 'new'
+  
+  const [categories, setCategories] = useState([]);
+  const [selectedCategory, setSelectedCategory] = useState("All");
+
+  // Read search query from URL ?q=
+  const urlSearchQuery = useMemo(() => {
+    const params = new URLSearchParams(location.search);
+    return (params.get('q') || '').trim().toLowerCase();
+  }, [location.search]);
 
   useEffect(() => {
     dispatch(fetchAllCourses());
   }, [dispatch]);
 
+  useEffect(() => {
+    const fetchCategories = async () => {
+      try {
+        const data = await adminService.getAllCategories();
+        setCategories(data);
+      } catch (err) {
+        console.error("Failed to fetch categories:", err);
+      }
+    };
+    fetchCategories();
+  }, []);
+
+  const loadRazorpayScript = () => {
+    return new Promise((resolve, reject) => {
+      if (window.Razorpay) {
+        return resolve(true);
+      }
+
+      const script = document.createElement('script');
+      script.src = 'https://checkout.razorpay.com/v1/checkout.js';
+      script.onload = () => resolve(true);
+      script.onerror = () => reject(new Error('Failed to load Razorpay checkout script'));
+      document.body.appendChild(script);
+    });
+  };
+
   const handleEnrollment = async () => {
     setIsProcessing(true);
     const loadingToast = toast.loading("Initializing payment...");
     try {
+      if (!navigator.onLine) {
+        throw new Error('No internet connection. Please connect and try again.');
+      }
+
+      await loadRazorpayScript();
+
       // 1. Create order on backend
       const orderData = await paymentService.createOrder(selectedCourse._id);
       
@@ -117,29 +163,56 @@ const BuyCourses = () => {
     }
   };
 
-  // Group courses by instructor for the current UI design
-  const instructors = Array.isArray(courses) ? courses.reduce((acc, course) => {
-    // Handle both populated and unpopulated instructor field
+  // Apply search, category, and sort filters to courses
+  const filteredAndSortedCourses = useMemo(() => {
+    if (!Array.isArray(courses)) return [];
+    let result = [...courses];
+
+    // Search filter
+    if (urlSearchQuery) {
+      result = result.filter(
+        (c) =>
+          c.title?.toLowerCase().includes(urlSearchQuery) ||
+          c.category?.toLowerCase().includes(urlSearchQuery) ||
+          (typeof c.instructor === 'object' && c.instructor?.name?.toLowerCase().includes(urlSearchQuery))
+      );
+    }
+
+    // Category filter
+    if (selectedCategory !== 'All') {
+      result = result.filter((c) => c.category === selectedCategory);
+    }
+
+    // Sort
+    if (sortMode === 'popular') {
+      result.sort((a, b) => (b.reviewsCount || 0) - (a.reviewsCount || 0));
+    } else if (sortMode === 'new') {
+      result.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+    }
+
+    return result;
+  }, [courses, urlSearchQuery, selectedCategory, sortMode]);
+
+  // Group by instructor
+  const instructors = filteredAndSortedCourses.reduce((acc, course) => {
     const instructorData = course.instructor;
     const instructorId = typeof instructorData === 'object' ? instructorData?._id : instructorData;
-    
     if (!instructorId) return acc;
-    
     if (!acc[instructorId]) {
       const name = typeof instructorData === 'object' ? (instructorData?.name || 'Expert Instructor') : 'Expert Instructor';
       acc[instructorId] = {
         id: instructorId,
-        name: name,
+        name,
         avatar: typeof instructorData === 'object' ? (instructorData?.profileImage || `https://ui-avatars.com/api/?name=${encodeURIComponent(name)}&background=2563eb&color=fff`) : `https://ui-avatars.com/api/?name=I&background=2563eb&color=fff`,
         expertise: typeof instructorData === 'object' ? (instructorData?.verificationDetails?.expertise || 'Certified Instructor') : 'Certified Instructor',
-        rating: 0, 
+        rating: 0,
         students: typeof instructorData === 'object' ? (instructorData?.studentsCount || 0) : 0,
         courses: []
       };
     }
     acc[instructorId].courses.push(course);
     return acc;
-  }, {}) : {};
+  }, {});
 
   const availableInstructors = Object.values(instructors);
 
@@ -194,100 +267,153 @@ const BuyCourses = () => {
       <div className="flex flex-col md:flex-row md:items-end justify-between gap-6 border-b border-slate-200 pb-8">
         <div>
           <h2 className="text-2xl font-bold text-slate-900">Explore Courses</h2>
-          <p className="text-slate-500 mt-2">Find the right course to build your skills and advance your career.</p>
+          <p className="text-slate-500 mt-2">
+            {urlSearchQuery
+              ? <>Showing results for <span className="font-bold text-slate-800">&ldquo;{urlSearchQuery}&rdquo;</span></>  
+              : 'Find the right course to build your skills and advance your career.'}
+          </p>
         </div>
         <div className="flex bg-slate-50 p-1 rounded-md border border-slate-200">
-          <button className="px-5 py-2 bg-white text-primary-600 rounded shadow-sm text-sm font-semibold border border-slate-200">All Courses</button>
-          <button className="px-5 py-2 text-slate-600 rounded text-sm font-semibold hover:bg-slate-100 transition-colors">Popular</button>
-          <button className="px-5 py-2 text-slate-600 rounded text-sm font-semibold hover:bg-slate-100 transition-colors">New</button>
+          {[['all', 'All Courses'], ['popular', 'Popular'], ['new', 'New']].map(([mode, label]) => (
+            <button
+              key={mode}
+              onClick={() => setSortMode(mode)}
+              className={`px-5 py-2 rounded text-sm font-semibold transition-colors ${
+                sortMode === mode
+                  ? 'bg-white text-primary-600 shadow-sm border border-slate-200'
+                  : 'text-slate-600 hover:bg-slate-100'
+              }`}
+            >
+              {label}
+            </button>
+          ))}
         </div>
       </div>
 
-      {availableInstructors.map((instructor) => (
-        <div key={instructor.id} className="space-y-8">
-          {/* Instructor Header */}
-          <div className="card p-8 flex flex-col md:flex-row items-center gap-8 bg-slate-50/50">
-            <img src={instructor.avatar} alt={instructor.name} className="w-20 h-20 rounded object-cover border border-slate-200" />
-            <div className="flex-1 space-y-4 text-center md:text-left">
-              <div>
-                <h3 className="text-xl font-bold text-slate-900">{instructor.name}</h3>
-                <p className="text-primary-600 font-semibold text-xs uppercase tracking-wider mt-1">{instructor.expertise}</p>
-              </div>
-              <div className="flex flex-wrap justify-center md:justify-start items-center gap-6">
-                <div className="flex items-center gap-2">
-                  <Star size={14} className="text-warning-500 fill-warning-500" />
-                  <span className="text-sm font-semibold text-slate-700">{instructor.rating} Rating</span>
+      {/* Categories Filter Pills */}
+      <div className="flex flex-wrap gap-2.5 pb-2">
+        <button 
+          onClick={() => setSelectedCategory('All')}
+          className={`px-5 py-2.5 rounded-xl text-xs font-black uppercase tracking-widest transition-all ${
+            selectedCategory === 'All' 
+              ? 'bg-blue-600 text-white shadow-lg shadow-blue-600/20' 
+              : 'bg-slate-50 text-slate-500 hover:bg-slate-100 border border-slate-100'
+          }`}
+        >
+          All
+        </button>
+        {categories.map((cat) => (
+          <button
+            key={cat._id}
+            onClick={() => setSelectedCategory(cat.name)}
+            className={`px-5 py-2.5 rounded-xl text-xs font-black uppercase tracking-widest transition-all ${
+              selectedCategory === cat.name 
+                ? 'bg-blue-600 text-white shadow-lg shadow-blue-600/20' 
+                : 'bg-slate-50 text-slate-500 hover:bg-slate-100 border border-slate-100'
+            }`}
+          >
+            {cat.name}
+          </button>
+        ))}
+      </div>
+
+      {availableInstructors.length > 0 ? (
+        availableInstructors.map((instructor) => (
+          <div key={instructor.id} className="space-y-8">
+            {/* Instructor Header */}
+            <div className="card p-8 flex flex-col md:flex-row items-center gap-8 bg-slate-50/50">
+              <img src={instructor.avatar} alt={instructor.name} className="w-20 h-20 rounded object-cover border border-slate-200" />
+              <div className="flex-1 space-y-4 text-center md:text-left">
+                <div>
+                  <h3 className="text-xl font-bold text-slate-900">{instructor.name}</h3>
+                  <p className="text-primary-600 font-semibold text-xs uppercase tracking-wider mt-1">{instructor.expertise}</p>
                 </div>
-                <div className="flex items-center gap-2">
-                  <Users size={14} className="text-primary-600" />
-                  <span className="text-sm font-semibold text-slate-700">{instructor.students.toLocaleString()} Students</span>
-                </div>
-                <div className="flex items-center gap-2">
-                  <ShieldCheck size={14} className="text-success-500" />
-                  <span className="text-sm font-semibold text-slate-700">Verified Expert</span>
+                <div className="flex flex-wrap justify-center md:justify-start items-center gap-6">
+                  <div className="flex items-center gap-2">
+                    <Star size={14} className="text-warning-500 fill-warning-500" />
+                    <span className="text-sm font-semibold text-slate-700">{instructor.rating} Rating</span>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <Users size={14} className="text-primary-600" />
+                    <span className="text-sm font-semibold text-slate-700">{instructor.students.toLocaleString()} Students</span>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <ShieldCheck size={14} className="text-success-500" />
+                    <span className="text-sm font-semibold text-slate-700">Verified Expert</span>
+                  </div>
                 </div>
               </div>
             </div>
-          </div>
 
-          {/* Courses Grid */}
-          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
-            {instructor.courses.map((course) => (
-              <div key={course._id} className="card group flex flex-col hover:border-primary-300 transition-all">
-                <div className="relative aspect-video overflow-hidden border-b border-slate-100">
-                  <img src={course.thumbnail} alt={course.title} className="w-full h-full object-cover" />
-                  <div className="absolute top-3 right-3 bg-white px-3 py-1 rounded font-bold text-primary-700 shadow-sm border border-slate-200 text-sm">
-                    ₹{course.price?.toLocaleString()}
-                  </div>
-                </div>
-                <div className="p-5 flex-1 flex flex-col space-y-5">
-                  <div className="space-y-2">
-                    <h4 className="text-md font-bold text-slate-900 line-clamp-2 h-12 group-hover:text-primary-600 transition-colors">
-                      {course.title}
-                    </h4>
-                    <div className="flex items-center gap-2 text-[11px] font-bold text-slate-400">
-                      <Star size={12} className="text-warning-500 fill-warning-500" />
-                      <span>{course.rating || 0} ({course.reviewsCount || 0} reviews)</span>
+            {/* Courses Grid */}
+            <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
+              {instructor.courses.map((course) => (
+                <div key={course._id} className="card group flex flex-col hover:border-primary-300 transition-all">
+                  <div className="relative aspect-video overflow-hidden border-b border-slate-100">
+                    <img src={course.thumbnail} alt={course.title} className="w-full h-full object-cover" />
+                    <div className="absolute top-3 right-3 bg-white px-3 py-1 rounded font-bold text-primary-700 shadow-sm border border-slate-200 text-sm">
+                      ₹{course.price?.toLocaleString()}
                     </div>
                   </div>
-
-                  <div className="grid grid-cols-2 gap-4 border-y border-slate-50 py-3">
-                    <div className="flex items-center gap-2 text-slate-500">
-                      <Clock size={14} />
-                      <span className="text-[11px] font-medium">{course.duration || '12h 30m'}</span>
+                  <div className="p-5 flex-1 flex flex-col space-y-5">
+                    <div className="space-y-2">
+                      <h4 className="text-md font-bold text-slate-900 line-clamp-2 h-12 group-hover:text-primary-600 transition-colors">
+                        {course.title}
+                      </h4>
+                      <div className="flex items-center gap-2 text-[11px] font-bold text-slate-400">
+                        <Star size={12} className="text-warning-500 fill-warning-500" />
+                        <span>{course.rating || 0} ({course.reviewsCount || 0} reviews)</span>
+                      </div>
                     </div>
-                    <div className="flex items-center gap-2 text-slate-500">
-                      <BookOpen size={14} />
-                      <span className="text-[11px] font-medium">{course.lessonsCount || course.lessons?.length || 0} Lessons</span>
-                    </div>
-                  </div>
 
-                  <div className="flex flex-wrap gap-2">
-                    {course.category && (
-                      <span className="px-2 py-0.5 bg-slate-100 text-slate-600 text-[10px] font-bold rounded uppercase tracking-tighter">
-                        {course.category}
+                    <div className="grid grid-cols-2 gap-4 border-y border-slate-50 py-3">
+                      <div className="flex items-center gap-2 text-slate-500">
+                        <Clock size={14} />
+                        <span className="text-[11px] font-medium">{course.duration || '12h 30m'}</span>
+                      </div>
+                      <div className="flex items-center gap-2 text-slate-500">
+                        <BookOpen size={14} />
+                        <span className="text-[11px] font-medium">{course.lessonsCount || course.lessons?.length || 0} Lessons</span>
+                      </div>
+                    </div>
+
+                    <div className="flex flex-wrap gap-2">
+                      {course.category && (
+                        <span className="px-2 py-0.5 bg-slate-100 text-slate-600 text-[10px] font-bold rounded uppercase tracking-tighter">
+                          {course.category}
+                        </span>
+                      )}
+                      <span className="px-2 py-0.5 bg-primary-50 text-primary-600 text-[10px] font-bold rounded uppercase tracking-tighter">
+                        Best Seller
                       </span>
-                    )}
-                    <span className="px-2 py-0.5 bg-primary-50 text-primary-600 text-[10px] font-bold rounded uppercase tracking-tighter">
-                      Best Seller
-                    </span>
-                  </div>
+                    </div>
 
-                  <div className="pt-2 mt-auto">
-                    <button 
-                      onClick={() => handleBuyClick(course, instructor)}
-                      className="btn-primary w-full flex items-center justify-center gap-2 text-sm"
-                    >
-                      <ShoppingBag size={16} />
-                      Enroll Now
-                    </button>
+                    <div className="pt-2 mt-auto">
+                      <button 
+                        onClick={() => handleBuyClick(course, instructor)}
+                        className="btn-primary w-full flex items-center justify-center gap-2 text-sm"
+                      >
+                        <ShoppingBag size={16} />
+                        Enroll Now
+                      </button>
+                    </div>
                   </div>
                 </div>
-              </div>
-            ))}
+              ))}
+            </div>
+          </div>
+        ))
+      ) : (
+        <div className="flex flex-col items-center justify-center min-h-[30vh] space-y-4">
+          <div className="bg-slate-50 p-10 rounded-[3rem] border border-slate-200 text-center max-w-md w-full">
+            <div className="w-20 h-20 bg-white rounded-3xl flex items-center justify-center mx-auto mb-6 shadow-xl shadow-slate-200">
+              <BookOpen size={40} className="text-blue-600" />
+            </div>
+            <h3 className="text-2xl font-bold text-slate-900">No Courses Found</h3>
+            <p className="text-slate-500 mt-2">We couldn't find any courses in the "{selectedCategory}" category.</p>
           </div>
         </div>
-      ))}
+      )}
 
       {/* Payment Modal */}
       {showPayment && selectedCourse && (
@@ -366,6 +492,7 @@ const BuyCourses = () => {
             </div>
           </div>
         </div>
+      )}
       {/* Payment Failure Modal */}
       {showFailureModal && (
         <div className="fixed inset-0 z-[70] flex items-center justify-center p-4">

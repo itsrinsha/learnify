@@ -1,6 +1,8 @@
 import express from "express";
 import multer from "multer";
 import { v2 as cloudinary } from "cloudinary";
+import { authMiddleware } from "../middleware/authMiddleware.js";
+import { saveVideoProgress, getVideoProgress } from "../controllers/videoController.js";
 
 const router = express.Router();
 
@@ -43,5 +45,9 @@ router.post(
     }
   }
 );
+
+// Progress tracking routes
+router.post("/save-progress", authMiddleware, saveVideoProgress);
+router.get("/progress/:lessonId", authMiddleware, getVideoProgress);
 
 export default router;

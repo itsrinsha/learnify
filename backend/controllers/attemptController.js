@@ -14,8 +14,7 @@ export const checkEligibility = asyncHandler(async (req, res) => {
 
 // ✅ Submit Attempt
 export const submitAttempt = asyncHandler(async (req, res) => {
-  const { score } = req.body;
-  const attempt = await submitAttemptService(req.user.id, req.params.examId, score);
+  const attempt = await submitAttemptService(req.user.id, req.params.examId, req.body);
   res.status(201).json(attempt);
 });
 

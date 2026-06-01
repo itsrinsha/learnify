@@ -4,6 +4,12 @@ import Category from "../models/Category.js";
 import Offer from "../models/Offer.js";
 import Payment from "../models/Payment.js";
 import { LiveSession } from "../models/LiveSetion.js";
+import Module from "../models/Module.js";
+import Lesson from "../models/Lesson.js";
+import Enrollment from "../models/Enrollment.js";
+import Exam from "../models/Exam.js";
+import ExamAttempt from "../models/ExamAttempt.js";
+
 
 // ✅ User management
 export const getAllUsersService = async () => {
@@ -25,6 +31,14 @@ export const getAllCoursesAdminService = async () => {
 export const deleteCourseAdminService = async (courseId) => {
   const course = await Course.findById(courseId);
   if (!course) throw new Error("Course not found");
+  
+  // Delete all related data
+  await Module.deleteMany({ courseId });
+  await Lesson.deleteMany({ courseId });
+  await Enrollment.deleteMany({ course: courseId });
+  await Exam.deleteMany({ course: courseId });
+  await ExamAttempt.deleteMany({ course: courseId });
+  
   await course.deleteOne();
   return true;
 };
@@ -35,6 +49,11 @@ export const updateCourseStatusService = async (courseId, status) => {
   
   if (status === "approved" || status === "rejected" || status === "pending") {
     course.approvalStatus = status;
+    if (status === "rejected") {
+      course.isBlocked = true;
+    } else if (status === "approved") {
+      course.isBlocked = false;
+    }
   } else if (status === "hide") {
     course.isHidden = true;
   } else if (status === "unhide") {
@@ -113,6 +132,10 @@ export const addCategoryService = async (data) => {
 
 export const deleteCategoryService = async (id) => {
   return await Category.findByIdAndDelete(id);
+};
+
+export const updateCategoryService = async (id, data) => {
+  return await Category.findByIdAndUpdate(id, data, { new: true });
 };
 
 // ✅ Offers
@@ -272,15 +295,29 @@ export const getActivityFeedService = async () => {
 };
 
 // ✅ Reports Data
-export const getReportsDataService = async () => {
+export const getReportsDataService = async (fromDate, toDate) => {
   try {
+    const paymentMatch = { status: "paid" };
+    const userMatch = {};
+    const courseMatch = {};
+
+    if (fromDate || toDate) {
+      const dateRange = {};
+      if (fromDate) dateRange.$gte = new Date(fromDate);
+      if (toDate) dateRange.$lte = new Date(toDate);
+      
+      paymentMatch.createdAt = dateRange;
+      userMatch.createdAt = dateRange;
+      courseMatch.createdAt = dateRange;
+    }
+
     const totalRevenue = await Payment.aggregate([
-      { $match: { status: "paid" } },
+      { $match: paymentMatch },
       { $group: { _id: null, total: { $sum: "$amount" } } }
     ]);
 
     const monthlyRevenue = await Payment.aggregate([
-      { $match: { status: "paid" } },
+      { $match: paymentMatch },
       { $group: { 
           _id: { 
             month: { $month: "$createdAt" }, 
@@ -293,6 +330,7 @@ export const getReportsDataService = async () => {
     ]);
 
     const userGrowth = await User.aggregate([
+      { $match: userMatch },
       { $group: { 
           _id: { 
             month: { $month: "$createdAt" }, 
@@ -307,8 +345,8 @@ export const getReportsDataService = async () => {
     const summary = {
       totalRevenue: totalRevenue[0]?.total || 0,
       monthlyRevenue: monthlyRevenue[0]?.revenue || 0,
-      totalUsers: await User.countDocuments(),
-      totalCourses: await Course.countDocuments()
+      totalUsers: await User.countDocuments(userMatch),
+      totalCourses: await Course.countDocuments(courseMatch)
     };
 
     const revenueGrowth = monthlyRevenue.slice(0, 6).reverse().map(m => ({

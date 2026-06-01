@@ -21,6 +21,11 @@ const liveSessionSchema = new mongoose.Schema(
       default: false,
     },
 
+    isCompleted: {
+      type: Boolean,
+      default: false,
+    },
+
     meetingLink: String, // Zoom / WebRTC link
   },
   { timestamps: true }

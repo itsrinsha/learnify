@@ -5,6 +5,8 @@ import Review from "../models/Review.js";
 import { LiveSession } from "../models/LiveSetion.js";
 import Lesson from "../models/Lesson.js";
 import Progress from "../models/Progress.js";
+import Certificate from "../models/Certificate.js";
+import crypto from "crypto";
 
 
 // get profile
@@ -57,6 +59,28 @@ export const enrollCourseService = async ({ userId, courseId }) => {
     instructor: course.instructor,
   });
 
+  course.enrolledStudentsCount = (course.enrolledStudentsCount || 0) + 1;
+  await course.save();
+
+  // Auto-create pending certificate record for this enrollment
+  try {
+    const existingCert = await Certificate.findOne({ student: userId, course: courseId });
+    if (!existingCert) {
+      const certId = `LERN-${crypto.randomBytes(6).toString("hex").toUpperCase()}`;
+      await Certificate.create({
+        student: userId,
+        course: courseId,
+        instructor: course.instructor,
+        certificateId: certId,
+        status: "pending",
+        courseCompleted: false,
+      });
+    }
+  } catch (certErr) {
+    // Non-fatal: log but don't fail enrollment
+    console.error("[Certificate] Auto-create failed:", certErr.message);
+  }
+
   return enrollment;
 };
 
@@ -73,19 +97,34 @@ export const getEnrolledCoursesService = async (userId) => {
     },
   });
 
-  return enrollments.map((enrollment) => {
+  const certificates = await Certificate.find({ student: userId });
+  const certMap = new Map();
+  certificates.forEach(c => {
+    if (c.course) {
+      certMap.set(c.course.toString(), c._id);
+    }
+  });
+
+  const activeEnrollments = enrollments.filter(e => e.course && !e.course.isBlocked);
+
+  return activeEnrollments.map((enrollment) => {
 
     const course = enrollment.course;
+    const certId = certMap.get(course._id.toString()) || null;
 
     return {
 
       ...enrollment.toObject(),
 
-      progress: 0,
+      progress: enrollment.progress || 0,
 
-      completedLessons: 0,
+      completedLessons: enrollment.completedLessons || 0,
 
-      nextLesson: "Start Learning",
+      nextLesson: enrollment.nextLesson || "Start Learning",
+
+      certificateId: certId,
+
+      completionStatus: enrollment.completionStatus || (enrollment.completed ? "completed" : "in-progress"),
 
       course: {
         ...course.toObject(),

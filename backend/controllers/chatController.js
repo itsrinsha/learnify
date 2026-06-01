@@ -1,6 +1,7 @@
 import { asyncHandler } from "../middleware/trycatchmiddleware.js";
 import { getConversationsService, getMessagesService, markAsReadService, sendMessageService } from "../services/chatServices.js";
-
+import { createNotification } from "./notificationController.js";
+import User from "../models/User.js";
 
 // ✅ Get conversations
 export const getConversations = asyncHandler(async (req, res) => {
@@ -18,8 +19,19 @@ export const sendMessage = asyncHandler(async (req, res) => {
     message,
   });
 
+  // 🔔 Notify receiver about the new message
+  const sender = await User.findById(req.user.id).select('name');
+  createNotification({
+    recipient: receiver,
+    type: 'new_message',
+    title: '💬 New Message',
+    message: `${sender?.name || 'Someone'} sent you a message: "${message.length > 60 ? message.slice(0, 60) + '…' : message}"`,
+    link: '/student/messages',
+  });
+
   res.status(201).json(newMessage);
 });
+
 
 // ✅ Get conversation
 export const getMessages = asyncHandler(async (req, res) => {
@@ -40,4 +52,6 @@ export const markAsRead = asyncHandler(async (req, res) => {
 
   res.json({ message: "Messages marked as read" });
 });
+
+
 

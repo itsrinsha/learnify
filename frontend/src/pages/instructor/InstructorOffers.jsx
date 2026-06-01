@@ -16,8 +16,11 @@ import {
 
 const InstructorOffers = () => {
   const [showOfferForm, setShowOfferForm] = useState(false);
-
- 
+  const [startDate, setStartDate] = useState('');
+  const [endDate, setEndDate] = useState('');
+  const [offerPrice, setOfferPrice] = useState('');
+  const [discountPercent, setDiscountPercent] = useState('');
+  const [selectedCourse, setSelectedCourse] = useState('');
 
   return (
     <div className="space-y-10 pb-20">
@@ -87,9 +90,14 @@ const InstructorOffers = () => {
             <div className="p-10 space-y-8">
               <div className="space-y-3">
                 <label className="text-xs font-black text-slate-400 uppercase tracking-widest px-1">Select Course</label>
-                <select className="w-full px-5 py-4 bg-slate-50 border-none rounded-2xl text-sm font-bold text-slate-700 outline-none focus:ring-2 focus:ring-blue-500 transition-all">
-                  <option>Advanced React 19 (Approved)</option>
-                  <option>Node.js Microservices (Approved)</option>
+                <select 
+                  value={selectedCourse}
+                  onChange={(e) => setSelectedCourse(e.target.value)}
+                  className="w-full px-5 py-4 bg-slate-50 border-none rounded-2xl text-sm font-bold text-slate-700 outline-none focus:ring-2 focus:ring-blue-500 transition-all"
+                >
+                  <option value="" disabled>-- Select Course --</option>
+                  <option value="react">Advanced React 19 (Approved)</option>
+                  <option value="node">Node.js Microservices (Approved)</option>
                 </select>
                 <p className="text-[10px] text-slate-400 font-medium px-1 flex items-center gap-1">
                   <AlertCircle size={10} /> Only approved courses are eligible for offers.
@@ -98,19 +106,55 @@ const InstructorOffers = () => {
               <div className="grid md:grid-cols-2 gap-8">
                 <div className="space-y-3">
                   <label className="text-xs font-black text-slate-400 uppercase tracking-widest px-1">Offer Price (₹)</label>
-                  <input type="number" placeholder="1999" className="w-full px-5 py-4 bg-slate-50 border-none rounded-2xl text-sm font-bold text-slate-700 outline-none focus:ring-2 focus:ring-blue-500 transition-all" />
+                  <input 
+                    type="number" 
+                    placeholder="1999" 
+                    value={offerPrice}
+                    onChange={(e) => setOfferPrice(e.target.value)}
+                    className="w-full px-5 py-4 bg-slate-50 border-none rounded-2xl text-sm font-bold text-slate-700 outline-none focus:ring-2 focus:ring-blue-500 transition-all" 
+                  />
                 </div>
                 <div className="space-y-3">
                   <label className="text-xs font-black text-slate-400 uppercase tracking-widest px-1">Discount %</label>
-                  <input type="number" placeholder="20" className="w-full px-5 py-4 bg-slate-50 border-none rounded-2xl text-sm font-bold text-slate-700 outline-none focus:ring-2 focus:ring-blue-500 transition-all" />
+                  <input 
+                    type="number" 
+                    placeholder="20" 
+                    value={discountPercent}
+                    onChange={(e) => setDiscountPercent(e.target.value)}
+                    className="w-full px-5 py-4 bg-slate-50 border-none rounded-2xl text-sm font-bold text-slate-700 outline-none focus:ring-2 focus:ring-blue-500 transition-all" 
+                  />
                 </div>
                 <div className="space-y-3">
                   <label className="text-xs font-black text-slate-400 uppercase tracking-widest px-1">Start Date</label>
-                  <input type="date" className="w-full px-5 py-4 bg-slate-50 border-none rounded-2xl text-sm font-bold text-slate-700 outline-none focus:ring-2 focus:ring-blue-500 transition-all" />
+                  <input 
+                    type="date" 
+                    value={startDate}
+                    onChange={(e) => setStartDate(e.target.value)}
+                    onClick={(e) => {
+                      try {
+                        e.target.showPicker();
+                      } catch (err) {
+                        console.error(err);
+                      }
+                    }}
+                    className="w-full px-5 py-4 bg-slate-50 border-none rounded-2xl text-sm font-bold text-slate-700 outline-none focus:ring-2 focus:ring-blue-500 transition-all" 
+                  />
                 </div>
                 <div className="space-y-3">
                   <label className="text-xs font-black text-slate-400 uppercase tracking-widest px-1">End Date</label>
-                  <input type="date" className="w-full px-5 py-4 bg-slate-50 border-none rounded-2xl text-sm font-bold text-slate-700 outline-none focus:ring-2 focus:ring-blue-500 transition-all" />
+                  <input 
+                    type="date" 
+                    value={endDate}
+                    onChange={(e) => setEndDate(e.target.value)}
+                    onClick={(e) => {
+                      try {
+                        e.target.showPicker();
+                      } catch (err) {
+                        console.error(err);
+                      }
+                    }}
+                    className="w-full px-5 py-4 bg-slate-50 border-none rounded-2xl text-sm font-bold text-slate-700 outline-none focus:ring-2 focus:ring-blue-500 transition-all" 
+                  />
                 </div>
               </div>
               <div className="pt-6">

@@ -18,6 +18,17 @@ const progressSchema = new mongoose.Schema(
         ref: "Lesson",
       },
     ],
+    progressPercentage: {
+      type: Number,
+      default: 0,
+    },
+    completedAt: {
+      type: Date,
+    },
+    lastWatchedLesson: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "Lesson",
+    },
     lastAccessed: {
       type: Date,
       default: Date.now,

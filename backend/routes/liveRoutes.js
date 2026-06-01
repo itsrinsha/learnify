@@ -5,6 +5,7 @@ import {
   startLiveSession,
   endLiveSession,
   getMyLiveSessions,
+  deleteLiveSession,
 } from "../controllers/liveController.js";
 import { authMiddleware } from "../middleware/authMiddleware.js";
 
@@ -18,5 +19,6 @@ router.get("/:courseId", getLiveSessions);
 
 router.put("/:id/start", authMiddleware, startLiveSession);
 router.put("/:id/end", authMiddleware, endLiveSession);
+router.delete("/:id", authMiddleware, deleteLiveSession);
 
 export default router;

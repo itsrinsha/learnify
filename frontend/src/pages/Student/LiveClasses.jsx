@@ -11,11 +11,14 @@ import {
   Info,
   ChevronRight,
   Loader2,
-  AlertCircle
+  AlertCircle,
+  ExternalLink
 } from 'lucide-react';
 import { getMyLiveSessions } from '../../services/liveService';
+import { useSocket } from '../../context/SocketContext';
 
 const LiveClasses = () => {
+  const { socket } = useSocket();
   const [sessions, setSessions] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -23,6 +26,52 @@ const LiveClasses = () => {
   useEffect(() => {
     fetchLiveSessions();
   }, []);
+
+  useEffect(() => {
+    if (!socket) return;
+
+    const handleSessionStarted = (data) => {
+      setSessions((prev) => 
+        prev.map((s) => s._id === data.sessionId ? { ...s, isLive: true, meetingLink: data.meetingLink } : s)
+      );
+    };
+
+    const handleSessionEnded = (data) => {
+      setSessions((prev) => 
+        prev.map((s) => s._id === data.sessionId ? { ...s, isLive: false } : s)
+      );
+    };
+
+    const handleClassCreated = () => {
+      fetchLiveSessions();
+    };
+
+    const handleClassUpdated = (updatedSession) => {
+      setSessions((prev) => 
+        prev.map((s) => s._id === updatedSession._id ? updatedSession : s)
+      );
+    };
+
+    const handleClassDeleted = (data) => {
+      setSessions((prev) => 
+        prev.filter((s) => s._id !== data.sessionId)
+      );
+    };
+
+    socket.on("live-session-started", handleSessionStarted);
+    socket.on("live-session-ended", handleSessionEnded);
+    socket.on("liveClassCreated", handleClassCreated);
+    socket.on("liveClassUpdated", handleClassUpdated);
+    socket.on("liveClassDeleted", handleClassDeleted);
+
+    return () => {
+      socket.off("live-session-started", handleSessionStarted);
+      socket.off("live-session-ended", handleSessionEnded);
+      socket.off("liveClassCreated", handleClassCreated);
+      socket.off("liveClassUpdated", handleClassUpdated);
+      socket.off("liveClassDeleted", handleClassDeleted);
+    };
+  }, [socket]);
 
   const fetchLiveSessions = async () => {
     try {
@@ -139,6 +188,13 @@ const LiveClasses = () => {
                       <div className="flex flex-wrap justify-center md:justify-start items-center gap-4 text-sm font-medium text-slate-500">
                         <span className="flex items-center gap-1.5"><Clock size={16} /> {new Date(item.startTime).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</span>
                         <span className="flex items-center gap-1.5 font-bold text-blue-600">Instructor: {item.instructor?.name}</span>
+                        {item.isLive && item.meetingLink ? (
+                          <a href={item.meetingLink} target="_blank" rel="noopener noreferrer" className="flex items-center gap-1.5 text-blue-600 hover:underline font-bold">
+                            <ExternalLink size={16} /> Link: {item.meetingLink}
+                          </a>
+                        ) : (
+                          <span className="text-slate-400 italic text-xs">Link will be available when session starts</span>
+                        )}
                       </div>
                     </div>
 

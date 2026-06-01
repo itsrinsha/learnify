@@ -7,6 +7,7 @@ import {
   getMyEnrolledLiveSessionsService,
   getMyEnrolledReviewsService
 } from "../services/userServices.js";
+import StudentReview from "../models/StudentReview.js";
 
 export const getStudentDashboard = async (req, res) => {
   try {
@@ -98,6 +99,47 @@ export const getMyEnrolledReviews = async (req, res, next) => {
   try {
     const reviews = await getMyEnrolledReviewsService(req.user.id);
     res.status(200).json(reviews);
+  } catch (error) {
+    next(error);
+  }
+};
+
+// ✅ Get all review sessions scheduled for this student
+export const getStudentScheduledReviews = async (req, res, next) => {
+  try {
+    const studentId = req.user.id;
+    const sessions = await StudentReview.find({
+      $or: [
+        { student: studentId },
+        { studentId: studentId }
+      ]
+    })
+      .populate("instructor", "name email profileImage")
+      .populate("instructorId", "name email profileImage")
+      .populate("course", "title thumbnail")
+      .sort({ createdAt: -1 });
+
+    const formatted = sessions.map(session => {
+      const doc = session.toObject();
+      return {
+        _id: doc._id,
+        course: doc.course,
+        student: doc.student || doc.studentId,
+        instructor: doc.instructor || doc.instructorId,
+        date: doc.reviewDate || doc.scheduledDate || "",
+        time: doc.reviewTime || "",
+        meetingLink: doc.meetingLink || doc.roomId || "",
+        status: doc.status || "Scheduled",
+        attempt: doc.attempt || 1,
+        mark: doc.mark || 0,
+        notes: doc.notes || "",
+      };
+    });
+
+    res.status(200).json({
+      success: true,
+      data: formatted
+    });
   } catch (error) {
     next(error);
   }
