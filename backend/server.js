@@ -37,7 +37,7 @@ const httpServer = createServer(app);
 initializeSocket(httpServer);
 
 app.use(cors({ 
-    origin: "http://localhost:5173",
+    origin: "https://learnify-three-nu.vercel.app",
     credentials: true,
     methods: ["GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS"],
     allowedHeaders: ["Content-Type", "Authorization"]
