@@ -86,8 +86,8 @@ const AdminDashboard = () => {
   if (loading) {
     return (
       <div className="flex flex-col items-center justify-center min-h-[60vh] space-y-4">
-        <Loader2 className="w-12 h-12 text-blue-600 animate-spin" />
-        <p className="text-slate-500 font-medium">Loading platform overview...</p>
+        <Loader2 className="w-12 h-12 text-primary-600 animate-spin" />
+        <p className="text-slate-500 font-bold text-sm">Loading platform overview...</p>
       </div>
     );
   }
@@ -97,26 +97,26 @@ const AdminDashboard = () => {
   return (
     <div className="space-y-10 pb-20">
       {/* Welcome Header */}
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 border-b border-slate-200 pb-8">
+      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 border-b border-slate-250/10 pb-8">
         <div>
-          <h2 className="text-2xl font-bold text-slate-900">Platform Overview</h2>
-          <p className="text-slate-500 mt-1 font-medium">Global statistics and recent administrative activities.</p>
+          <h2 className="text-2xl font-black text-slate-900 tracking-tight">Platform Overview</h2>
+          <p className="text-slate-500 mt-1 font-semibold text-sm">Global statistics and recent administrative activities.</p>
         </div>
         <div className="flex items-center gap-3">
-          <button className="px-5 py-2.5 bg-white border border-slate-200 rounded text-sm font-bold text-slate-700 hover:bg-slate-50 transition-colors shadow-sm">
+          <button className="btn-secondary">
             Export Report
           </button>
-          <button className="btn-primary flex items-center gap-2">
+          <button className="btn-primary">
             Platform Settings
           </button>
         </div>
       </div>
 
       {error && (
-        <div className="p-4 bg-error-50 border border-error-200 rounded flex items-center gap-4 text-error-600">
+        <div className="p-4 bg-error-50 border border-error-100 rounded-xl flex items-center gap-4 text-error-600">
           <AlertCircle className="w-5 h-5" />
           <p className="text-sm font-bold">{error}</p>
-          <button onClick={fetchDashboardData} className="ml-auto bg-white px-3 py-1 rounded border border-error-200 text-xs font-bold transition-colors">Retry</button>
+          <button onClick={fetchDashboardData} className="ml-auto bg-white px-3 py-1 rounded-lg border border-error-200 text-xs font-bold transition-colors cursor-pointer hover:bg-error-50">Retry</button>
         </div>
       )}
 
@@ -146,12 +146,12 @@ const AdminDashboard = () => {
                 <XAxis dataKey="name" axisLine={false} tickLine={false} tick={{fill: '#94a3b8', fontSize: 10, fontWeight: 700}} dy={10} />
                 <YAxis axisLine={false} tickLine={false} tick={{fill: '#94a3b8', fontSize: 10, fontWeight: 700}} />
                 <Tooltip 
-                  contentStyle={{backgroundColor: '#fff', borderRadius: '4px', border: '1px solid #e2e8f0', boxShadow: 'none'}} 
-                  labelStyle={{fontWeight: 700, color: '#1e293b', fontSize: '12px'}}
-                  itemStyle={{fontSize: '12px', color: '#2563eb'}}
+                  contentStyle={{backgroundColor: '#fff', borderRadius: '12px', border: '1px solid #e2e8f0', boxShadow: 'none'}} 
+                  labelStyle={{fontWeight: 700, color: '#0f172a', fontSize: '12px'}}
+                  itemStyle={{fontSize: '12px', color: '#7c3aed'}}
                   formatter={(value) => [`₹${value.toLocaleString()}`, 'Revenue']}
                 />
-                <Area type="monotone" dataKey="revenue" stroke="#2563eb" strokeWidth={2} fillOpacity={0.05} fill="#2563eb" />
+                <Area type="monotone" dataKey="revenue" stroke="#7c3aed" strokeWidth={2} fillOpacity={0.05} fill="#7c3aed" />
               </AreaChart>
             </ResponsiveContainer>
           </div>
@@ -161,27 +161,27 @@ const AdminDashboard = () => {
         <div className="card overflow-hidden flex flex-col">
           <div className="px-6 py-4 border-b border-slate-100 flex items-center justify-between bg-slate-50/50">
             <h3 className="text-xs font-bold text-slate-500 uppercase tracking-widest">Activity Feed</h3>
-            <button className="text-primary-600 hover:text-primary-700 text-[10px] font-bold uppercase tracking-widest">View All</button>
+            <button className="text-primary-600 hover:text-primary-700 text-[10px] font-bold uppercase tracking-widest cursor-pointer">View All</button>
           </div>
           <div className="p-6 space-y-6 flex-1">
             {activities.length > 0 ? activities.map((activity, i) => (
               <div key={activity.id || i} className="flex gap-4">
-                <div className={`w-10 h-10 rounded flex items-center justify-center shrink-0 border border-slate-100 ${
-                  activity.type === 'instructor' ? 'bg-slate-50 text-primary-700' :
-                  activity.type === 'course' ? 'bg-slate-50 text-warning-500' :
-                  activity.type === 'payment' ? 'bg-slate-50 text-success-500' : 'bg-slate-50 text-primary-600'
+                <div className={`w-10 h-10 rounded-xl flex items-center justify-center shrink-0 border border-slate-100 ${
+                  activity.type === 'instructor' ? 'bg-primary-50 text-primary-700' :
+                  activity.type === 'course' ? 'bg-warning-50 text-warning-600' :
+                  activity.type === 'payment' ? 'bg-success-50 text-success-600' : 'bg-slate-50 text-slate-600'
                 }`}>
                    <CheckCircle2 size={18} />
                 </div>
                 <div>
                   <p className="text-xs font-bold text-slate-900 leading-snug">
-                    <span className="text-primary-600 font-bold">{activity.user}</span> {activity.action}
+                    <span className="text-primary-650 font-extrabold">{activity.user}</span> {activity.action}
                   </p>
-                  <p className="text-[10px] text-slate-400 font-bold mt-1 uppercase tracking-widest">{formatTime(activity.time)}</p>
+                  <p className="text-[10px] text-slate-450 font-bold mt-1 uppercase tracking-wider">{formatTime(activity.time)}</p>
                 </div>
               </div>
             )) : (
-              <div className="py-10 text-center text-slate-300 font-bold uppercase tracking-widest text-[10px]">No recent data</div>
+              <div className="py-10 text-center text-slate-355 font-bold uppercase tracking-widest text-[10px]">No recent data</div>
             )}
           </div>
         </div>
@@ -191,9 +191,9 @@ const AdminDashboard = () => {
       <div className="card overflow-hidden">
         <div className="px-8 py-5 border-b border-slate-100 flex items-center justify-between bg-slate-50/50">
           <div>
-            <h3 className="text-xs font-bold text-slate-500 uppercase tracking-widest">Pending Instructor Applications</h3>
+            <h3 className="text-xs font-bold text-slate-550 uppercase tracking-widest">Pending Instructor Applications</h3>
           </div>
-          <Link to="/admin/instructors" className="p-2 hover:bg-slate-100 rounded transition-colors text-slate-400">
+          <Link to="/admin/instructors" className="p-2 hover:bg-slate-100 rounded-xl transition-colors text-slate-400">
             <MoreVertical size={18} />
           </Link>
         </div>
@@ -212,12 +212,12 @@ const AdminDashboard = () => {
                 <tr key={req._id} className="hover:bg-slate-50/30 transition-colors">
                   <td className="px-8 py-5">
                     <div className="flex items-center gap-3">
-                      <div className="w-9 h-9 rounded bg-primary-100 flex items-center justify-center text-primary-700 font-bold text-xs border border-primary-200">
+                      <div className="w-9 h-9 rounded-xl bg-primary-100 flex items-center justify-center text-primary-700 font-bold text-xs border border-primary-200">
                         {req.name.charAt(0)}
                       </div>
                       <div>
                         <p className="text-xs font-bold text-slate-900">{req.name}</p>
-                        <p className="text-[10px] text-slate-400 font-medium">{req.email}</p>
+                        <p className="text-[10px] text-slate-450 font-semibold">{req.email}</p>
                       </div>
                     </div>
                   </td>
@@ -226,10 +226,10 @@ const AdminDashboard = () => {
                     <p className="text-[10px] text-slate-400 font-bold uppercase tracking-tighter">{req.verificationDetails?.education}</p>
                   </td>
                   <td className="px-8 py-5">
-                    <span className="px-2 py-0.5 bg-warning-50 text-warning-600 text-[9px] font-bold rounded uppercase tracking-widest border border-warning-200">Pending</span>
+                    <span className="px-2.5 py-1 bg-warning-50 text-warning-600 text-[9px] font-black rounded-lg uppercase tracking-wider border border-warning-200">Pending</span>
                   </td>
                   <td className="px-8 py-5 text-right">
-                    <Link to="/admin/instructors" className="text-xs font-bold text-primary-600 hover:text-primary-700 underline">
+                    <Link to="/admin/instructors" className="text-xs font-bold text-primary-600 hover:text-primary-700 hover:underline">
                       Review
                     </Link>
                   </td>

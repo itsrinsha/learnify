@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { 
   User as UserIcon, 
@@ -17,11 +17,15 @@ import {
   ChevronRight
 } from 'lucide-react';
 import { fetchProfile, updateProfile } from '../../features/auth/authSlice';
+import { toast } from 'react-hot-toast';
+import { uploadUserAvatar } from '../../services/userService';
 
 const AdminProfile = () => {
   const dispatch = useDispatch();
   const { user, loading } = useSelector((state) => state.auth);
+  const fileInputRef = useRef(null);
   
+  const [avatarLoading, setAvatarLoading] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
   const [formData, setFormData] = useState({
     name: '',
@@ -53,6 +57,39 @@ const AdminProfile = () => {
     setIsEditing(false);
   };
 
+  const handleAvatarClick = () => {
+    fileInputRef.current?.click();
+  };
+
+  const handleFileChange = async (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+
+    if (!file.type.startsWith('image/')) {
+      toast.error("Please upload an image file.");
+      return;
+    }
+
+    if (file.size > 5 * 1024 * 1024) {
+      toast.error("Image size must be less than 5MB.");
+      return;
+    }
+
+    try {
+      setAvatarLoading(true);
+      const res = await uploadUserAvatar(file);
+      if (res && res.url) {
+        await dispatch(updateProfile({ profileImage: res.url })).unwrap();
+        toast.success("Profile picture updated successfully!");
+      }
+    } catch (err) {
+      console.error(err);
+      toast.error(err.response?.data?.message || "Failed to update profile picture");
+    } finally {
+      setAvatarLoading(false);
+    }
+  };
+
   const DefaultAvatar = () => (
     <div className="w-full h-full bg-blue-600 flex items-center justify-center text-white font-black text-4xl">
       {user?.name?.charAt(0).toUpperCase()}
@@ -71,14 +108,29 @@ const AdminProfile = () => {
         <div className="h-40 bg-gradient-to-r from-blue-600 to-indigo-700 relative">
            <div className="absolute -bottom-16 left-8 p-1.5 bg-white rounded-[2.5rem] shadow-2xl">
               <div className="relative group overflow-hidden w-32 h-32 rounded-[2rem]">
-                {user?.profileImage ? (
+                {avatarLoading ? (
+                  <div className="w-full h-full bg-slate-50 flex items-center justify-center">
+                    <Loader2 className="w-8 h-8 text-primary-600 animate-spin" />
+                  </div>
+                ) : user?.profileImage ? (
                   <img src={user.profileImage} alt="Admin" className="w-full h-full object-cover" />
                 ) : (
                   <DefaultAvatar />
                 )}
-                <button className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center text-white">
+                <button 
+                  onClick={handleAvatarClick}
+                  disabled={avatarLoading}
+                  className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center text-white cursor-pointer disabled:cursor-not-allowed"
+                >
                   <Camera className="w-8 h-8" />
                 </button>
+                <input 
+                  type="file" 
+                  ref={fileInputRef} 
+                  onChange={handleFileChange} 
+                  className="hidden" 
+                  accept="image/*" 
+                />
               </div>
            </div>
         </div>

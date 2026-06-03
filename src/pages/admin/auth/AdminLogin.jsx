@@ -105,11 +105,8 @@ function AdminLogin() {
       <div className="w-full lg:w-1/2 flex items-center justify-center p-6 sm:p-12 md:p-20">
         <div className="w-full max-w-md">
           {/* Header for Mobile */}
-          <div className="lg:hidden mb-12 flex items-center space-x-2">
-            <div className="w-10 h-10 bg-slate-900 rounded-xl flex items-center justify-center">
-              <span className="text-white font-bold text-xl">L</span>
-            </div>
-            <h1 className="text-2xl font-bold tracking-tight">Learnify</h1>
+          <div className="lg:hidden mb-12 flex items-center justify-center">
+            <img src="/logo.png" alt="Learnify" className="h-10 w-auto" />
           </div>
 
           <div className="mb-10">

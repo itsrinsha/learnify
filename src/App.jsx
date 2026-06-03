@@ -22,29 +22,32 @@ const BuyCourses = lazy(() => import("./pages/Student/BuyCourses"));
 const LiveClasses = lazy(() => import("./pages/Student/LiveClasses"));
 const StudentMessage = lazy(() => import("./pages/Student/StudentMessage"));
 const Exams = lazy(() => import("./pages/Student/Exams"));
+const StudentReviews = lazy(() => import("./pages/Student/StudentReviews"));
 const Certificates = lazy(() => import("./pages/Student/Certificates"));
 const StudentProfile = lazy(() => import("./pages/Student/StudentProfile"));
 const CourseDetails = lazy(() => import("./pages/Student/CourseDetails"));
 const CoursePlayer = lazy(() => import("./pages/Student/CoursePlayer"));
 const LiveRoom = lazy(() => import("./pages/Student/LiveRoom"));
+const VerifyCertificate = lazy(() => import("./pages/Student/VerifyCertificate"));
 
 // Instructor Dashboard Components (Lazy loaded)
 const InstructorLayout = lazy(() => import("./components/instructor/InstructorLayout"));
-const InstructorDashboard = lazy(() => import("./pages/Instructor/InstructorDashboard"));
-const InstructorProfile = lazy(() => import("./pages/Instructor/InstructorProfile"));
-const MyCourses = lazy(() => import("./pages/Instructor/MyCourses"));
-const CreateCourse = lazy(() => import("./pages/Instructor/CreateCourse"));
-const StudentsList = lazy(() => import("./pages/Instructor/StudentsList"));
-const StudentDetails = lazy(() => import("./pages/Instructor/StudentDetails"));
-const InstructorReviews = lazy(() => import("./pages/Instructor/InstructorReviews"));
-const InstructorLiveClasses = lazy(() => import("./pages/Instructor/InstructorLiveClasses"));
-const InstructorMessages = lazy(() => import("./pages/Instructor/InstructorMessages"));
-const InstructorAttendance = lazy(() => import("./pages/Instructor/InstructorAttendance"));
-const InstructorOffers = lazy(() => import("./pages/Instructor/InstructorOffers"));
-const InstructorPayments = lazy(() => import("./pages/Instructor/InstructorPayments"));
-const InstructorEarnings = lazy(() => import("./pages/Instructor/InstructorEarnings"));
-const InstructorVerification = lazy(() => import("./pages/Instructor/InstructorVerification"));
-const InstructorPendingApproval = lazy(() => import("./pages/Instructor/InstructorPendingApproval"));
+const InstructorDashboard = lazy(() => import("./pages/instructor/InstructorDashboard"));
+const InstructorProfile = lazy(() => import("./pages/instructor/InstructorProfile"));
+const MyCourses = lazy(() => import("./pages/instructor/MyCourses"));
+const CreateCourse = lazy(() => import("./pages/instructor/CreateCourse"));
+const StudentsList = lazy(() => import("./pages/instructor/StudentsList"));
+const InstructorReviews = lazy(() => import("./pages/instructor/InstructorReviews"));
+const InstructorExams = lazy(() => import("./pages/instructor/InstructorExams"));
+const InstructorLiveClasses = lazy(() => import("./pages/instructor/InstructorLiveClasses"));
+const InstructorCertificates = lazy(() => import("./pages/instructor/InstructorCertificates"));
+const InstructorMessages = lazy(() => import("./pages/instructor/InstructorMessages"));
+const InstructorAttendance = lazy(() => import("./pages/instructor/InstructorAttendance"));
+const InstructorOffers = lazy(() => import("./pages/instructor/InstructorOffers"));
+const InstructorPayments = lazy(() => import("./pages/instructor/InstructorPayments"));
+const InstructorEarnings = lazy(() => import("./pages/instructor/InstructorEarnings"));
+const InstructorVerification = lazy(() => import("./pages/instructor/InstructorVerification"));
+const InstructorPendingApproval = lazy(() => import("./pages/instructor/InstructorPendingApproval"));
 
 // Admin Dashboard Components (Lazy loaded)
 const AdminLayout = lazy(() => import("./components/admin/AdminLayout"));
@@ -81,6 +84,8 @@ function App() {
           <Route path="/instructor/register" element={<InstructorRegister />} />
           <Route path="/admin/login" element={<AdminLogin />} />
           <Route path="/blocked" element={<BlockedPage />} />
+          <Route path="/verify/:certificateCode" element={<VerifyCertificate />} />
+          <Route path="/verify" element={<VerifyCertificate />} />
 
           {/* Student Protected Routes */}
           <Route
@@ -99,6 +104,7 @@ function App() {
             <Route path="live-chat" element={<LiveRoom />} />
             <Route path="messages" element={<StudentMessage />} />
             <Route path="exams" element={<Exams />} />
+            <Route path="reviews" element={<StudentReviews />} />
             <Route path="certificates" element={<Certificates />} />
             <Route path="profile" element={<StudentProfile />} />
             <Route path="course-details/:id" element={<CourseDetails />} />
@@ -122,9 +128,10 @@ function App() {
             <Route path="add-course" element={<CreateCourse />} />
             <Route path="edit-course/:id" element={<CreateCourse />} />
             <Route path="students/:id?" element={<StudentsList />} />
-            <Route path="student-details" element={<StudentDetails />} />
             <Route path="reviews" element={<InstructorReviews />} />
+            <Route path="exams" element={<InstructorExams />} />
             <Route path="live-classes" element={<InstructorLiveClasses />} />
+            <Route path="certificates" element={<InstructorCertificates />} />
             <Route path="messages" element={<InstructorMessages />} />
             <Route path="attendance" element={<InstructorAttendance />} />
             <Route path="offers" element={<InstructorOffers />} />

@@ -30,11 +30,29 @@ axiosInstance.interceptors.response.use(
     if (error.response && error.response.status === 401) {
       console.log("Unauthorized! Logging out...");
 
-      localStorage.removeItem("token");
-      localStorage.removeItem("user");
+      // Check if this was a login or registration request
+      const isAuthRequest = error.config && (
+        error.config.url.includes("/auth/login") || 
+        error.config.url.includes("/auth/register") || 
+        error.config.url.includes("/auth/google")
+      );
 
-      // Optional: redirect to login page
-      window.location.href = "/login";
+      if (!isAuthRequest) {
+        localStorage.removeItem("token");
+        localStorage.removeItem("user");
+
+        // Redirect to appropriate login page based on current path
+        const currentPath = window.location.pathname;
+        let redirectPath = "/login";
+        
+        if (currentPath.startsWith("/admin")) {
+          redirectPath = "/admin/login";
+        } else if (currentPath.startsWith("/instructor")) {
+          redirectPath = "/instructor/login";
+        }
+
+        window.location.href = redirectPath;
+      }
     }
 
     return Promise.reject(error);

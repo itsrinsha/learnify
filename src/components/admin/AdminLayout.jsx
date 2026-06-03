@@ -30,7 +30,7 @@ const AdminLayout = () => {
   };
 
   return (
-    <div className="min-h-screen bg-slate-50 font-sans text-slate-900">
+    <div className="min-h-screen bg-slate-50 flex font-sans text-slate-900 overflow-hidden h-screen">
       <AdminSidebar isOpen={isSidebarOpen} toggleSidebar={toggleSidebar} />
       
       {/* Mobile Overlay */}
@@ -41,15 +41,17 @@ const AdminLayout = () => {
         ></div>
       )}
 
-      <div className="lg:ml-64 flex flex-col min-h-screen transition-all duration-300">
+      <div className="flex-1 flex flex-col min-w-0 h-screen overflow-hidden transition-all duration-300 lg:ml-64">
         <AdminNavbar 
           toggleSidebar={toggleSidebar} 
           isSidebarOpen={isSidebarOpen}
           title={getPageTitle(location.pathname)}
         />
         
-        <main className="flex-1 p-4 lg:p-8 overflow-x-hidden">
-          <Outlet />
+        <main className="flex-1 p-6 lg:p-8 overflow-y-auto bg-slate-50/50">
+          <div className="max-w-[1600px] mx-auto space-y-8">
+            <Outlet />
+          </div>
         </main>
       </div>
     </div>

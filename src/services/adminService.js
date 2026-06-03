@@ -65,8 +65,10 @@ export const getActivityFeed = async () => {
   return response.data;
 };
 
-export const getReportsData = async () => {
-  const response = await axiosInstance.get('/admin/reports');
+export const getReportsData = async (fromDate, toDate) => {
+  const response = await axiosInstance.get('/admin/reports', {
+    params: { fromDate, toDate }
+  });
   return response.data;
 };
 
@@ -77,6 +79,21 @@ export const getAdminStats = async () => {
 
 export const getAllCategories = async () => {
   const response = await axiosInstance.get('/admin/categories');
+  return response.data;
+};
+
+export const addCategory = async (categoryData) => {
+  const response = await axiosInstance.post('/admin/categories', categoryData);
+  return response.data;
+};
+
+export const updateCategory = async (id, categoryData) => {
+  const response = await axiosInstance.put(`/admin/categories/${id}`, categoryData);
+  return response.data;
+};
+
+export const deleteCategory = async (id) => {
+  const response = await axiosInstance.delete(`/admin/categories/${id}`);
   return response.data;
 };
 
@@ -112,6 +129,9 @@ export default {
   getReportsData,
   getAdminStats,
   getAllCategories,
+  addCategory,
+  updateCategory,
+  deleteCategory,
   getAllOffers,
   getInstructorAvailability,
   getAdminLiveSessions,

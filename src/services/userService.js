@@ -53,8 +53,8 @@ export const getUserStats = async () => {
 export const uploadUserAvatar = async (file) => {
   try {
     const formData = new FormData();
-    formData.append('avatar', file);
-    const response = await axiosInstance.post('/users/avatar', formData, {
+    formData.append('profilePicture', file);
+    const response = await axiosInstance.post('/uploads/profile-picture', formData, {
       headers: {
         'Content-Type': 'multipart/form-data',
       },

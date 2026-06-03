@@ -3,19 +3,20 @@ import {
   Search, 
   Filter, 
   MessageSquare, 
-  ChevronRight, 
   BookOpen,
   Calendar,
   Users,
   Loader2,
   Mail,
   User,
-  GraduationCap
+  GraduationCap,
+  Award
 } from 'lucide-react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { useDispatch, useSelector } from 'react-redux';
 import { toast } from 'react-hot-toast';
 import { fetchInstructorStudents } from '../../features/instructor/instructorThunk';
+import { completeStudentCourse } from '../../services/instructorService';
 
 const StudentsList = () => {
   const navigate = useNavigate();
@@ -25,6 +26,32 @@ const StudentsList = () => {
   
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedCourseId, setSelectedCourseId] = useState(courseIdFromUrl || 'all');
+  
+  const [showConfirmModal, setShowConfirmModal] = useState(false);
+  const [selectedStudent, setSelectedStudent] = useState(null);
+  const [submitting, setSubmitting] = useState(false);
+
+  const handleCompleteCourseClick = (student) => {
+    setSelectedStudent(student);
+    setShowConfirmModal(true);
+  };
+
+  const handleConfirmComplete = async () => {
+    if (!selectedStudent) return;
+    try {
+      setSubmitting(true);
+      await completeStudentCourse(selectedStudent.courseId, selectedStudent.studentId);
+      toast.success(`${selectedStudent.name} has been marked as course completed!`);
+      setShowConfirmModal(false);
+      setSelectedStudent(null);
+      dispatch(fetchInstructorStudents());
+    } catch (error) {
+      console.error("Error completing course:", error);
+      toast.error(error.response?.data?.message || "Failed to complete course.");
+    } finally {
+      setSubmitting(false);
+    }
+  };
 
   useEffect(() => {
     dispatch(fetchInstructorStudents());
@@ -210,22 +237,29 @@ const StudentsList = () => {
                       </div>
                     </td>
 
-                    {/* Actions */}
                     <td className="px-8 py-6 text-right">
-                      <div className="flex items-center gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
+                      <div className="flex items-center justify-end gap-3">
+                        {student.completionStatus === 'completed' || student.status === 'Completed' ? (
+                          <button 
+                            disabled
+                            className="px-4 py-2 bg-green-50 text-green-600 border border-green-250 rounded-xl text-xs font-black cursor-not-allowed uppercase tracking-wider"
+                          >
+                            Completed ✓
+                          </button>
+                        ) : (
+                          <button 
+                            onClick={() => handleCompleteCourseClick(student)}
+                            className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-xl text-xs font-black transition-all active:scale-95 shadow-md shadow-blue-100 uppercase tracking-wider"
+                          >
+                            Complete Course
+                          </button>
+                        )}
                         <button 
                           onClick={() => toast.success(`Message sent to ${student.name}`)}
                           className="p-2.5 bg-white border border-slate-200 text-slate-400 hover:text-blue-600 hover:border-blue-100 hover:bg-blue-50 rounded-xl transition-all shadow-sm"
                           title="Message Student"
                         >
                           <MessageSquare size={18} />
-                        </button>
-                        <button 
-                          onClick={() => navigate('/instructor/student-details')}
-                          className="p-2.5 bg-slate-900 text-white hover:bg-blue-600 rounded-xl transition-all shadow-lg shadow-slate-200"
-                          title="View Profile"
-                        >
-                          <ChevronRight size={18} />
                         </button>
                       </div>
                     </td>
@@ -256,6 +290,49 @@ const StudentsList = () => {
           </div>
         </div>
       </div>
+
+      {/* Confirmation Modal */}
+      {showConfirmModal && selectedStudent && (
+        <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-[100] flex items-center justify-center p-6">
+          <div className="bg-white rounded-[2.5rem] w-full max-w-md overflow-hidden shadow-2xl p-8 relative flex flex-col items-center text-center animate-in fade-in zoom-in duration-200">
+            <div className="w-16 h-16 bg-blue-50 text-blue-600 rounded-2xl flex items-center justify-center mb-6 border border-blue-100">
+              <Award size={32} />
+            </div>
+            
+            <h3 className="text-xl font-black text-slate-900 mb-2">Mark Course Completed</h3>
+            <p className="text-slate-500 text-sm leading-relaxed mb-8">
+              Mark this student as course completed? This will automatically generate and issue their certificate.
+            </p>
+            
+            <div className="flex gap-4 w-full">
+              <button
+                disabled={submitting}
+                onClick={() => {
+                  setShowConfirmModal(false);
+                  setSelectedStudent(null);
+                }}
+                className="w-1/2 py-3 bg-slate-50 hover:bg-slate-100 border border-slate-200 text-slate-700 rounded-xl font-bold text-xs transition-all active:scale-95 disabled:opacity-50"
+              >
+                Cancel
+              </button>
+              <button
+                disabled={submitting}
+                onClick={handleConfirmComplete}
+                className="w-1/2 py-3 bg-blue-600 hover:bg-blue-700 text-white rounded-xl font-bold text-xs flex items-center justify-center gap-1.5 shadow-md shadow-blue-100 transition-all active:scale-95 disabled:bg-blue-400"
+              >
+                {submitting ? (
+                  <>
+                    <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                    Processing...
+                  </>
+                ) : (
+                  'Confirm'
+                )}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

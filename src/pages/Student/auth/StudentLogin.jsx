@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { useFormik } from "formik";
 import * as Yup from "yup";
@@ -11,6 +11,7 @@ import { useDispatch } from "react-redux";
 import { loginUser } from "../../../features/auth/authThunk";
 import { setCredentials } from "../../../features/auth/authSlice";
 import axiosInstance from "../../../features/axiosInstance";
+import heroImage from "../../../assets/hero.png";
 
 
 function Login() {
@@ -20,6 +21,20 @@ function Login() {
   const [apiError, setApiError] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
+  const [isOnline, setIsOnline] = useState(typeof navigator !== 'undefined' ? navigator.onLine : true);
+
+  useEffect(() => {
+    const handleOnline = () => setIsOnline(true);
+    const handleOffline = () => setIsOnline(false);
+
+    window.addEventListener('online', handleOnline);
+    window.addEventListener('offline', handleOffline);
+
+    return () => {
+      window.removeEventListener('online', handleOnline);
+      window.removeEventListener('offline', handleOffline);
+    };
+  }, []);
 
   // ✅ Formik setup
   const formik = useFormik({
@@ -89,9 +104,13 @@ function Login() {
             Access world-class courses, expert instructors, and a community of passionate learners. Your journey to excellence starts here.
           </p>
           <img
-            src="https://images.unsplash.com/photo-1523240795612-9a054b0db644?q=80&w=2070&auto=format&fit=crop"
+            src={heroImage}
             alt="Student Learning Environment"
             className="w-full h-auto shadow-2xl rounded-3xl object-cover min-h-[400px] hover:scale-[1.01] transition-all duration-700"
+            onError={(event) => {
+              event.currentTarget.onerror = null;
+              event.currentTarget.style.display = 'none';
+            }}
           />
         </div>
         {/* Abstract shapes */}
@@ -103,11 +122,8 @@ function Login() {
       <div className="w-full lg:w-1/2 flex items-center justify-center p-6 sm:p-12 md:p-20">
         <div className="w-full max-w-md">
           {/* Header for Mobile */}
-          <div className="lg:hidden mb-12 flex items-center space-x-2">
-            <div className="w-10 h-10 bg-blue-600 rounded-xl flex items-center justify-center">
-              <span className="text-white font-bold text-xl">L</span>
-            </div>
-            <h1 className="text-2xl font-bold tracking-tight">Learnify</h1>
+          <div className="lg:hidden mb-12 flex items-center justify-center">
+            <img src="/logo.png" alt="Learnify" className="h-10 w-auto" />
           </div>
 
           <div className="mb-10">
@@ -224,44 +240,50 @@ function Login() {
           </div>
 
 <div className="flex justify-center">
-  <GoogleLogin
-    theme="outline"
-    size="large"
-    shape="pill"
-    width="350"
-    onSuccess={async (response) => {
-      const token = response.credential;
+  {isOnline ? (
+    <GoogleLogin
+      theme="outline"
+      size="large"
+      shape="pill"
+      width="350"
+      onSuccess={async (response) => {
+        const token = response.credential;
 
-      try {
-        const res = await axiosInstance.post("/auth/google", {
-          token,
-          role: "student", // ✅ VERY IMPORTANT
-        });
+        try {
+          const res = await axiosInstance.post("/auth/google", {
+            token,
+            role: "student", // ✅ VERY IMPORTANT
+          });
 
-        const user = res.data;
+          const user = res.data;
 
-        // ✅ role protection
-        if (user.role !== "student") {
-          toast.error("Access denied. Use correct portal.");
-          return;
+          // ✅ role protection
+          if (user.role !== "student") {
+            toast.error("Access denied. Use correct portal.");
+            return;
+          }
+
+          // ✅ save to redux
+          dispatch(setCredentials(user));
+          toast.success("Welcome back!");
+
+          // ✅ redirect
+          navigate("/student/dashboard");
+
+        } catch (error) {
+          toast.error("Google login failed");
+          console.log("Google login error", error);
         }
-
-        // ✅ save to redux
-        dispatch(setCredentials(user));
-        toast.success("Welcome back!");
-
-        // ✅ redirect
-        navigate("/student/dashboard");
-
-      } catch (error) {
-        toast.error("Google login failed");
-        console.log("Google login error", error);
-      }
-    }}
-    onError={() => {
-      console.log("Google Login Failed");
-    }}
-  />
+      }}
+      onError={() => {
+        console.log("Google Login Failed");
+      }}
+    />
+  ) : (
+    <div className="w-full max-w-[350px] px-6 py-4 text-center rounded-xl border border-slate-200 bg-slate-50 text-slate-600">
+      Google sign-in is unavailable while offline. Please use email/password login.
+    </div>
+  )}
 </div>
 
           <div className="text-center mt-10">

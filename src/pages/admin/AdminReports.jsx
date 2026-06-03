@@ -24,6 +24,7 @@ import {
   Legend
 } from 'recharts';
 import adminService from '../../services/adminService';
+import { toast } from 'react-hot-toast';
 
 const AdminReports = () => {
   const [reportsData, setReportsData] = useState({
@@ -38,15 +39,19 @@ const AdminReports = () => {
   });
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [fromDate, setFromDate] = useState('');
+  const [toDate, setToDate] = useState('');
+
+  const isDateRangeInvalid = fromDate && toDate && toDate < fromDate;
 
   useEffect(() => {
     fetchReports();
   }, []);
 
-  const fetchReports = async () => {
+  const fetchReports = async (from = '', to = '') => {
     try {
       setLoading(true);
-      const data = await adminService.getReportsData();
+      const data = await adminService.getReportsData(from, to);
       console.log('Reports Data Received:', data); // Added logging
       setReportsData(data);
       setError(null);
@@ -56,6 +61,48 @@ const AdminReports = () => {
     } finally {
       setLoading(false);
     }
+  };
+
+  const handleFromDateChange = (val) => {
+    setFromDate(val);
+    if (val && toDate && toDate < val) {
+      setToDate('');
+    }
+  };
+
+  const handleFilterApply = () => {
+    const now = new Date();
+    
+    if (fromDate) {
+      const from = new Date(fromDate);
+      if (from > now) {
+        toast.error("From Date cannot be in the future");
+        return;
+      }
+    }
+    
+    if (toDate) {
+      const to = new Date(toDate);
+      if (to > now) {
+        toast.error("To Date cannot be in the future");
+        return;
+      }
+    }
+    
+    if (fromDate && toDate) {
+      if (new Date(fromDate) > new Date(toDate)) {
+        toast.error("From Date cannot be after To Date");
+        return;
+      }
+    }
+    
+    fetchReports(fromDate, toDate);
+  };
+
+  const handleClearFilters = () => {
+    setFromDate('');
+    setToDate('');
+    fetchReports('', '');
   };
 
   if (loading) {
@@ -80,6 +127,68 @@ const AdminReports = () => {
         <button className="flex items-center gap-2 px-6 py-3 bg-blue-600 rounded-xl text-sm font-bold text-white hover:bg-blue-700 transition-all shadow-lg shadow-blue-900/20">
           <Download className="w-5 h-5" /> Export All Reports
         </button>
+      </div>
+
+      {/* Date Filter Panel */}
+      <div className="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm flex flex-col md:flex-row items-center gap-6">
+        <div className="flex-1 w-full grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div className="space-y-2">
+            <label className="text-xs font-black text-slate-400 uppercase tracking-widest block">From Date</label>
+            <div className="relative">
+              <Calendar className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 w-4 h-4" />
+              <input 
+                type="date"
+                value={fromDate}
+                onChange={(e) => handleFromDateChange(e.target.value)}
+                onClick={(e) => e.target.showPicker()}
+                className="w-full pl-11 pr-4 py-2.5 bg-slate-50 border border-slate-100 focus:bg-white focus:border-blue-500 focus:ring-4 focus:ring-blue-500/10 rounded-xl text-sm transition-all outline-none font-bold text-slate-600 cursor-pointer"
+              />
+            </div>
+          </div>
+          <div className="space-y-2">
+            <label className="text-xs font-black text-slate-400 uppercase tracking-widest block">To Date</label>
+            <div className="relative">
+              <Calendar className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 w-4 h-4" />
+              <input 
+                type="date"
+                value={toDate}
+                min={fromDate || undefined}
+                onChange={(e) => setToDate(e.target.value)}
+                onClick={(e) => e.target.showPicker()}
+                className={`w-full pl-11 pr-4 py-2.5 bg-slate-50 border focus:bg-white focus:ring-4 rounded-xl text-sm transition-all outline-none font-bold cursor-pointer ${
+                  isDateRangeInvalid 
+                    ? 'border-error-500 focus:border-error-500 focus:ring-error-500/10 text-error-600' 
+                    : 'border-slate-100 focus:border-blue-500 focus:ring-blue-500/10 text-slate-600'
+                }`}
+              />
+            </div>
+            {isDateRangeInvalid && (
+              <p className="text-xs font-bold text-error-600 mt-1 flex items-center gap-1">
+                <AlertCircle className="w-3.5 h-3.5" />
+                To Date cannot be earlier than From Date.
+              </p>
+            )}
+          </div>
+        </div>
+        <div className="w-full md:w-auto flex items-end gap-3 mt-4 md:mt-0 pt-5 md:pt-0">
+          <button 
+            onClick={handleFilterApply}
+            disabled={isDateRangeInvalid}
+            className={`flex-1 md:flex-initial px-6 py-3 bg-blue-600 rounded-xl text-xs font-black uppercase tracking-widest text-white hover:bg-blue-700 transition-all shadow-lg shadow-blue-900/15 ${
+              isDateRangeInvalid ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer'
+            }`}
+          >
+            Apply Filters
+          </button>
+          {(fromDate || toDate) && (
+            <button 
+              onClick={handleClearFilters}
+              className="px-6 py-3 bg-slate-100 rounded-xl text-xs font-black uppercase tracking-widest text-slate-600 hover:bg-slate-200 transition-all cursor-pointer"
+            >
+              Clear
+            </button>
+          )}
+        </div>
       </div>
 
       {error && (

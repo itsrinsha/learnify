@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { 
   User as UserIcon, 
@@ -22,12 +22,16 @@ import {
 } from 'lucide-react';
 import { fetchProfile, updateProfile, clearState } from '../../features/auth/authSlice';
 import { fetchStudentDashboard } from '../../features/student/studentThunk';
+import { uploadUserAvatar } from '../../services/userService';
+import { toast } from 'react-hot-toast';
 
 const StudentProfile = () => {
   const dispatch = useDispatch();
   const { user, loading, error, success } = useSelector((state) => state.auth);
   const { dashboardData } = useSelector((state) => state.student);
   
+  const fileInputRef = useRef(null);
+  const [avatarLoading, setAvatarLoading] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
   const [formData, setFormData] = useState({
     name: '',
@@ -81,6 +85,39 @@ const StudentProfile = () => {
     setIsEditing(false);
   };
 
+  const handleAvatarClick = () => {
+    fileInputRef.current?.click();
+  };
+
+  const handleFileChange = async (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+
+    if (!file.type.startsWith('image/')) {
+      toast.error("Please upload an image file.");
+      return;
+    }
+
+    if (file.size > 5 * 1024 * 1024) {
+      toast.error("Image size must be less than 5MB.");
+      return;
+    }
+
+    try {
+      setAvatarLoading(true);
+      const res = await uploadUserAvatar(file);
+      if (res && res.url) {
+        await dispatch(updateProfile({ profileImage: res.url })).unwrap();
+        toast.success("Profile picture updated successfully!");
+      }
+    } catch (err) {
+      console.error(err);
+      toast.error(err.response?.data?.message || "Failed to update profile picture");
+    } finally {
+      setAvatarLoading(false);
+    }
+  };
+
   const stats = [
     { label: 'Courses Enrolled', value: dashboardData?.totalCourses || 0, icon: <BookOpen className="text-blue-600" />, bg: 'bg-blue-50' },
     { label: 'Completed', value: dashboardData?.completedCourses || 0, icon: <CheckCircle2 className="text-green-600" />, bg: 'bg-green-50' },
@@ -103,21 +140,36 @@ const StudentProfile = () => {
         </div>
       )}
 
-      <div className="flex flex-col lg:flex-row gap-10">
+      <div className="flex flex-col xl:flex-row gap-10">
         {/* Left Column: Profile Card */}
-        <div className="lg:w-96 space-y-8">
+        <div className="xl:w-96 space-y-8">
           <div className="bg-white rounded-[2.5rem] border border-slate-200 shadow-sm overflow-hidden relative">
             <div className="h-32 bg-blue-600"></div>
             <div className="px-8 pb-8 flex flex-col items-center -mt-16 text-center">
               <div className="relative group overflow-hidden w-32 h-32 rounded-[2rem] border-4 border-white shadow-xl">
-                {user?.profileImage ? (
+                {avatarLoading ? (
+                  <div className="w-full h-full bg-slate-50 flex items-center justify-center">
+                    <Loader2 className="w-8 h-8 text-blue-600 animate-spin" />
+                  </div>
+                ) : user?.profileImage ? (
                   <img src={user.profileImage} alt="avatar" className="w-full h-full object-cover" />
                 ) : (
                   <DefaultAvatar />
                 )}
-                <button className="absolute inset-0 bg-black/40 flex items-center justify-center text-white opacity-0 group-hover:opacity-100 transition-all">
+                <button 
+                  onClick={handleAvatarClick}
+                  disabled={avatarLoading}
+                  className="absolute inset-0 bg-black/40 flex items-center justify-center text-white opacity-0 group-hover:opacity-100 transition-all disabled:cursor-not-allowed"
+                >
                   <Camera size={24} />
                 </button>
+                <input 
+                  type="file" 
+                  ref={fileInputRef} 
+                  onChange={handleFileChange} 
+                  className="hidden" 
+                  accept="image/*" 
+                />
               </div>
               
               <div className="mt-6 space-y-2">
