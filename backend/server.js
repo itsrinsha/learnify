@@ -28,8 +28,6 @@ import errorMiddleware from "./middleware/errorMiddleware.js"
 import roleMiddleware from "./middleware/roleMiddleware.js"
 import paymentRoutes from "./routes/paymentRoutes.js";
 
-
-console.log('server.js loaded');
 connectDB(env.MONGO_URL);
 
 const app = express();
