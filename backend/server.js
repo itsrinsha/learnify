@@ -71,7 +71,7 @@ app.use("/api/missions", missionRoutes)
 app.use("/api/notifications", notificationRoutes);
 app.use(errorMiddleware);
 
-const PORT = process.env.PORT || 5000;
+const PORT = env.PORT || 5000;
 httpServer.listen(PORT, () => {
     console.log(`Server running on port ${PORT}`)
 })
