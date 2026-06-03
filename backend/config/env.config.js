@@ -14,6 +14,7 @@ export const env={
     process.env.NODE_ENV,
     MONGO_URL:
     process.env.MONGO_URL,
-    JWT_SECRET:process.env.JWT_SECRET
+    JWT_SECRET:process.env.JWT_SECRET,
+    CLIENT_URL:process.env.CLIENT_URL
 };
 

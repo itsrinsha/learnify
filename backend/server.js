@@ -37,10 +37,8 @@ const httpServer = createServer(app);
 initializeSocket(httpServer);
 
 app.use(cors({ 
-    origin: "https://learnify-three-nu.vercel.app",
-    credentials: true,
-    methods: ["GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS"],
-    allowedHeaders: ["Content-Type", "Authorization"]
+    origin: env.CLIENT_URL,
+    credentials: true
 }))
 app.use(express.json())
 app.use("/uploads", express.static(path.join(process.cwd(), "uploads")));

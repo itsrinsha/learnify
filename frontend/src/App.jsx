@@ -3,7 +3,7 @@ import { Navigate, Route, Routes } from "react-router-dom";
 import { Toaster } from 'react-hot-toast';
 
 // Common Components
-import ProtectedRoute from "./components/common/ProtectedRoute";
+import ProtectedRoute from "./routes/ProtectedRoute";
 
 // Auth Pages (Eagerly loaded as they are entry points)
 import Login from "./pages/Student/auth/StudentLogin";
@@ -13,6 +13,7 @@ import InstructorRegister from "./pages/instructor/auth/InstructorRegister";
 import AdminLogin from "./pages/admin/auth/AdminLogin";
 import LandingPage from "./pages/Home/LandingPage";
 import BlockedPage from "./pages/common/BlockedPage";
+import PublicRoute from "./routes/PublicRoute";
 
 // Student Dashboard Components (Lazy loaded)
 const DashboardLayout = lazy(() => import("./components/student/DashboardLayout"));
@@ -78,8 +79,8 @@ function App() {
       <Suspense fallback={<LoadingSpinner />}>
         <Routes>
           <Route path="/" element={<LandingPage />} />
-          <Route path="/login" element={<Login />} />
-          <Route path="/register" element={<Register />} />
+          <Route path="/login" element={<PublicRoute><Login /></PublicRoute>} />
+          <Route path="/register" element={<PublicRoute><Register /></PublicRoute>} />
           <Route path="/instructor/login" element={<InstructorLogin />} />
           <Route path="/instructor/register" element={<InstructorRegister />} />
           <Route path="/admin/login" element={<AdminLogin />} />
