@@ -3,12 +3,14 @@ import { Link, useNavigate } from "react-router-dom";
 import { useFormik } from "formik";
 import * as Yup from "yup";
 import { registerUser, resendOtp, verifyOtp } from "../../../features/auth/authThunk";
-import { clearState } from "../../../features/auth/authSlice";
 import { useDispatch, useSelector } from "react-redux";
 import { User, Mail, Lock, Eye, EyeOff, ShieldCheck, ArrowRight, CheckCircle2 } from "lucide-react";
 import { FcGoogle } from "react-icons/fc";
 import { FaGithub } from "react-icons/fa";
 import { toast } from 'react-hot-toast';
+import { GoogleLogin } from "@react-oauth/google";
+import { clearState, setCredentials } from "../../../features/auth/authSlice";
+import axiosInstance from "../../../features/axiosInstance";
 
 function Register() {
   const navigate = useNavigate();
@@ -406,7 +408,42 @@ function Register() {
                 </div>
               </div>
 
-             
+              <div className="flex flex-col gap-4 items-center">
+               <GoogleLogin
+  theme="outline"
+  size="large"
+  shape="pill"
+  width="180"
+  onSuccess={async (response) => {
+    const token = response.credential;
+
+    try {
+      const res = await axiosInstance.post("/auth/google", {
+        token,
+        role: "student",
+      });
+
+      const user = res.data;
+
+      dispatch(setCredentials(user));
+
+      toast.success("Account created successfully!");
+
+      navigate("/student/dashboard");
+    } catch (error) {
+      toast.error("Google signup failed");
+      console.log(error);
+    }
+  }}
+  onError={() => {
+    toast.error("Google signup failed");
+  }}
+/>
+                <button className="flex items-center justify-center py-3 px-4 rounded-xl border border-slate-200 bg-white hover:bg-slate-50 transition-colors font-semibold text-sm space-x-2 group">
+                  <FaGithub size={20} className="text-slate-700 group-hover:scale-110 transition-transform" />
+                  <span>Github</span>
+                </button>
+              </div>
             </>
           )}
 
