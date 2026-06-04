@@ -406,16 +406,7 @@ function Register() {
                 </div>
               </div>
 
-              <div className="grid grid-cols-2 gap-4">
-                <button className="flex items-center justify-center py-3 px-4 rounded-xl border border-slate-200 bg-white hover:bg-slate-50 transition-colors font-semibold text-sm space-x-2 group">
-                  <FcGoogle size={20} className="group-hover:scale-110 transition-transform" />
-                  <span>Google</span>
-                </button>
-                <button className="flex items-center justify-center py-3 px-4 rounded-xl border border-slate-200 bg-white hover:bg-slate-50 transition-colors font-semibold text-sm space-x-2 group">
-                  <FaGithub size={20} className="text-slate-700 group-hover:scale-110 transition-transform" />
-                  <span>Github</span>
-                </button>
-              </div>
+             
             </>
           )}
 
