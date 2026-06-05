@@ -323,23 +323,7 @@ const Certificates = () => {
         )}
       </div>
 
-      <div className="p-8 bg-blue-900 rounded-[2rem] text-white space-y-6 shadow-sm relative overflow-hidden">
-        <div className="absolute top-0 right-0 w-48 h-48 bg-blue-800 rounded-full -mr-24 -mt-24 opacity-50 blur-3xl"></div>
-        <div className="flex flex-col md:flex-row items-center gap-8 relative z-10">
-          <div className="w-16 h-16 bg-blue-800 rounded-2xl flex items-center justify-center flex-shrink-0 border border-blue-700">
-            <ShieldCheck size={32} className="text-blue-100" />
-          </div>
-          <div className="space-y-2 flex-1 text-center md:text-left">
-            <h4 className="text-xl font-bold">Verified Digital Credentials</h4>
-            <p className="text-blue-200 text-sm max-w-2xl leading-relaxed">
-              Every Learnify certificate is backed by a unique verification ID. Share your certificates directly on LinkedIn or with recruiters to instantly validate your expertise.
-            </p>
-          </div>
-          <button className="px-6 py-3 bg-white text-blue-900 rounded-xl font-bold text-sm hover:bg-blue-50 transition-colors shadow-sm shrink-0">
-            Verification Guide
-          </button>
-        </div>
-      </div>
+
 
       {/* Certificate Preview Modal */}
       {previewCert && (

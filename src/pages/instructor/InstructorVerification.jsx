@@ -18,12 +18,14 @@ import {
 import { useNavigate } from 'react-router-dom';
 import axiosInstance from '../../features/axiosInstance';
 import { logout, fetchProfile } from '../../features/auth/authSlice';
+import { toast } from 'react-hot-toast';
 
 const InstructorVerification = () => {
   const dispatch = useDispatch();
   const navigate = useNavigate();
   const { user, loading, error, success } = useSelector((state) => state.auth);
   
+  const [certLoading, setCertLoading] = useState(false);
   const [formData, setFormData] = useState({
     name: '',
     age: '',
@@ -61,6 +63,31 @@ const InstructorVerification = () => {
   const handleInputChange = (e) => {
     const { name, value } = e.target;
     setFormData(prev => ({ ...prev, [name]: value }));
+  };
+
+  const handleCertUpload = async (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+
+    try {
+      setCertLoading(true);
+      const data = new FormData();
+      data.append('resource', file);
+      const response = await axiosInstance.post('/uploads/resource', data, {
+        headers: { 'Content-Type': 'multipart/form-data' }
+      });
+      if (response.data?.url) {
+        const newCerts = formData.certifications ? formData.certifications + ', ' + response.data.url : response.data.url;
+        setFormData(prev => ({ ...prev, certifications: newCerts }));
+        toast.success("Certificate uploaded successfully!");
+      }
+    } catch (err) {
+      console.error(err);
+      toast.error("Failed to upload certificate");
+    } finally {
+      setCertLoading(false);
+      e.target.value = '';
+    }
   };
 
   const handleSubmit = async (e) => {
@@ -235,14 +262,18 @@ const InstructorVerification = () => {
                   <div className="relative">
                     <ShieldCheck className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400" size={18} />
                     <input 
-                      type="text" 
-                      name="certifications"
-                      value={formData.certifications}
-                      onChange={handleInputChange}
-                      placeholder="List your certifications (AWS, Google, etc.)"
-                      className="w-full pl-12 pr-4 py-4 bg-slate-50 border border-slate-100 rounded-2xl outline-none focus:ring-2 focus:ring-blue-500 transition-all"
+                      type="file" 
+                      onChange={handleCertUpload}
+                      disabled={certLoading}
+                      className="w-full pl-12 pr-4 py-4 bg-slate-50 border border-slate-100 rounded-2xl outline-none focus:ring-2 focus:ring-blue-500 transition-all file:mr-4 file:py-2 file:px-4 file:rounded-xl file:border-0 file:text-sm file:font-bold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100"
                     />
+                    {certLoading && <Loader2 className="absolute right-4 top-1/2 -translate-y-1/2 animate-spin text-blue-600" size={18} />}
                   </div>
+                  {formData.certifications && (
+                    <p className="text-xs text-green-600 font-medium ml-1">
+                      Uploaded files: {formData.certifications.split(',').length}
+                    </p>
+                  )}
                 </div>
               </div>
             </div>
@@ -265,7 +296,10 @@ const InstructorVerification = () => {
                       type="tel" 
                       name="phone"
                       value={formData.phone}
-                      onChange={handleInputChange}
+                      onChange={(e) => {
+                        const val = e.target.value.replace(/[^0-9+]/g, '');
+                        setFormData(prev => ({ ...prev, phone: val }));
+                      }}
                       placeholder="+1 234 567 890"
                       className="w-full pl-12 pr-4 py-4 bg-slate-50 border border-slate-100 rounded-2xl outline-none focus:ring-2 focus:ring-blue-500 transition-all"
                       required
@@ -280,7 +314,10 @@ const InstructorVerification = () => {
                       type="text" 
                       name="location"
                       value={formData.location}
-                      onChange={handleInputChange}
+                      onChange={(e) => {
+                        const val = e.target.value.replace(/[^a-zA-Z\s,]/g, '');
+                        setFormData(prev => ({ ...prev, location: val }));
+                      }}
                       placeholder="City, Country"
                       className="w-full pl-12 pr-4 py-4 bg-slate-50 border border-slate-100 rounded-2xl outline-none focus:ring-2 focus:ring-blue-500 transition-all"
                       required

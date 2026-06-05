@@ -3,12 +3,12 @@ import { Link, useNavigate } from "react-router-dom";
 import { useFormik } from "formik";
 import * as Yup from "yup";
 import { registerUser, resendOtp, verifyOtp } from "../../../features/auth/authThunk";
-import { clearState } from "../../../features/auth/authSlice";
+import { clearState, setCredentials } from "../../../features/auth/authSlice";
 import { useDispatch, useSelector } from "react-redux";
 import { User, Mail, Lock, Eye, EyeOff, ShieldCheck, ArrowRight, CheckCircle2, Briefcase } from "lucide-react";
-import { FcGoogle } from "react-icons/fc";
-import { FaGithub } from "react-icons/fa";
 import { toast } from 'react-hot-toast';
+import { GoogleLogin } from "@react-oauth/google";
+import axiosInstance from "../../../features/axiosInstance";
 function InstructorRegister() {
   const navigate = useNavigate();
   const dispatch = useDispatch();
@@ -170,7 +170,7 @@ function InstructorRegister() {
             Create an instructor account and start sharing your knowledge with students from around the globe.
           </p>
           <img
-            src="https://images.unsplash.com/photo-1524178232363-1fb28f74b671?q=80&w=2070&auto=format&fit=crop"
+            src="https://images.unsplash.com/photo-1516321318423-f06f85e504b3?q=80&w=2070&auto=format&fit=crop"
             alt="Instructor Illustration"
             className="w-full h-auto shadow-2xl rounded-3xl object-cover min-h-[400px]"
           />
@@ -404,15 +404,32 @@ function InstructorRegister() {
                 </div>
               </div>
 
-              <div className="grid grid-cols-2 gap-4">
-                <button className="flex items-center justify-center py-3 px-4 rounded-xl border border-slate-200 bg-white hover:bg-slate-50 transition-colors font-semibold text-sm space-x-2 group">
-                  <FcGoogle size={20} className="group-hover:scale-110 transition-transform" />
-                  <span>Google</span>
-                </button>
-                <button className="flex items-center justify-center py-3 px-4 rounded-xl border border-slate-200 bg-white hover:bg-slate-50 transition-colors font-semibold text-sm space-x-2 group">
-                  <FaGithub size={20} className="text-slate-700 group-hover:scale-110 transition-transform" />
-                  <span>Github</span>
-                </button>
+              <div className="flex flex-col gap-4 items-center">
+                <GoogleLogin
+                  theme="outline"
+                  size="large"
+                  shape="pill"
+                  width="180"
+                  onSuccess={async (response) => {
+                    const token = response.credential;
+                    try {
+                      const res = await axiosInstance.post("/auth/google", {
+                        token,
+                        role: "instructor",
+                      });
+                      const user = res.data;
+                      dispatch(setCredentials(user));
+                      toast.success("Instructor Account created successfully!");
+                      navigate("/instructor/dashboard");
+                    } catch (error) {
+                      toast.error("Google signup failed");
+                      console.log(error);
+                    }
+                  }}
+                  onError={() => {
+                    toast.error("Google signup failed");
+                  }}
+                />
               </div>
             </>
           )}

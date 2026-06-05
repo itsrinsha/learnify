@@ -205,20 +205,7 @@ const StudentProfile = () => {
             </div>
           </div>
 
-          <div className="bg-white p-8 rounded-[2.5rem] border border-slate-200 shadow-sm space-y-6">
-            <h3 className="font-bold text-slate-900 flex items-center gap-2">
-              <Settings size={18} className="text-blue-600" />
-              Quick Settings
-            </h3>
-            <div className="space-y-4">
-              {['Account Security', 'Notification Settings', 'Payment Methods', 'Privacy Policy'].map((item, idx) => (
-                <div key={idx} className="flex items-center justify-between p-4 bg-slate-50 rounded-2xl cursor-pointer hover:bg-blue-50 transition-all group">
-                  <span className="text-sm font-bold text-slate-600 group-hover:text-blue-700">{item}</span>
-                  <ChevronRight size={16} className="text-slate-400 group-hover:translate-x-1 transition-all" />
-                </div>
-              ))}
-            </div>
-          </div>
+
         </div>
 
         {/* Right Column: Stats & Information */}

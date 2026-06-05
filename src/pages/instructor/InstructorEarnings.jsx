@@ -90,9 +90,9 @@ const InstructorEarnings = () => {
         ))}
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+      <div className="grid grid-cols-1 gap-8">
         {/* Revenue Chart Section */}
-        <div className="lg:col-span-2 bg-white p-8 rounded-[2.5rem] border border-slate-200 shadow-sm">
+        <div className="bg-white p-8 rounded-[2.5rem] border border-slate-200 shadow-sm">
           <div className="flex items-center justify-between mb-8">
             <h2 className="text-xl font-black text-slate-900 flex items-center gap-3">
               <Activity className="text-blue-600" /> Revenue Overview
@@ -119,27 +119,7 @@ const InstructorEarnings = () => {
           </div>
         </div>
 
-        {/* CTA & Payout Section */}
-        <div className="bg-slate-900 rounded-[2.5rem] p-8 text-white relative overflow-hidden flex flex-col justify-between">
-          <div className="absolute top-0 right-0 w-64 h-64 bg-blue-600 rounded-full -mr-32 -mt-32 opacity-30 blur-3xl"></div>
-          
-          <div>
-            <div className="w-16 h-16 bg-blue-500/20 border border-blue-400/30 rounded-2xl flex items-center justify-center mb-6">
-              <FaFileInvoiceDollar size={28} className="text-blue-400" />
-            </div>
-            <h2 className="text-2xl font-black mb-2">Available for Payout</h2>
-            <p className="text-slate-400 text-sm leading-relaxed mb-6">
-              Withdraw your earnings once they cross the minimum threshold of ₹1,000.
-            </p>
-            <p className="text-4xl font-black text-white tracking-tight mb-8">
-              {formatCurrency(stats.totalEarnings)}
-            </p>
-          </div>
 
-          <button className="w-full py-4 bg-blue-600 text-white rounded-xl font-black text-lg hover:bg-blue-500 transition-all shadow-lg shadow-blue-900/50 active:scale-[0.98]">
-            Withdraw Funds
-          </button>
-        </div>
       </div>
 
       {/* Lower Grid: Courses & Transactions */}
