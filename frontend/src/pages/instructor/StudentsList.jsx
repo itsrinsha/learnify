@@ -254,13 +254,7 @@ const StudentsList = () => {
                             Complete Course
                           </button>
                         )}
-                        <button 
-                          onClick={() => toast.success(`Message sent to ${student.name}`)}
-                          className="p-2.5 bg-white border border-slate-200 text-slate-400 hover:text-blue-600 hover:border-blue-100 hover:bg-blue-50 rounded-xl transition-all shadow-sm"
-                          title="Message Student"
-                        >
-                          <MessageSquare size={18} />
-                        </button>
+
                       </div>
                     </td>
                   </tr>

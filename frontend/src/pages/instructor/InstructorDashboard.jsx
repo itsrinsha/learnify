@@ -158,27 +158,7 @@ const InstructorDashboard = () => {
             </div>
           </div>
 
-          {/* Financial Card */}
-          <div className="bg-slate-950 rounded-2xl p-6 text-white space-y-6 shadow-sm relative overflow-hidden">
-            <div className="absolute top-0 right-0 w-48 h-48 bg-primary-600/10 rounded-full filter blur-2xl -mr-24 -mt-24"></div>
-            <div className="flex justify-between items-center relative z-10">
-              <h3 className="text-[10px] font-black uppercase tracking-widest text-slate-350">Revenue Overview</h3>
-              <TrendingUp size={16} className="text-primary-300 animate-pulse" />
-            </div>
-            <div className="space-y-4 relative z-10">
-              <div className="flex justify-between items-end">
-                <span className="text-xs font-semibold text-slate-400 uppercase tracking-wider">Gross Earnings</span>
-                <span className="text-2xl font-extrabold tracking-tight">₹{dashboardData?.totalEarnings?.toLocaleString() || 0}</span>
-              </div>
-              <div className="flex justify-between items-center border-t border-slate-900 pt-4">
-                <span className="text-[9px] font-black text-slate-500 uppercase tracking-widest">Settlement Schedule</span>
-                <span className="text-[9px] font-black text-emerald-400 uppercase tracking-widest">Monthly</span>
-              </div>
-            </div>
-            <button className="w-full py-3 bg-white text-slate-950 rounded-xl font-black text-xs uppercase tracking-wider hover:bg-slate-100 transition-colors shadow-sm relative z-10">
-              Request Payout
-            </button>
-          </div>
+
         </div>
       </div>
     </div>
