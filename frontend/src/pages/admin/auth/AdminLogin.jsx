@@ -6,9 +6,13 @@ import { Eye, EyeOff, Mail, Lock, ArrowRight, ShieldCheck } from "lucide-react";
 
 import { useDispatch } from "react-redux";
 import { loginUser } from "../../../features/auth/authThunk";
+<<<<<<< HEAD
 import { logout, setCredentials } from "../../../features/auth/authSlice";
 import { GoogleLogin } from "@react-oauth/google";
 import axiosInstance from "../../../features/axiosInstance";
+=======
+import { logout } from "../../../features/auth/authSlice";
+>>>>>>> d777039 (Implemented instructor dashboard, Razorpay payment integration, enrollment flow, course management, and backend service improvements)
 
 function AdminLogin() {
   const navigate = useNavigate();
@@ -59,6 +63,7 @@ function AdminLogin() {
         alert("Welcome to the Admin Dashboard!");
         navigate("/admin/dashboard");
       } catch (err) {
+<<<<<<< HEAD
         if (typeof err === "string") {
           setApiError(err);
         } else if (err.response) {
@@ -68,6 +73,9 @@ function AdminLogin() {
         } else {
           setApiError("Something went wrong. Please try again.");
         }
+=======
+        setApiError(err || "Something went wrong. Please try again.");
+>>>>>>> d777039 (Implemented instructor dashboard, Razorpay payment integration, enrollment flow, course management, and backend service improvements)
       } finally {
         setIsLoading(false);
       }

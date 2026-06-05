@@ -9,20 +9,41 @@ import {
   MessageSquare,
   BookOpen,
   Image as ImageIcon,
+<<<<<<< HEAD
   Loader2,
   User,
   Phone
+=======
+>>>>>>> d777039 (Implemented instructor dashboard, Razorpay payment integration, enrollment flow, course management, and backend service improvements)
 } from 'lucide-react';
 import chatService from '../../services/chatService';
 import { toast } from 'react-hot-toast';
 import { useSocket } from '../../context/SocketContext';
 import AudioCall from '../../components/live/AudioCall';
 
+const chats = [
+  {
+    id: 1,
+    student: 'Alice Johnson',
+    avatar: 'https://i.pravatar.cc/160?u=alice',
+    course: 'Advanced React 19',
+    lastMessage: 'Can you review my assignment?',
+    time: '10:30 AM',
+    unread: 2
+  }
+];
+
+const messages = [
+  { id: 1, sender: 'student', text: 'Can you review my assignment?', time: '10:30 AM' },
+  { id: 2, sender: 'instructor', text: 'Sure, send me the link and I will check it.', time: '10:32 AM' }
+];
+
 const InstructorMessages = () => {
   const { socket, onlineUsers } = useSocket();
   const userFromStorage = JSON.parse(localStorage.getItem('user') || '{}');
   const currentUserId = userFromStorage?._id || userFromStorage?.id || '';
 
+<<<<<<< HEAD
   const [conversations, setConversations] = useState([]);
   const [selectedChat, setSelectedChat] = useState(null);
   const [messages, setMessages] = useState([]);
@@ -362,6 +383,11 @@ const InstructorMessages = () => {
   }
 
   const isContactOnline = onlineUsers.map(String).includes(String(selectedContact?._id));
+=======
+
+
+
+>>>>>>> d777039 (Implemented instructor dashboard, Razorpay payment integration, enrollment flow, course management, and backend service improvements)
 
   return (
     <div className="h-full flex flex-col md:flex-row bg-white overflow-hidden">

@@ -46,6 +46,36 @@ const AdminDashboard = () => {
   const [error, setError] = useState(null);
 
   useEffect(() => {
+<<<<<<< HEAD
+=======
+    const fetchDashboardData = async () => {
+      try {
+        setLoading(true);
+        const [users, pendingReqs] = await Promise.all([
+          adminService.getAllUsers(),
+          adminService.getInstructorRequests()
+        ]);
+
+        // Just fetching users and courses to get counts
+        // Note: For now we count from the users array
+        const students = users.filter(u => u.role === 'student').length;
+        const instructors = users.filter(u => u.role === 'instructor').length;
+        
+        setStats({
+          totalStudents: students,
+          totalInstructors: instructors,
+          totalCourses: 0, // Placeholder until courses service is fully ready
+          pendingApprovals: pendingReqs.length,
+        });
+        setRequests(pendingReqs.slice(0, 5)); // Show latest 5
+      } catch (error) {
+        console.error('Failed to fetch dashboard data', error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+>>>>>>> d777039 (Implemented instructor dashboard, Razorpay payment integration, enrollment flow, course management, and backend service improvements)
     fetchDashboardData();
   }, []);
 
@@ -207,12 +237,21 @@ const AdminDashboard = () => {
                 <th className="px-8 py-4 text-[10px] font-bold text-slate-400 uppercase tracking-widest text-right">Action</th>
               </tr>
             </thead>
+<<<<<<< HEAD
             <tbody className="divide-y divide-slate-100">
               {pendingRequests.map((req) => (
                 <tr key={req._id} className="hover:bg-slate-50/30 transition-colors">
                   <td className="px-8 py-5">
                     <div className="flex items-center gap-3">
                       <div className="w-9 h-9 rounded-xl bg-primary-100 flex items-center justify-center text-primary-700 font-bold text-xs border border-primary-200">
+=======
+            <tbody className="divide-y divide-slate-50">
+              {requests.map((req) => (
+                <tr key={req._id} className="hover:bg-slate-50/50 transition-colors">
+                  <td className="px-8 py-6">
+                    <div className="flex items-center gap-4">
+                      <div className="w-10 h-10 rounded-xl bg-blue-100 flex items-center justify-center text-blue-600 font-bold text-xs">
+>>>>>>> d777039 (Implemented instructor dashboard, Razorpay payment integration, enrollment flow, course management, and backend service improvements)
                         {req.name.charAt(0)}
                       </div>
                       <div>

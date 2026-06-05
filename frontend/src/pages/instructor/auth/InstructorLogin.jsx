@@ -55,9 +55,13 @@ function InstructorLogin() {
         toast.success("Welcome back, Instructor!");
         navigate("/instructor/dashboard");
       } catch (err) {
+<<<<<<< HEAD
         const errorMsg = typeof err === 'string' ? err : (err.message || "Invalid credentials");
         toast.error(errorMsg);
         setApiError(errorMsg);
+=======
+        setApiError(err || "Something went wrong. Please try again.");
+>>>>>>> d777039 (Implemented instructor dashboard, Razorpay payment integration, enrollment flow, course management, and backend service improvements)
       } finally {
         setIsLoading(false);
       }

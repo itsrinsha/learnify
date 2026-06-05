@@ -80,7 +80,7 @@ function InstructorRegister() {
           toast.error(result.payload || "Registration failed. Please try again.");
         }
       } catch (err) {
-        setError(err.response?.data?.message || "Registration failed. Please try again.");
+        setError(err || "Registration failed. Please try again.");
       }
     },
   });

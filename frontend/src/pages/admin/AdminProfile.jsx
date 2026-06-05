@@ -17,13 +17,19 @@ import {
   ChevronRight
 } from 'lucide-react';
 import { fetchProfile, updateProfile } from '../../features/auth/authSlice';
+<<<<<<< HEAD
 import { toast } from 'react-hot-toast';
 import { uploadUserAvatar } from '../../services/userService';
+=======
+>>>>>>> d777039 (Implemented instructor dashboard, Razorpay payment integration, enrollment flow, course management, and backend service improvements)
 
 const AdminProfile = () => {
   const dispatch = useDispatch();
   const { user, loading } = useSelector((state) => state.auth);
+<<<<<<< HEAD
   const fileInputRef = useRef(null);
+=======
+>>>>>>> d777039 (Implemented instructor dashboard, Razorpay payment integration, enrollment flow, course management, and backend service improvements)
   
   const [avatarLoading, setAvatarLoading] = useState(false);
   const [isEditing, setIsEditing] = useState(false);

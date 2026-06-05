@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 import axiosInstance from '../features/axiosInstance';
 
 // Get all courses (with filters)
@@ -124,3 +125,5 @@ export default {
   createCourse,
   updateCourse,
 };
+=======
+>>>>>>> d777039 (Implemented instructor dashboard, Razorpay payment integration, enrollment flow, course management, and backend service improvements)

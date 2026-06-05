@@ -85,7 +85,11 @@ function Register() {
           toast.error(result.payload || "Registration failed. Please try again.");
         }
       } catch (err) {
+<<<<<<< HEAD
         toast.error("Registration failed. Please try again.");
+=======
+        setError(err || "Registration failed. Please try again.");
+>>>>>>> d777039 (Implemented instructor dashboard, Razorpay payment integration, enrollment flow, course management, and backend service improvements)
       }
     },
   });

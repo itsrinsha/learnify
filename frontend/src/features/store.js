@@ -17,7 +17,7 @@ import instructorReducer from "../features/instructor/instructorSlice";
 // 🔹 persist config
 const persistConfig = {
   key: "auth",
-  storage: realStorage, // ✅ correct
+  storage: realStorage,
   whitelist: ["user", "isAuthenticated"],
 };
 // console.log("storage", storage)

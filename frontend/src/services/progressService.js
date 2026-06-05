@@ -20,6 +20,7 @@ export const markLessonCompleted = async (courseId, lessonId) => {
   }
 };
 
+<<<<<<< HEAD
 export const completeLesson = async (courseId, lessonId) => {
   try {
     const response = await axiosInstance.post('/progress/complete-lesson', { courseId, lessonId });
@@ -56,4 +57,9 @@ export default {
   completeLesson,
   getVideoProgress,
   saveVideoProgress,
+=======
+export default {
+  getCourseProgress,
+  markLessonCompleted,
+>>>>>>> d777039 (Implemented instructor dashboard, Razorpay payment integration, enrollment flow, course management, and backend service improvements)
 };
