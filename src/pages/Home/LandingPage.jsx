@@ -2,7 +2,8 @@ import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { 
   BookOpen, 
-  Users, 
+  User, 
+  Users,
   Award, 
   PlayCircle, 
   Star, 
@@ -16,15 +17,25 @@ import {
   Zap,
   Globe
 } from 'lucide-react';
+<<<<<<< HEAD
 import { useNavigate } from 'react-router-dom';
 import { useSelector } from 'react-redux';
 import { getAllCourses } from '../../services/courseService';
 import heroImage from '../../assets/hero.png';
+=======
+import { useNavigate, Link } from 'react-router-dom';
+import { useDispatch, useSelector } from 'react-redux';
+import { fetchAllCourses } from '../../features/courses/courseThunk';
+>>>>>>> d777039 (Implemented instructor dashboard, Razorpay payment integration, enrollment flow, course management, and backend service improvements)
 
 const LandingPage = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
   const navigate = useNavigate();
+  const dispatch = useDispatch();
+  const { courses: allCourses, loading: loadingCourses } = useSelector((state) => state.courses);
+
+  const featuredCourses = allCourses?.slice(0, 3) || [];
 
   useEffect(() => {
     const handleScroll = () => {
@@ -44,6 +55,7 @@ const LandingPage = () => {
   const features = [
     {
       title: 'Live Mentor Sessions',
+<<<<<<< HEAD
       description: 'Learn directly from industry experts through scheduled live classes and interactive review sessions.',
       icon: <Users className="w-6 h-6 text-primary-600" />
     },
@@ -103,6 +115,47 @@ const LandingPage = () => {
       navigate('/login');
     }
   };
+=======
+      description: 'Learn directly from instructors through scheduled classes and focused review sessions.',
+      icon: <Users />
+    },
+    {
+      title: 'Career Ready Courses',
+      description: 'Build practical skills with structured lessons, projects, and progress tracking.',
+      icon: <Laptop />
+    },
+    {
+      title: 'Verified Certificates',
+      description: 'Earn certificates with unique IDs after completing courses and passing reviews.',
+      icon: <ShieldCheck />
+    }
+  ];
+
+  const testimonials = [
+    {
+      name: 'Alice Johnson',
+      role: 'Frontend Developer',
+      quote: 'The live reviews helped me understand exactly where I needed to improve.'
+    },
+    {
+      name: 'Rahul Mehta',
+      role: 'MERN Student',
+      quote: 'Courses are easy to follow and the dashboard keeps me motivated.'
+    },
+    {
+      name: 'Priya Sharma',
+      role: 'UI Engineer',
+      quote: 'The certificate flow and mentor feedback made the learning feel professional.'
+    }
+  ];
+>>>>>>> d777039 (Implemented instructor dashboard, Razorpay payment integration, enrollment flow, course management, and backend service improvements)
+
+ 
+  useEffect(() => {
+    dispatch(fetchAllCourses({ limit: 3, status: 'published' }));
+  }, [dispatch]);
+
+  
 
   return (
     <div className="min-h-screen bg-slate-50/30 font-sans text-slate-900 selection:bg-primary-100 selection:text-primary-900">
@@ -135,6 +188,7 @@ const LandingPage = () => {
           </div>
 
           <div className="hidden md:flex items-center gap-4">
+<<<<<<< HEAD
             {!currentUser ? (
               <>
                 <button 
@@ -158,6 +212,21 @@ const LandingPage = () => {
                 Start Learning
               </button>
             )}
+=======
+            <button 
+              onClick={() => navigate('/login')}
+              className="px-5 py-2.5 text-sm font-semibold text-slate-700 hover:text-blue-600 transition-colors"
+            >
+              Login
+            </button>
+            <button 
+              onClick={() => navigate('/instructor/login')}
+              className="px-5 py-2.5 text-sm font-semibold text-slate-700 hover:text-blue-600 transition-colors"
+              
+            >
+              Start Teaching
+            </button>
+>>>>>>> d777039 (Implemented instructor dashboard, Razorpay payment integration, enrollment flow, course management, and backend service improvements)
           </div>
 
           {/* Mobile Toggle */}
@@ -351,8 +420,26 @@ const LandingPage = () => {
                     </h4>
                   </div>
                 </div>
+<<<<<<< HEAD
                 
                 <div className="p-6 pt-0">
+=======
+                <div className="p-6 space-y-4">
+                  <div className="flex items-center gap-2">
+                    <div className="flex items-center text-yellow-400">
+                      <Star className="w-4 h-4 fill-current" />
+                      <span className="ml-1 text-slate-900 font-bold text-sm">4.9</span>
+                    </div>
+                    <span className="text-slate-400 text-sm">({course.enrolledCount || 0} students)</span>
+                  </div>
+                  <h4 
+                    onClick={() => navigate('/register')}
+                    className="text-xl font-bold text-slate-900 leading-tight hover:text-blue-600 cursor-pointer transition-colors line-clamp-2 h-14"
+                  >
+                    {course.title}
+                  </h4>
+                  <p className="text-slate-500 text-sm font-medium">By <span className="text-slate-900">{course.instructor?.name || 'Expert Instructor'}</span></p>
+>>>>>>> d777039 (Implemented instructor dashboard, Razorpay payment integration, enrollment flow, course management, and backend service improvements)
                   <div className="flex items-center justify-between pt-4 border-t border-slate-50">
                     <div>
                       <p className="text-[9px] font-black text-slate-400 uppercase tracking-widest">Program Fee</p>
@@ -365,6 +452,12 @@ const LandingPage = () => {
                       Enroll
                     </button>
                   </div>
+<<<<<<< HEAD
+=======
+                  <button onClick={() => navigate('/register')} className="w-full py-3 bg-slate-50 text-slate-900 font-bold rounded-xl hover:bg-blue-600 hover:text-white transition-all active:scale-[0.98]">
+                    Enroll Now
+                  </button>
+>>>>>>> d777039 (Implemented instructor dashboard, Razorpay payment integration, enrollment flow, course management, and backend service improvements)
                 </div>
               </div>
             )) : (
@@ -390,9 +483,18 @@ const LandingPage = () => {
                 <div className="flex items-center gap-1 text-yellow-500">
                   {[1, 2, 3, 4, 5].map(i => <Star key={i} size={14} className="fill-current" />)}
                 </div>
+<<<<<<< HEAD
                 <p className="text-slate-600 text-sm leading-relaxed italic font-medium">"{t.quote}"</p>
                 <div className="flex items-center gap-3 pt-4 border-t border-slate-100">
                   <div className="w-9 h-9 rounded-xl bg-primary-100 flex items-center justify-center text-primary-700 font-black text-xs">
+=======
+                <div className="flex items-center gap-1 mb-6 text-yellow-400">
+                  {[1, 2, 3, 4, 5].map(i => <Star key={i} className="w-4 h-4 fill-current" />)}
+                </div>
+                <p className="text-slate-700 text-lg italic leading-relaxed mb-8">"{t.quote}"</p>
+                <div className="flex items-center gap-4">
+                  <div className="w-14 h-14 rounded-full bg-blue-100 flex items-center justify-center text-blue-600 font-bold border-2 border-white shadow-sm">
+>>>>>>> d777039 (Implemented instructor dashboard, Razorpay payment integration, enrollment flow, course management, and backend service improvements)
                     {t.name.charAt(0)}
                   </div>
                   <div>

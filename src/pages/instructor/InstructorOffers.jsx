@@ -16,11 +16,16 @@ import {
 
 const InstructorOffers = () => {
   const [showOfferForm, setShowOfferForm] = useState(false);
+<<<<<<< HEAD
   const [startDate, setStartDate] = useState('');
   const [endDate, setEndDate] = useState('');
   const [offerPrice, setOfferPrice] = useState('');
   const [discountPercent, setDiscountPercent] = useState('');
   const [selectedCourse, setSelectedCourse] = useState('');
+=======
+
+ 
+>>>>>>> d777039 (Implemented instructor dashboard, Razorpay payment integration, enrollment flow, course management, and backend service improvements)
 
   return (
     <div className="space-y-10 pb-20">

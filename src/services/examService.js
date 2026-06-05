@@ -20,10 +20,16 @@ export const getExamHistory = async (examId) => {
   }
 };
 
+<<<<<<< HEAD
 export const submitExamAttempt = async (examId, attemptData) => {
   try {
     const payload = typeof attemptData === 'object' ? attemptData : { score: attemptData };
     const response = await axiosInstance.post(`/exams/${examId}/submit`, payload);
+=======
+export const submitExamAttempt = async (examId, score) => {
+  try {
+    const response = await axiosInstance.post(`/exams/${examId}/submit`, { score });
+>>>>>>> d777039 (Implemented instructor dashboard, Razorpay payment integration, enrollment flow, course management, and backend service improvements)
     return response.data;
   } catch (error) {
     console.error('Error submitting exam attempt:', error);
@@ -51,6 +57,7 @@ export const checkExamEligibility = async (examId) => {
   }
 };
 
+<<<<<<< HEAD
 export const getInstructorExams = async () => {
   try {
     const response = await axiosInstance.get('/exams/instructor');
@@ -165,11 +172,14 @@ export const deleteExam = async (examId) => {
   }
 };
 
+=======
+>>>>>>> d777039 (Implemented instructor dashboard, Razorpay payment integration, enrollment flow, course management, and backend service improvements)
 export default {
   getStudentExams,
   getExamHistory,
   submitExamAttempt,
   requestExtraAttempt,
+<<<<<<< HEAD
   checkExamEligibility,
   getInstructorExams,
   createExam,
@@ -182,4 +192,7 @@ export default {
   unpublishExam,
   duplicateExam,
   deleteExam
+=======
+  checkExamEligibility
+>>>>>>> d777039 (Implemented instructor dashboard, Razorpay payment integration, enrollment flow, course management, and backend service improvements)
 };

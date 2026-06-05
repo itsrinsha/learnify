@@ -11,6 +11,7 @@ import {
   User,
   ShieldCheck,
   Loader2,
+<<<<<<< HEAD
   AlertCircle,
   RefreshCw
 } from 'lucide-react';
@@ -18,10 +19,17 @@ import { getMyCertificates, getCertificateDownloadUrl, claimCertificate, getCert
 import { getEnrolledCourses } from '../../services/userService';
 import { getStudentExams } from '../../services/examService';
 import { toast } from 'react-hot-toast';
+=======
+  AlertCircle
+} from 'lucide-react';
+import { getMyCertificates, getCertificateDownloadUrl } from '../../services/certificateService';
+import { getEnrolledCourses } from '../../services/userService';
+>>>>>>> d777039 (Implemented instructor dashboard, Razorpay payment integration, enrollment flow, course management, and backend service improvements)
 
 const Certificates = () => {
   const [certificates, setCertificates] = useState([]);
   const [enrolledCourses, setEnrolledCourses] = useState([]);
+<<<<<<< HEAD
   const [exams, setExams] = useState([]);
   const [loading, setLoading] = useState(true);
   const [claiming, setClaiming] = useState(false);
@@ -29,10 +37,16 @@ const Certificates = () => {
   const [searchQuery, setSearchQuery] = useState("");
   const [previewCert, setPreviewCert] = useState(null);
   const [loadingCertId, setLoadingCertId] = useState(null);
+=======
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+  const [searchQuery, setSearchQuery] = useState("");
+>>>>>>> d777039 (Implemented instructor dashboard, Razorpay payment integration, enrollment flow, course management, and backend service improvements)
 
   const fetchData = useCallback(async () => {
     try {
       setLoading(true);
+<<<<<<< HEAD
       const [certs, enrolled, studentExams] = await Promise.all([
         getMyCertificates(),
         getEnrolledCourses(),
@@ -41,6 +55,14 @@ const Certificates = () => {
       setCertificates(certs || []);
       setEnrolledCourses(enrolled || []);
       setExams(studentExams || []);
+=======
+      const [certs, enrolled] = await Promise.all([
+        getMyCertificates(),
+        getEnrolledCourses()
+      ]);
+      setCertificates(certs);
+      setEnrolledCourses(enrolled);
+>>>>>>> d777039 (Implemented instructor dashboard, Razorpay payment integration, enrollment flow, course management, and backend service improvements)
       setError(null);
     } catch (err) {
       console.error("Error fetching certificates data:", err);
@@ -54,11 +76,19 @@ const Certificates = () => {
     fetchData();
   }, [fetchData]);
 
+<<<<<<< HEAD
   // Filter pending courses (enrolled but no certificate created yet)
   const certificateCourseIds = certificates.map(cert => cert.course?._id || cert.course);
   const pendingCourses = enrolledCourses.filter(enrollment => {
     const course = enrollment.course || enrollment;
     return !certificateCourseIds.includes(course._id);
+=======
+  // Filter pending courses (enrolled but no certificate yet)
+  const earnedCourseIds = certificates.map(cert => cert.course?._id);
+  const pendingCourses = enrolledCourses.filter(enrollment => {
+    const course = enrollment.course || enrollment;
+    return !earnedCourseIds.includes(course._id);
+>>>>>>> d777039 (Implemented instructor dashboard, Razorpay payment integration, enrollment flow, course management, and backend service improvements)
   });
 
   const filteredCertificates = certificates.filter(cert => 
@@ -71,6 +101,7 @@ const Certificates = () => {
     window.open(url, "_blank");
   };
 
+<<<<<<< HEAD
   const handlePreview = async (cert) => {
     try {
       setLoadingCertId(cert._id);
@@ -99,6 +130,8 @@ const Certificates = () => {
     }
   };
 
+=======
+>>>>>>> d777039 (Implemented instructor dashboard, Razorpay payment integration, enrollment flow, course management, and backend service improvements)
   if (loading) {
     return (
       <div className="h-[60vh] flex items-center justify-center bg-white rounded-[2.5rem] border border-slate-200">
@@ -135,6 +168,7 @@ const Certificates = () => {
           <h2 className="text-2xl font-bold text-slate-900">My Certificates</h2>
           <p className="text-slate-500 mt-1">Download and share your industry-recognized certifications.</p>
         </div>
+<<<<<<< HEAD
         <div className="flex items-center gap-3 w-full md:w-auto font-sans">
           <button
             onClick={fetchData}
@@ -156,6 +190,19 @@ const Certificates = () => {
               className="w-full pl-10 pr-4 py-2.5 bg-slate-50 border border-slate-200 rounded text-sm focus:ring-1 focus:ring-primary-500 transition-all outline-none font-medium"
             />
           </div>
+=======
+        <div className="relative w-full md:w-64">
+          <span className="absolute inset-y-0 left-0 pl-3 flex items-center text-slate-400">
+            <Search size={18} />
+          </span>
+          <input
+            type="text"
+            placeholder="Search certificate ID..."
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            className="w-full pl-10 pr-4 py-2 bg-white border border-slate-200 rounded-xl text-sm focus:ring-2 focus:ring-blue-500 shadow-sm"
+          />
+>>>>>>> d777039 (Implemented instructor dashboard, Razorpay payment integration, enrollment flow, course management, and backend service improvements)
         </div>
       </div>
 
@@ -166,13 +213,18 @@ const Certificates = () => {
             Verified Certifications
           </h3>
           {filteredCertificates.length === 0 ? (
+<<<<<<< HEAD
             <div className="bg-slate-50 border border-dashed border-slate-200 p-16 text-center flex flex-col items-center gap-4 rounded-3xl">
+=======
+            <div className="bg-slate-50 border border-dashed border-slate-200 rounded-[2.5rem] p-16 text-center flex flex-col items-center gap-4">
+>>>>>>> d777039 (Implemented instructor dashboard, Razorpay payment integration, enrollment flow, course management, and backend service improvements)
               <Award size={48} className="text-slate-200" />
               <p className="text-slate-500 font-medium italic">No certificates found matching your search.</p>
             </div>
           ) : (
             <div className="grid md:grid-cols-2 gap-8">
               {filteredCertificates.map((cert) => (
+<<<<<<< HEAD
                 <div key={cert._id} className="bg-white rounded-3xl border border-slate-200 flex flex-col md:flex-row overflow-hidden hover:border-blue-300 transition-all group">
                   <div className="w-full md:w-40 h-40 md:h-auto relative bg-slate-900 flex-shrink-0 border-r border-slate-100">
                     <img 
@@ -251,6 +303,53 @@ const Certificates = () => {
                           </button>
                         </div>
                       )}
+=======
+                <div key={cert._id} className="bg-white rounded-[2.5rem] border border-slate-200 overflow-hidden shadow-sm hover:shadow-2xl transition-all group flex flex-col md:flex-row">
+                  <div className="w-full md:w-48 h-48 md:h-auto relative overflow-hidden bg-slate-900">
+                    <img 
+                      src={cert.course?.thumbnail || "https://images.unsplash.com/photo-1561070791-2526d30994b5?auto=format&fit=crop&w=600&q=80"} 
+                      alt={cert.course?.title} 
+                      className="w-full h-full object-cover opacity-60 group-hover:scale-110 transition-transform duration-700" 
+                    />
+                    <div className="absolute inset-0 flex items-center justify-center">
+                      <div className="p-4 bg-white/20 backdrop-blur-md rounded-2xl border border-white/30">
+                        <Award className="text-white" size={48} />
+                      </div>
+                    </div>
+                  </div>
+                  
+                  <div className="flex-1 p-8 space-y-6">
+                    <div className="space-y-2">
+                      <div className="flex justify-between items-start">
+                        <span className="text-[10px] font-black uppercase tracking-widest text-blue-600 bg-blue-50 px-2 py-0.5 rounded">Verified</span>
+                        <span className="text-[10px] font-bold text-slate-400">ID: {cert.certificateId}</span>
+                      </div>
+                      <h4 className="text-xl font-bold text-slate-900 leading-tight line-clamp-2">{cert.course?.title}</h4>
+                    </div>
+
+                    <div className="grid grid-cols-2 gap-4">
+                      <div className="space-y-1">
+                        <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Instructor</p>
+                        <p className="text-xs font-bold text-slate-900 flex items-center gap-1"><User size={12} /> {cert.instructor?.name}</p>
+                      </div>
+                      <div className="space-y-1">
+                        <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Issue Date</p>
+                        <p className="text-xs font-bold text-slate-900 flex items-center gap-1"><Calendar size={12} /> {new Date(cert.issueDate).toLocaleDateString()}</p>
+                      </div>
+                    </div>
+
+                    <div className="pt-4 flex items-center gap-3">
+                      <button 
+                        onClick={() => handleDownload(cert._id)}
+                        className="flex-1 flex items-center justify-center gap-2 px-6 py-3 bg-slate-900 text-white rounded-xl font-bold text-sm hover:bg-blue-600 transition-all shadow-lg shadow-slate-100"
+                      >
+                        <Download size={18} />
+                        Download PDF
+                      </button>
+                      <button className="p-3 bg-slate-50 text-slate-500 rounded-xl hover:bg-slate-200 transition-all border border-slate-100">
+                        <ExternalLink size={18} />
+                      </button>
+>>>>>>> d777039 (Implemented instructor dashboard, Razorpay payment integration, enrollment flow, course management, and backend service improvements)
                     </div>
                   </div>
                 </div>
@@ -258,6 +357,7 @@ const Certificates = () => {
             </div>
           )}
         </div>
+<<<<<<< HEAD
 
         {/* Pending / Claimable Certificates */}
         {pendingCourses.length > 0 && (
@@ -407,6 +507,46 @@ const Certificates = () => {
                 <span>Verify at: http://localhost:5173/verify/{previewCert.certificateCode || previewCert.certificateId}</span>
               </div>
             </div>
+=======
+
+        {/* Pending Certificates */}
+        {pendingCourses.length > 0 && (
+          <div className="space-y-6">
+            <h3 className="text-lg font-bold text-slate-900 flex items-center gap-2">
+              <Clock size={20} className="text-yellow-600" />
+              Locked & Pending
+            </h3>
+            <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+              {pendingCourses.map((enrollment) => {
+                const course = enrollment.course || enrollment;
+                return (
+                  <div key={course._id} className="bg-slate-50 rounded-3xl border border-dashed border-slate-300 p-6 flex items-center gap-6 opacity-60 grayscale group hover:grayscale-0 hover:bg-white hover:border-blue-200 transition-all">
+                    <div className="w-16 h-16 rounded-2xl bg-slate-200 flex items-center justify-center relative">
+                      <Lock className="text-slate-400 group-hover:text-blue-400 transition-colors" size={24} />
+                    </div>
+                    <div className="flex-1 min-w-0 space-y-2">
+                      <h4 className="font-bold text-slate-700 text-sm truncate">{course.title}</h4>
+                      <div className="space-y-1.5">
+                        <div className="flex justify-between text-[10px] font-bold text-slate-400 uppercase tracking-widest">
+                          <span>Status</span>
+                          <span>{enrollment.completed ? '100% - Ready' : 'In Progress'}</span>
+                        </div>
+                        <div className="h-1 bg-slate-200 rounded-full overflow-hidden">
+                          <div 
+                            className={`h-full ${enrollment.completed ? 'bg-green-500' : 'bg-blue-600'} opacity-30`} 
+                            style={{ width: enrollment.completed ? '100%' : '50%' }}
+                          ></div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+        )}
+      </div>
+>>>>>>> d777039 (Implemented instructor dashboard, Razorpay payment integration, enrollment flow, course management, and backend service improvements)
 
             {/* Action Buttons */}
             <div className="flex gap-4 mt-6 w-full">
@@ -430,6 +570,18 @@ const Certificates = () => {
               )}
             </div>
           </div>
+<<<<<<< HEAD
+=======
+          <div className="space-y-2 flex-1 text-center md:text-left">
+            <h4 className="text-2xl font-bold">Verified Digital Identity</h4>
+            <p className="text-blue-100 max-w-2xl">
+              All Learnify certificates are secured with unique IDs and instructor signatures. You can share your certificate link with recruiters to instantly verify your credentials.
+            </p>
+          </div>
+          <button className="px-8 py-4 bg-white text-blue-600 rounded-2xl font-bold hover:bg-blue-50 transition-all shadow-xl">
+            Learn More
+          </button>
+>>>>>>> d777039 (Implemented instructor dashboard, Razorpay payment integration, enrollment flow, course management, and backend service improvements)
         </div>
       )}
     </div>

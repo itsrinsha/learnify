@@ -30,7 +30,9 @@ export const loginUser = createAsyncThunk(
       localStorage.setItem("user", JSON.stringify(res));
       return res;
     } catch (error) {
+      console.log(error.message)
       return thunkAPI.rejectWithValue(error.response?.data?.message || "Login failed");
+      
     }
   }
 );

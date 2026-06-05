@@ -15,8 +15,13 @@ const StatCard = ({ title, value, icon: Icon, trend, color }) => {
   return (
     <div className="card p-6 flex flex-col justify-between">
       <div className="flex items-center justify-between mb-4">
+<<<<<<< HEAD
         <div className={`p-2.5 rounded-xl border ${colorStyles[color] || colorStyles.blue}`}>
           {Icon ? React.createElement(Icon, { size: 20 }) : null}
+=======
+        <div className={`p-3 rounded-xl ${colorStyles[color] || colorStyles.blue}`}>
+          {Icon ? React.createElement(Icon, { className: 'w-6 h-6' }) : null}
+>>>>>>> d777039 (Implemented instructor dashboard, Razorpay payment integration, enrollment flow, course management, and backend service improvements)
         </div>
         {trend && (
           <div className={`flex items-center gap-1 text-[11px] font-black ${trend > 0 ? 'text-success-600' : 'text-error-600'}`}>

@@ -27,6 +27,7 @@ import {
 import { toast } from 'react-hot-toast';
 import { useSocket } from '../../context/SocketContext';
 
+
 const InstructorLiveClasses = () => {
   const [showScheduleForm, setShowScheduleForm] = useState(false);
   const [sessions, setSessions] = useState([]);
@@ -34,6 +35,7 @@ const InstructorLiveClasses = () => {
   const [searchQuery, setSearchQuery] = useState('');
   const [loading, setLoading] = useState(true);
 
+<<<<<<< HEAD
   // Form State
   const [title, setTitle] = useState('');
   const [courseId, setCourseId] = useState('');
@@ -177,6 +179,9 @@ const InstructorLiveClasses = () => {
 
     return tabMatch && searchMatch;
   });
+=======
+
+>>>>>>> d777039 (Implemented instructor dashboard, Razorpay payment integration, enrollment flow, course management, and backend service improvements)
 
   return (
     <div className="space-y-10 pb-20">
@@ -233,6 +238,7 @@ const InstructorLiveClasses = () => {
       </div>
 
       {/* Class List */}
+<<<<<<< HEAD
       {loading ? (
         <div className="flex flex-col items-center justify-center py-20 gap-4">
           <Loader2 className="w-10 h-10 text-blue-600 animate-spin" />
@@ -313,6 +319,12 @@ const InstructorLiveClasses = () => {
           ))}
         </div>
       )}
+=======
+    
+
+      {/* Empty State Mockup */}
+     
+>>>>>>> d777039 (Implemented instructor dashboard, Razorpay payment integration, enrollment flow, course management, and backend service improvements)
 
       {/* Schedule Form Modal */}
       {showScheduleForm && (

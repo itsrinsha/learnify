@@ -3,6 +3,11 @@ import {
   Search, 
   Filter, 
   MessageSquare, 
+<<<<<<< HEAD
+=======
+  ChevronRight, 
+  Video,
+>>>>>>> d777039 (Implemented instructor dashboard, Razorpay payment integration, enrollment flow, course management, and backend service improvements)
   BookOpen,
   Calendar,
   Users,
@@ -18,8 +23,25 @@ import { toast } from 'react-hot-toast';
 import { fetchInstructorStudents } from '../../features/instructor/instructorThunk';
 import { completeStudentCourse } from '../../services/instructorService';
 
+const students = [
+  {
+    id: 1,
+    name: 'Alice Johnson',
+    email: 'alice@example.com',
+    avatar: 'https://i.pravatar.cc/160?u=alice',
+    courseName: 'Advanced React 19 Patterns',
+    purchaseDate: 'May 01, 2026',
+    progress: 80,
+    completedLessons: 12,
+    totalLessons: 15,
+    liveAttendance: '92%',
+    reviewStatus: 'Pending'
+  }
+];
+
 const StudentsList = () => {
   const navigate = useNavigate();
+<<<<<<< HEAD
   const dispatch = useDispatch();
   const { id: courseIdFromUrl } = useParams();
   const { students, loading } = useSelector((state) => state.instructor);
@@ -89,6 +111,8 @@ const StudentsList = () => {
   }, [students, searchQuery, selectedCourseId]);
 
   const activeStudentsCount = filteredStudents.filter(s => s.status === 'Active').length;
+=======
+>>>>>>> d777039 (Implemented instructor dashboard, Razorpay payment integration, enrollment flow, course management, and backend service improvements)
 
   return (
     <div className="space-y-10 pb-20">
@@ -161,6 +185,7 @@ const StudentsList = () => {
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-50">
+<<<<<<< HEAD
               {loading ? (
                 <tr>
                   <td colSpan="6" className="px-8 py-20 text-center">
@@ -269,6 +294,9 @@ const StudentsList = () => {
                   </td>
                 </tr>
               )}
+=======
+             
+>>>>>>> d777039 (Implemented instructor dashboard, Razorpay payment integration, enrollment flow, course management, and backend service improvements)
             </tbody>
           </table>
         </div>

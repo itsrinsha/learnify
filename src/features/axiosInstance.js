@@ -27,7 +27,7 @@ axiosInstance.interceptors.response.use(
   (response) => response,
   (error) => {
     // Example: Unauthorized (token expired)
-    if (error.response && error.response.status === 401) {
+    if (error.response && error.response.status === 401 && !error.config.url.includes('/auth/')) {
       console.log("Unauthorized! Logging out...");
 
       // Check if this was a login or registration request

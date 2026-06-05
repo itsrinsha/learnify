@@ -22,6 +22,7 @@ import {
   Loader2,
   AlertCircle
 } from 'lucide-react';
+<<<<<<< HEAD
 import { useNavigate, useParams } from 'react-router-dom';
 import { toast } from 'react-hot-toast';
 import { 
@@ -36,6 +37,10 @@ import {
   updateLesson
 } from '../../services/instructorCourseService';
 import adminService from '../../services/adminService';
+=======
+import { useNavigate } from 'react-router-dom';
+import { createCourseDraft, addModule, addLesson, publishCourse } from '../../services/instructorCourseService';
+>>>>>>> d777039 (Implemented instructor dashboard, Razorpay payment integration, enrollment flow, course management, and backend service improvements)
 
 const CreateCourse = () => {
   const navigate = useNavigate();
@@ -43,7 +48,10 @@ const CreateCourse = () => {
   const [step, setStep] = useState(1);
   const [loading, setLoading] = useState(false);
   const [courseId, setCourseId] = useState(null);
+<<<<<<< HEAD
   const [categories, setCategories] = useState([]);
+=======
+>>>>>>> d777039 (Implemented instructor dashboard, Razorpay payment integration, enrollment flow, course management, and backend service improvements)
   
   // Form States
   const [courseData, setCourseData] = useState({
@@ -55,12 +63,17 @@ const CreateCourse = () => {
     language: 'English',
     price: '',
     discountPrice: '',
+<<<<<<< HEAD
     thumbnail: '',
   });
 
   const [thumbnailPreview, setThumbnailPreview] = useState(null);
   const [uploadingThumbnail, setUploadingThumbnail] = useState(false);
 
+=======
+  });
+
+>>>>>>> d777039 (Implemented instructor dashboard, Razorpay payment integration, enrollment flow, course management, and backend service improvements)
   const [modules, setModules] = useState([
     { title: 'Introduction', lessons: [{ title: 'Welcome to the course', duration: '5:00', isPreviewFree: true }] }
   ]);
@@ -70,6 +83,7 @@ const CreateCourse = () => {
     certificateEligibility: true,
   });
 
+<<<<<<< HEAD
   useEffect(() => {
     const fetchCategories = async () => {
       try {
@@ -120,6 +134,8 @@ const CreateCourse = () => {
     }
   }, [id]);
 
+=======
+>>>>>>> d777039 (Implemented instructor dashboard, Razorpay payment integration, enrollment flow, course management, and backend service improvements)
   const handleInputChange = (e) => {
     const { name, value } = e.target;
     setCourseData(prev => ({ ...prev, [name]: value }));
@@ -131,6 +147,7 @@ const CreateCourse = () => {
 
   const handleAddLesson = (moduleIndex) => {
     const newModules = [...modules];
+<<<<<<< HEAD
     newModules[moduleIndex].lessons.push({ 
       title: 'New Lesson', 
       duration: '10:00', 
@@ -191,12 +208,22 @@ const CreateCourse = () => {
     }
   };
 
+=======
+    newModules[moduleIndex].lessons.push({ title: 'New Lesson', duration: '10:00', isPreviewFree: false });
+    setModules(newModules);
+  };
+
+>>>>>>> d777039 (Implemented instructor dashboard, Razorpay payment integration, enrollment flow, course management, and backend service improvements)
   const handleNextStep = async () => {
     try {
       setLoading(true);
       if (step === 1) {
         if (!courseData.title.trim()) {
+<<<<<<< HEAD
           toast.error("Please enter a course title.");
+=======
+          alert("Please enter a course title.");
+>>>>>>> d777039 (Implemented instructor dashboard, Razorpay payment integration, enrollment flow, course management, and backend service improvements)
           return;
         }
 
@@ -209,6 +236,7 @@ const CreateCourse = () => {
           };
           const result = await createCourseDraft(payload);
           setCourseId(result.course._id);
+<<<<<<< HEAD
           toast.success("Course draft created!");
         }
         setStep(2);
@@ -282,6 +310,31 @@ const CreateCourse = () => {
     } catch (error) {
       console.error("Error saving step:", error);
       toast.error(error.response?.data?.message || "Something went wrong. Please try again.");
+=======
+        }
+        setStep(2);
+      } else if (step === 2) {
+        // Save Modules & Lessons (In a real app, you might save these one by one, but here we'll simulate the flow)
+        // We'll iterate and call the API for each module and lesson
+        for (const mod of modules) {
+          const modResult = await addModule(courseId, { title: mod.title });
+          for (const lesson of mod.lessons) {
+            await addLesson(courseId, modResult.module._id, lesson);
+          }
+        }
+        setStep(3);
+      } else if (step === 3) {
+        setStep(4);
+      } else if (step === 4) {
+        // Final Publish
+        await publishCourse(courseId);
+        alert('Congratulations! Your course is now published.');
+        navigate('/instructor/courses');
+      }
+    } catch (error) {
+      console.error("Error saving step:", error);
+      alert(error.response?.data?.message || "Something went wrong. Please try again.");
+>>>>>>> d777039 (Implemented instructor dashboard, Razorpay payment integration, enrollment flow, course management, and backend service improvements)
     } finally {
       setLoading(false);
     }
@@ -369,6 +422,7 @@ const CreateCourse = () => {
                     onChange={handleInputChange}
                     className="w-full px-6 py-4 bg-slate-50 border border-slate-100 rounded-2xl text-sm focus:ring-2 focus:ring-blue-500 outline-none transition-all font-bold text-slate-600"
                   >
+<<<<<<< HEAD
                     {categories.length > 0 ? (
                       categories.map((cat) => (
                         <option key={cat._id} value={cat.name}>{cat.name}</option>
@@ -381,6 +435,12 @@ const CreateCourse = () => {
                         <option>UI/UX Design</option>
                       </>
                     )}
+=======
+                    <option>Web Development</option>
+                    <option>Data Science</option>
+                    <option>Mobile App Dev</option>
+                    <option>UI/UX Design</option>
+>>>>>>> d777039 (Implemented instructor dashboard, Razorpay payment integration, enrollment flow, course management, and backend service improvements)
                   </select>
                 </div>
                 <div className="space-y-2">
