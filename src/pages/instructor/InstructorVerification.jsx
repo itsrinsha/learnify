@@ -18,10 +18,7 @@ import {
 import { useNavigate } from 'react-router-dom';
 import axiosInstance from '../../features/axiosInstance';
 import { logout, fetchProfile } from '../../features/auth/authSlice';
-<<<<<<< HEAD
 import { toast } from 'react-hot-toast';
-=======
->>>>>>> d777039 (Implemented instructor dashboard, Razorpay payment integration, enrollment flow, course management, and backend service improvements)
 
 const InstructorVerification = () => {
   const dispatch = useDispatch();

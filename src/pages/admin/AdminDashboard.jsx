@@ -46,36 +46,6 @@ const AdminDashboard = () => {
   const [error, setError] = useState(null);
 
   useEffect(() => {
-<<<<<<< HEAD
-=======
-    const fetchDashboardData = async () => {
-      try {
-        setLoading(true);
-        const [users, pendingReqs] = await Promise.all([
-          adminService.getAllUsers(),
-          adminService.getInstructorRequests()
-        ]);
-
-        // Just fetching users and courses to get counts
-        // Note: For now we count from the users array
-        const students = users.filter(u => u.role === 'student').length;
-        const instructors = users.filter(u => u.role === 'instructor').length;
-        
-        setStats({
-          totalStudents: students,
-          totalInstructors: instructors,
-          totalCourses: 0, // Placeholder until courses service is fully ready
-          pendingApprovals: pendingReqs.length,
-        });
-        setRequests(pendingReqs.slice(0, 5)); // Show latest 5
-      } catch (error) {
-        console.error('Failed to fetch dashboard data', error);
-      } finally {
-        setLoading(false);
-      }
-    };
-
->>>>>>> d777039 (Implemented instructor dashboard, Razorpay payment integration, enrollment flow, course management, and backend service improvements)
     fetchDashboardData();
   }, []);
 
@@ -190,7 +160,7 @@ const AdminDashboard = () => {
         {/* Latest Activity Feed */}
         <div className="card overflow-hidden flex flex-col">
           <div className="px-6 py-4 border-b border-slate-100 flex items-center justify-between bg-slate-50/50">
-            <h3 className="text-xs font-bold text-slate-500 uppercase tracking-widest">Activity Feed</h3>
+            <h3 className="text-xs font-bold text-slate-550 uppercase tracking-widest">Activity Feed</h3>
             <button className="text-primary-600 hover:text-primary-700 text-[10px] font-bold uppercase tracking-widest cursor-pointer">View All</button>
           </div>
           <div className="p-6 space-y-6 flex-1">
@@ -199,7 +169,7 @@ const AdminDashboard = () => {
                 <div className={`w-10 h-10 rounded-xl flex items-center justify-center shrink-0 border border-slate-100 ${
                   activity.type === 'instructor' ? 'bg-primary-50 text-primary-700' :
                   activity.type === 'course' ? 'bg-warning-50 text-warning-600' :
-                  activity.type === 'payment' ? 'bg-success-50 text-success-600' : 'bg-slate-50 text-slate-600'
+                  activity.type === 'payment' ? 'bg-success-50 text-success-600' : 'bg-slate-50 text-slate-650'
                 }`}>
                    <CheckCircle2 size={18} />
                 </div>
@@ -237,21 +207,12 @@ const AdminDashboard = () => {
                 <th className="px-8 py-4 text-[10px] font-bold text-slate-400 uppercase tracking-widest text-right">Action</th>
               </tr>
             </thead>
-<<<<<<< HEAD
             <tbody className="divide-y divide-slate-100">
               {pendingRequests.map((req) => (
                 <tr key={req._id} className="hover:bg-slate-50/30 transition-colors">
                   <td className="px-8 py-5">
                     <div className="flex items-center gap-3">
                       <div className="w-9 h-9 rounded-xl bg-primary-100 flex items-center justify-center text-primary-700 font-bold text-xs border border-primary-200">
-=======
-            <tbody className="divide-y divide-slate-50">
-              {requests.map((req) => (
-                <tr key={req._id} className="hover:bg-slate-50/50 transition-colors">
-                  <td className="px-8 py-6">
-                    <div className="flex items-center gap-4">
-                      <div className="w-10 h-10 rounded-xl bg-blue-100 flex items-center justify-center text-blue-600 font-bold text-xs">
->>>>>>> d777039 (Implemented instructor dashboard, Razorpay payment integration, enrollment flow, course management, and backend service improvements)
                         {req.name.charAt(0)}
                       </div>
                       <div>
@@ -262,7 +223,7 @@ const AdminDashboard = () => {
                   </td>
                   <td className="px-8 py-5">
                     <p className="text-xs font-bold text-slate-700">{req.verificationDetails?.expertise || 'N/A'}</p>
-                    <p className="text-[10px] text-slate-400 font-bold uppercase tracking-tighter">{req.verificationDetails?.education}</p>
+                    <p className="text-[10px] text-slate-450 font-bold uppercase tracking-tighter">{req.verificationDetails?.education}</p>
                   </td>
                   <td className="px-8 py-5">
                     <span className="px-2.5 py-1 bg-warning-50 text-warning-600 text-[9px] font-black rounded-lg uppercase tracking-wider border border-warning-200">Pending</span>

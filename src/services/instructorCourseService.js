@@ -40,7 +40,6 @@ export const publishCourse = async (courseId) => {
   }
 };
 
-<<<<<<< HEAD
 export const uploadThumbnail = async (file) => {
   const formData = new FormData();
   formData.append('thumbnail', file);
@@ -99,8 +98,6 @@ export const deleteCourse = async (courseId) => {
   }
 };
 
-=======
->>>>>>> d777039 (Implemented instructor dashboard, Razorpay payment integration, enrollment flow, course management, and backend service improvements)
 export const getInstructorDashboardStats = async () => {
   try {
     const response = await axiosInstance.get('/instructor/dashboard');
@@ -116,14 +113,11 @@ export default {
   addModule,
   addLesson,
   publishCourse,
-<<<<<<< HEAD
   uploadThumbnail,
   uploadVideo,
   getCourseDetails,
   updateCourse,
   updateLesson,
   deleteCourse,
-=======
->>>>>>> d777039 (Implemented instructor dashboard, Razorpay payment integration, enrollment flow, course management, and backend service improvements)
   getInstructorDashboardStats
 };

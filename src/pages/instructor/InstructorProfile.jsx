@@ -1,10 +1,5 @@
-<<<<<<< HEAD
 import React, { useState, useRef } from 'react';
 import { useSelector, useDispatch } from 'react-redux';
-=======
-import React from 'react';
-import { useSelector } from 'react-redux';
->>>>>>> d777039 (Implemented instructor dashboard, Razorpay payment integration, enrollment flow, course management, and backend service improvements)
 import { 
   User, 
   Mail, 

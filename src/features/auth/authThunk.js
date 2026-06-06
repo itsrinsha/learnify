@@ -67,8 +67,9 @@ export const fetchProfile = createAsyncThunk(
   async (_, thunkAPI) => {
     try {
       const res = await getProfileAPI();
-      localStorage.setItem("user", JSON.stringify(res));
-      return res;
+      const userData = res.user || res.data || res;
+      localStorage.setItem("user", JSON.stringify(userData));
+      return userData;
     } catch (error) {
       return thunkAPI.rejectWithValue(error.response?.data?.message || "Failed to fetch profile");
     }

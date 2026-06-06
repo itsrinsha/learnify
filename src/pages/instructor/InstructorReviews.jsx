@@ -1,11 +1,6 @@
-<<<<<<< HEAD
 import React, { useState, useEffect } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { fetchInstructorDashboard, fetchInstructorStudents, fetchReviewHistory } from '../../features/instructor/instructorThunk';
-=======
-import React, { useEffect, useState } from 'react';
-import instructorService from '../../services/instructorService';
->>>>>>> d777039 (Implemented instructor dashboard, Razorpay payment integration, enrollment flow, course management, and backend service improvements)
 import { 
   Calendar, 
   Clock, 
@@ -33,7 +28,6 @@ import axiosInstance from '../../features/axiosInstance';
 
 
 const InstructorReviews = () => {
-<<<<<<< HEAD
   const dispatch = useDispatch();
   const { dashboardData, students, reviewHistory, loading } = useSelector((state) => state.instructor);
 
@@ -225,22 +219,6 @@ const InstructorReviews = () => {
     return <VideoCall roomId={activeRoomId} onEndCall={() => setActiveRoomId(null)} />;
   }
 
-=======
-  const [history, setHistory] = useState([]);
-  const [showScheduleForm, setShowScheduleForm] = useState(false);
-useEffect(()=>{
-  const fetchHistory = async ()=>{
-    try{
-      const gata = await instructorCourseService.getReviewHistory();
-
-      setHistory(data.history||[]);
-    }catch(error){
-      console.log(error)
-    }
-  }
-  fetchHistory();
-},[])
->>>>>>> d777039 (Implemented instructor dashboard, Razorpay payment integration, enrollment flow, course management, and backend service improvements)
   return (
     <div className="space-y-10 pb-20">
       {/* Header */}
@@ -273,7 +251,6 @@ useEffect(()=>{
             </div>
           </div>
 
-<<<<<<< HEAD
           {activeReviews.length === 0 ? (
             <div className="py-20 text-center bg-white rounded-[2.5rem] border border-dashed border-slate-200">
                <p className="text-slate-500 font-bold">No upcoming reviews scheduled.</p>
@@ -355,9 +332,6 @@ useEffect(()=>{
               ))}
             </div>
           )}
-=======
-         
->>>>>>> d777039 (Implemented instructor dashboard, Razorpay payment integration, enrollment flow, course management, and backend service improvements)
         </div>
 
         {/* Sidebar History & Info */}
@@ -395,31 +369,10 @@ useEffect(()=>{
               <h3 className="font-black text-slate-900">Recent History</h3>
               <History size={18} className="text-slate-300" />
             </div>
-<<<<<<< HEAD
             <div className="divide-y divide-slate-50 min-h-[200px]">
               {loading ? (
                 <div className="p-8 flex justify-center">
                   <Loader2 className="w-6 h-6 text-blue-600 animate-spin" />
-=======
-            <div className="divide-y divide-slate-50">
-              {history.map((item) => (
-                <div key={`${item.student}-${item.course}`} className="p-6 space-y-3 hover:bg-slate-50 transition-colors">
-                  <div className="flex justify-between items-start">
-                    <div>
-                      <h4 className="text-sm font-bold text-slate-900">{item.student}</h4>
-                      <p className="text-[10px] text-slate-400 font-bold uppercase tracking-widest">{item.course}</p>
-                    </div>
-                    <span className={`px-2 py-0.5 rounded text-[9px] font-black uppercase tracking-widest ${
-                      item.result === 'Pass' ? 'bg-green-50 text-green-600' : 'bg-red-50 text-red-600'
-                    }`}>
-                      {item.result}
-                    </span>
-                  </div>
-                  <div className="flex justify-between items-center text-[10px] font-bold text-slate-400 uppercase tracking-widest">
-                    <span>{item.date}</span>
-                    <span>Attempt {item.attempt}</span>
-                  </div>
->>>>>>> d777039 (Implemented instructor dashboard, Razorpay payment integration, enrollment flow, course management, and backend service improvements)
                 </div>
               ) : reviewHistory.length > 0 ? (
                 reviewHistory.map((item, idx) => (
@@ -471,7 +424,6 @@ useEffect(()=>{
             <form onSubmit={handleConfirmSchedule} className="p-10 space-y-8">
               <div className="grid md:grid-cols-2 gap-8">
                 <div className="space-y-3">
-<<<<<<< HEAD
                   <label htmlFor="schedule-course-select" className="text-xs font-black text-slate-400 uppercase tracking-widest px-1">Select Course</label>
                   <select 
                     id="schedule-course-select"
@@ -487,14 +439,9 @@ useEffect(()=>{
                     ))}
                     {courses.length === 0 && <option disabled>No courses available</option>}
                   </select>
-=======
-                  <label className="text-xs font-black text-slate-400 uppercase tracking-widest px-1">Select Course</label>
-
->>>>>>> d777039 (Implemented instructor dashboard, Razorpay payment integration, enrollment flow, course management, and backend service improvements)
                 </div>
                 
                 <div className="space-y-3">
-<<<<<<< HEAD
                   <label htmlFor="schedule-student-select" className="text-xs font-black text-slate-400 uppercase tracking-widest px-1">Select Student</label>
                   <select 
                     id="schedule-student-select"
@@ -516,10 +463,6 @@ useEffect(()=>{
                     ))}
                     {students.length === 0 && <option disabled>No students found</option>}
                   </select>
-=======
-                  <label className="text-xs font-black text-slate-400 uppercase tracking-widest px-1">Select Student</label>
-  
->>>>>>> d777039 (Implemented instructor dashboard, Razorpay payment integration, enrollment flow, course management, and backend service improvements)
                 </div>
                 
                 <div className="space-y-3">

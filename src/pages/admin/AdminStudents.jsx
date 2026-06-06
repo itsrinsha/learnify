@@ -14,13 +14,8 @@ import {
   AlertCircle
 } from 'lucide-react';
 import StatusBadge from '../../components/admin/StatusBadge';
-<<<<<<< HEAD
 import adminService from '../../services/adminService';
 import { toast } from 'react-hot-toast';
-=======
-
-
->>>>>>> d777039 (Implemented instructor dashboard, Razorpay payment integration, enrollment flow, course management, and backend service improvements)
 
 const AdminStudents = () => {
   const [searchTerm, setSearchTerm] = useState('');
@@ -151,7 +146,6 @@ const AdminStudents = () => {
                 <th className="px-6 py-4 text-xs font-bold text-slate-500 uppercase tracking-wider text-right">Actions</th>
               </tr>
             </thead>
-<<<<<<< HEAD
             <tbody className="divide-y divide-slate-100">
               {filteredStudents.length > 0 ? (
                 filteredStudents.map((student) => (
@@ -221,9 +215,6 @@ const AdminStudents = () => {
                 </tr>
               )}
             </tbody>
-=======
-           
->>>>>>> d777039 (Implemented instructor dashboard, Razorpay payment integration, enrollment flow, course management, and backend service improvements)
           </table>
         </div>
         <div className="px-6 py-4 border-t border-slate-100 flex items-center justify-between bg-slate-50/30">

@@ -2,11 +2,7 @@ import axiosInstance from '../features/axiosInstance';
 
 export const getMyCertificates = async () => {
   try {
-<<<<<<< HEAD
     const response = await axiosInstance.get('/student/certificates');
-=======
-    const response = await axiosInstance.get('/certificates/my-certificates');
->>>>>>> d777039 (Implemented instructor dashboard, Razorpay payment integration, enrollment flow, course management, and backend service improvements)
     return response.data;
   } catch (error) {
     console.error('Error fetching certificates:', error);
@@ -14,7 +10,6 @@ export const getMyCertificates = async () => {
   }
 };
 
-<<<<<<< HEAD
 export const getCertificateById = async (id) => {
   try {
     const response = await axiosInstance.get(`/student/certificate/${id}`);
@@ -25,8 +20,6 @@ export const getCertificateById = async (id) => {
   }
 };
 
-=======
->>>>>>> d777039 (Implemented instructor dashboard, Razorpay payment integration, enrollment flow, course management, and backend service improvements)
 export const claimCertificate = async (examId) => {
   try {
     const response = await axiosInstance.post('/certificates/claim', { examId });
@@ -38,7 +31,6 @@ export const claimCertificate = async (examId) => {
 };
 
 export const getCertificateDownloadUrl = (certId) => {
-<<<<<<< HEAD
   // Uses VITE_API_URL or default local port 5000 base
   const baseUrl = import.meta.env.VITE_API_URL || "http://localhost:5000";
   const token = localStorage.getItem("token");
@@ -63,14 +55,10 @@ export const rejectCertificate = async (certId, rejectionReason) => {
 export const verifyCertificate = async (certificateCode) => {
   const response = await axiosInstance.get(`/certificates/verify/${certificateCode}`);
   return response.data;
-=======
-  return `${import.meta.env.VITE_API_BASE_URL}/certificates/download/${certId}`;
->>>>>>> d777039 (Implemented instructor dashboard, Razorpay payment integration, enrollment flow, course management, and backend service improvements)
 };
 
 export default {
   getMyCertificates,
-<<<<<<< HEAD
   getCertificateById,
   claimCertificate,
   getCertificateDownloadUrl,
@@ -78,8 +66,4 @@ export default {
   approveCertificate,
   rejectCertificate,
   verifyCertificate,
-=======
-  claimCertificate,
-  getCertificateDownloadUrl
->>>>>>> d777039 (Implemented instructor dashboard, Razorpay payment integration, enrollment flow, course management, and backend service improvements)
 };

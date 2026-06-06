@@ -21,14 +21,10 @@ import {
   Settings,
   Clock,
   BookOpen,
-<<<<<<< HEAD
   Loader2,
   ClipboardCheck,
   ExternalLink,
   X
-=======
-  Loader2
->>>>>>> d777039 (Implemented instructor dashboard, Razorpay payment integration, enrollment flow, course management, and backend service improvements)
 } from 'lucide-react';
 import { getCourseMissions, submitMission } from '../../services/missionService';
 import { getCourseProgress, completeLesson, getVideoProgress, saveVideoProgress } from '../../services/progressService';
@@ -41,11 +37,29 @@ const CoursePlayer = () => {
   
   const [expandedModule, setExpandedModule] = useState(0);
   const [currentLessonId, setCurrentLessonId] = useState(null);
-<<<<<<< HEAD
 
-  const modules = selectedCourse?.modules || [];
   const lessons = selectedCourse?.lessons || [];
   const currentLesson = lessons.find((lesson) => lesson._id === currentLessonId) || lessons[0] || null;
+
+  // Group lessons into modules (for now, we'll treat all lessons as one module if not structured)
+  const modules = (selectedCourse?.modules && selectedCourse.modules.length > 0)
+    ? selectedCourse.modules
+    : [
+        {
+          _id: 'default-module',
+          id: 'default-module',
+          title: 'Course Content',
+          duration: selectedCourse?.duration || 'Unknown',
+          lessons: lessons.map((l, idx) => ({
+            _id: l._id || idx,
+            id: l._id || idx,
+            title: l.title,
+            duration: l.duration || '00:00',
+            status: currentLesson?._id === l._id ? 'current' : 'pending',
+            videoUrl: l.videoUrl
+          })) || []
+        }
+      ];
 
   // Tabs & Missions State
   const [activeTab, setActiveTab] = useState('about'); // 'about' or 'missions'
@@ -75,14 +89,11 @@ const CoursePlayer = () => {
 
   const videoRef = React.useRef(null);
   const playerContainerRef = React.useRef(null);
-=======
->>>>>>> d777039 (Implemented instructor dashboard, Razorpay payment integration, enrollment flow, course management, and backend service improvements)
 
   useEffect(() => {
     dispatch(fetchCourseThunk(id));
   }, [dispatch, id]);
 
-<<<<<<< HEAD
   const fetchProgress = async () => {
     try {
       const data = await getCourseProgress(id);
@@ -107,8 +118,10 @@ const CoursePlayer = () => {
     }
     if (selectedCourse?.modules?.length > 0 && selectedCourse.modules[0] && expandedModule === 0) {
       setExpandedModule(selectedCourse.modules[0]._id || selectedCourse.modules[0].id);
+    } else if (expandedModule === 0 && modules.length > 0) {
+      setExpandedModule(modules[0].id);
     }
-  }, [selectedCourse, currentLessonId, expandedModule]);
+  }, [selectedCourse, currentLessonId, expandedModule, modules]);
 
   const handleMarkComplete = async () => {
     if (!currentLesson?._id) return;
@@ -129,7 +142,7 @@ const CoursePlayer = () => {
         toast.success("Lesson marked as completed!");
         
         if (result.percentage === 100) {
-          toast.success("Congratulations! You completed the course! 🎉");
+          toast.success("Congratulations! You completed the course! 🎓");
         }
       }
     } catch (err) {
@@ -403,12 +416,6 @@ const CoursePlayer = () => {
     }
   };
 
-
-=======
-  const lessons = selectedCourse?.lessons || [];
-  const currentLesson = lessons.find((lesson) => lesson._id === currentLessonId) || lessons[0] || null;
->>>>>>> d777039 (Implemented instructor dashboard, Razorpay payment integration, enrollment flow, course management, and backend service improvements)
-
   if (loading && !selectedCourse) {
     return (
       <div className="flex flex-col items-center justify-center min-h-[60vh] space-y-4 bg-white rounded-[2.5rem]">
@@ -418,25 +425,6 @@ const CoursePlayer = () => {
     );
   }
 
-<<<<<<< HEAD
-=======
-  // Group lessons into modules (for now, we'll treat all lessons as one module if not structured)
-  const modules = [
-    {
-      id: 1,
-      title: 'Course Content',
-      duration: selectedCourse?.duration || 'Unknown',
-      lessons: lessons.map((l, idx) => ({
-        id: l._id || idx,
-        title: l.title,
-        duration: l.duration || '00:00',
-        status: currentLesson?._id === l._id ? 'current' : 'pending',
-        videoUrl: l.videoUrl
-      })) || []
-    }
-  ];
-
->>>>>>> d777039 (Implemented instructor dashboard, Razorpay payment integration, enrollment flow, course management, and backend service improvements)
   return (
     <div className="h-[calc(100vh-140px)] flex flex-col lg:flex-row bg-white rounded-[2.5rem] border border-slate-200 shadow-sm overflow-hidden">
       {/* Video Area */}
@@ -454,7 +442,7 @@ const CoursePlayer = () => {
                 onTimeUpdate={() => setVideoCurrentTime(videoRef.current?.currentTime || 0)}
                 onDurationChange={() => setVideoDuration(videoRef.current?.duration || 0)}
                 onWaiting={() => setIsBuffering(true)}
-                onPlaying={() => setIsBuffering(false)}
+                onPlaying={() => setIsPlaying(false)}
                 onPause={handlePause}
                 onEnded={handleEnded}
                 className="w-full h-full object-contain cursor-pointer"
@@ -618,7 +606,6 @@ const CoursePlayer = () => {
               )}
             </button>
           </div>
-<<<<<<< HEAD
 
           {/* Tab Content */}
           <div className="flex-1 p-8 overflow-y-auto">
@@ -782,29 +769,6 @@ const CoursePlayer = () => {
                 )}
               </div>
             )}
-=======
-          <div className="flex items-center gap-3">
-            <button 
-              onClick={() => {
-                const idx = selectedCourse?.lessons?.findIndex(l => l._id === currentLesson?._id);
-                if (idx > 0) setCurrentLessonId(selectedCourse.lessons[idx - 1]._id);
-              }}
-              disabled={!selectedCourse?.lessons || selectedCourse.lessons.indexOf(currentLesson) === 0}
-              className="px-6 py-3 bg-slate-50 text-slate-500 rounded-2xl font-bold text-sm hover:bg-slate-100 disabled:opacity-50 transition-all flex items-center gap-2 border border-slate-100"
-            >
-              <ChevronLeft size={18} /> Previous
-            </button>
-            <button 
-              onClick={() => {
-                const idx = selectedCourse?.lessons?.findIndex(l => l._id === currentLesson?._id);
-                if (idx < selectedCourse.lessons.length - 1) setCurrentLessonId(selectedCourse.lessons[idx + 1]._id);
-              }}
-              disabled={!selectedCourse?.lessons || selectedCourse.lessons.indexOf(currentLesson) === selectedCourse.lessons.length - 1}
-              className="px-8 py-3 bg-blue-600 text-white rounded-2xl font-bold text-sm hover:bg-blue-700 disabled:opacity-50 transition-all shadow-xl shadow-blue-100 flex items-center gap-2"
-            >
-              Next Lesson <ChevronRight size={18} />
-            </button>
->>>>>>> d777039 (Implemented instructor dashboard, Razorpay payment integration, enrollment flow, course management, and backend service improvements)
           </div>
         </div>
       </div>
@@ -847,11 +811,7 @@ const CoursePlayer = () => {
                     <div 
                       key={lesson.id || lesson._id} 
                       onClick={() => {
-<<<<<<< HEAD
                         const target = selectedCourse.lessons.find(l => l._id === (lesson.id || lesson._id));
-=======
-                        const target = selectedCourse.lessons.find(l => l._id === lesson.id);
->>>>>>> d777039 (Implemented instructor dashboard, Razorpay payment integration, enrollment flow, course management, and backend service improvements)
                         if (target) setCurrentLessonId(target._id);
                       }}
                       className={`p-4 pl-12 flex items-center gap-4 cursor-pointer hover:bg-blue-50/50 transition-all relative ${

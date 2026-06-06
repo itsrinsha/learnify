@@ -217,11 +217,7 @@ const CourseDetails = () => {
             <div className="flex items-center gap-3">
               <div className="flex items-center text-yellow-400">
                 <Star size={20} fill="currentColor" />
-<<<<<<< HEAD
                 <span className="ml-2 text-xl font-black">{course.rating || 0}</span>
-=======
-                <span className="ml-2 text-xl font-black">{course.rating || 4.8}</span>
->>>>>>> d777039 (Implemented instructor dashboard, Razorpay payment integration, enrollment flow, course management, and backend service improvements)
               </div>
               <span className="text-slate-400 text-sm font-bold uppercase tracking-widest">
                 ({course.reviewsCount || 0} reviews)

@@ -3,16 +3,13 @@ import { Link, useNavigate } from "react-router-dom";
 import { useFormik } from "formik";
 import * as Yup from "yup";
 import { Eye, EyeOff, Mail, Lock, ArrowRight, ShieldCheck } from "lucide-react";
+import React from "react";
 
-import { useDispatch } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
 import { loginUser } from "../../../features/auth/authThunk";
-<<<<<<< HEAD
 import { logout, setCredentials } from "../../../features/auth/authSlice";
 import { GoogleLogin } from "@react-oauth/google";
 import axiosInstance from "../../../features/axiosInstance";
-=======
-import { logout } from "../../../features/auth/authSlice";
->>>>>>> d777039 (Implemented instructor dashboard, Razorpay payment integration, enrollment flow, course management, and backend service improvements)
 
 function AdminLogin() {
   const navigate = useNavigate();
@@ -21,6 +18,13 @@ function AdminLogin() {
   const [apiError, setApiError] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
+  const { user, token } = useSelector((state) => state.auth);
+
+  React.useEffect(() => {
+    if (token && user?.role === "admin") {
+      navigate("/admin/dashboard", { replace: true });
+    }
+  }, [user, token, navigate]);
 
   // ✅ Formik setup
   const formik = useFormik({
@@ -63,7 +67,6 @@ function AdminLogin() {
         alert("Welcome to the Admin Dashboard!");
         navigate("/admin/dashboard");
       } catch (err) {
-<<<<<<< HEAD
         if (typeof err === "string") {
           setApiError(err);
         } else if (err.response) {
@@ -73,9 +76,6 @@ function AdminLogin() {
         } else {
           setApiError("Something went wrong. Please try again.");
         }
-=======
-        setApiError(err || "Something went wrong. Please try again.");
->>>>>>> d777039 (Implemented instructor dashboard, Razorpay payment integration, enrollment flow, course management, and backend service improvements)
       } finally {
         setIsLoading(false);
       }
