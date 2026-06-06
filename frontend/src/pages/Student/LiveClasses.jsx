@@ -11,7 +11,6 @@ import {
   Info,
   ChevronRight,
   Loader2,
-<<<<<<< HEAD
   AlertCircle,
   ExternalLink
 } from 'lucide-react';
@@ -95,67 +94,6 @@ const LiveClasses = () => {
     { label: 'Missed Classes', value: '0', icon: <XCircle className="text-red-600" />, bg: 'bg-red-50' },
     { label: 'Total Live Hours', value: '0h', icon: <Clock className="text-blue-600" />, bg: 'bg-blue-50' },
   ];
-=======
-  AlertCircle
-} from 'lucide-react';
-import { getMyLiveSessions } from '../../services/liveService';
-
-const LiveClasses = () => {
-  const [sessions, setSessions] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
-
-  useEffect(() => {
-    fetchLiveSessions();
-  }, []);
-
-  const fetchLiveSessions = async () => {
-    try {
-      setLoading(true);
-      const data = await getMyLiveSessions();
-      setSessions(data);
-      setError(null);
-    } catch (err) {
-      console.error("Error fetching live sessions:", err);
-      setError("Failed to load live sessions. Please try again later.");
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  
-
- 
-
-  if (loading) {
-    return (
-      <div className="h-[60vh] flex items-center justify-center bg-white rounded-[2.5rem] border border-slate-200">
-        <div className="flex flex-col items-center gap-4">
-          <Loader2 className="w-10 h-10 text-blue-600 animate-spin" />
-          <p className="text-slate-500 font-medium">Loading your live classes...</p>
-        </div>
-      </div>
-    );
-  }
-
-  if (error) {
-    return (
-      <div className="h-[60vh] flex items-center justify-center bg-white rounded-[2.5rem] border border-slate-200">
-        <div className="flex flex-col items-center gap-4 text-center p-6">
-          <AlertCircle className="w-12 h-12 text-red-500" />
-          <h3 className="text-xl font-bold text-slate-900">Oops! Something went wrong</h3>
-          <p className="text-slate-500 max-w-md">{error}</p>
-          <button 
-            onClick={fetchLiveSessions}
-            className="mt-2 px-6 py-2 bg-blue-600 text-white rounded-xl font-bold hover:bg-blue-700 transition-all"
-          >
-            Try Again
-          </button>
-        </div>
-      </div>
-    );
-  }
->>>>>>> d777039 (Implemented instructor dashboard, Razorpay payment integration, enrollment flow, course management, and backend service improvements)
 
   if (loading) {
     return (
@@ -195,7 +133,17 @@ const LiveClasses = () => {
 
       {/* Stats Row */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-      
+        {stats.map((stat, idx) => (
+          <div key={idx} className="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm flex items-center gap-5">
+            <div className={`w-12 h-12 ${stat.bg} rounded-xl flex items-center justify-center`}>
+              {stat.icon}
+            </div>
+            <div>
+              <p className="text-sm font-medium text-slate-500">{stat.label}</p>
+              <p className="text-2xl font-bold text-slate-900">{stat.value}</p>
+            </div>
+          </div>
+        ))}
       </div>
 
       <div className="grid lg:grid-cols-3 gap-8">
@@ -240,7 +188,6 @@ const LiveClasses = () => {
                       <div className="flex flex-wrap justify-center md:justify-start items-center gap-4 text-sm font-medium text-slate-500">
                         <span className="flex items-center gap-1.5"><Clock size={16} /> {new Date(item.startTime).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</span>
                         <span className="flex items-center gap-1.5 font-bold text-blue-600">Instructor: {item.instructor?.name}</span>
-<<<<<<< HEAD
                         {item.isLive && item.meetingLink ? (
                           <a href={item.meetingLink} target="_blank" rel="noopener noreferrer" className="flex items-center gap-1.5 text-blue-600 hover:underline font-bold">
                             <ExternalLink size={16} /> Link: {item.meetingLink}
@@ -248,8 +195,6 @@ const LiveClasses = () => {
                         ) : (
                           <span className="text-slate-400 italic text-xs">Link will be available when session starts</span>
                         )}
-=======
->>>>>>> d777039 (Implemented instructor dashboard, Razorpay payment integration, enrollment flow, course management, and backend service improvements)
                       </div>
                     </div>
 
@@ -295,7 +240,6 @@ const LiveClasses = () => {
           
           <div className="bg-white rounded-3xl border border-slate-200 shadow-sm overflow-hidden">
             <div className="divide-y divide-slate-100">
-<<<<<<< HEAD
               {attendanceHistory.length === 0 ? (
                 <div className="p-10 text-center text-slate-400 italic text-xs">No attendance history found.</div>
               ) : (
@@ -316,9 +260,6 @@ const LiveClasses = () => {
                   </div>
                 ))
               )}
-=======
-           
->>>>>>> d777039 (Implemented instructor dashboard, Razorpay payment integration, enrollment flow, course management, and backend service improvements)
             </div>
             <button className="w-full py-4 bg-slate-50 text-slate-500 font-bold text-xs hover:bg-slate-100 transition-all flex items-center justify-center gap-2">
               Load More <ChevronRight size={14} />

@@ -91,8 +91,8 @@ export const publishCourseService = async (instructorId, courseId) => {
     err.statusCode = 400;
     throw err;
   }
-  if (!course.description || course.description.length < 100) {
-    const err = new Error("Course description must be at least 100 characters long.");
+  if (!course.description || course.description.trim() === "") {
+    const err = new Error("Course description is required.");
     err.statusCode = 400;
     throw err;
   }

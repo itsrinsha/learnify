@@ -71,14 +71,8 @@ const AdminInstructors = () => {
       await adminService.approveInstructor(id);
       toast.success("Instructor approved successfully");
       fetchInstructors();
-<<<<<<< HEAD
     } catch (error) {
       toast.error("Failed to approve instructor");
-=======
-      alert('Instructor approved successfully!');
-    } catch {
-      alert('Failed to approve instructor');
->>>>>>> d777039 (Implemented instructor dashboard, Razorpay payment integration, enrollment flow, course management, and backend service improvements)
     }
   };
 
@@ -88,14 +82,8 @@ const AdminInstructors = () => {
       await adminService.rejectInstructor(id);
       toast.success("Instructor rejected");
       fetchInstructors();
-<<<<<<< HEAD
     } catch (error) {
       toast.error("Failed to reject instructor");
-=======
-      alert('Instructor rejected.');
-    } catch {
-      alert('Failed to reject instructor');
->>>>>>> d777039 (Implemented instructor dashboard, Razorpay payment integration, enrollment flow, course management, and backend service improvements)
     }
   };
 

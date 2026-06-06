@@ -22,7 +22,6 @@ export const verifyPayment = async (paymentData) => {
   return response.data;
 };
 
-<<<<<<< HEAD
 // Record Payment Failure
 export const recordPaymentFailure = async (failureData) => {
   const response = await axiosInstance.post(
@@ -37,9 +36,4 @@ export default {
   createOrder,
   verifyPayment,
   recordPaymentFailure,
-=======
-export default {
-  createOrder,
-  verifyPayment,
->>>>>>> d777039 (Implemented instructor dashboard, Razorpay payment integration, enrollment flow, course management, and backend service improvements)
 };

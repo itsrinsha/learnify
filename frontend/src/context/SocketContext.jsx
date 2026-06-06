@@ -15,36 +15,47 @@ export const SocketProvider = ({ children }) => {
   const { user } = useSelector((state) => state.auth);
 
   useEffect(() => {
+    let socketConn;
+    let timeoutId;
+
     if (user && user._id) {
       const socketUrl = import.meta.env.VITE_API_URL || "http://localhost:5000";
       
-      const socketConn = io(socketUrl, {
-        query: {
-          userId: user._id,
-        },
-        transports: ["websocket", "polling"],
-      });
+      const connectSocket = () => {
+        socketConn = io(socketUrl, {
+          query: {
+            userId: user._id,
+          },
+          transports: ["websocket", "polling"],
+        });
 
-      setSocket(socketConn);
-      setSocketInstance(socketConn);
+        setSocket(socketConn);
+        setSocketInstance(socketConn);
 
-      socketConn.on("getOnlineUsers", (users) => {
-        setOnlineUsers(users);
-      });
+        socketConn.on("getOnlineUsers", (users) => {
+          setOnlineUsers(users);
+        });
 
-      socketConn.on('connect_error', (error) => {
-        console.warn('Socket connect error:', error);
-      });
+        socketConn.on('connect_error', (error) => {
+          console.warn('Socket connect error:', error);
+        });
 
-      socketConn.on('disconnect', (reason) => {
-        console.warn('Socket disconnected:', reason);
-      });
+        socketConn.on('disconnect', (reason) => {
+          console.warn('Socket disconnected:', reason);
+        });
+      };
+
+      // Delay connection slightly to avoid strict mode double-invoke issue
+      timeoutId = setTimeout(connectSocket, 10);
 
       return () => {
-        try {
-          socketConn.close();
-        } catch (closeError) {
-          console.warn('Error closing socket connection:', closeError);
+        clearTimeout(timeoutId);
+        if (socketConn) {
+          try {
+            socketConn.close();
+          } catch (closeError) {
+            console.warn('Error closing socket connection:', closeError);
+          }
         }
         setSocket(null);
         setSocketInstance(null);

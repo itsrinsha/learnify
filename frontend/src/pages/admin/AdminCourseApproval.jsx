@@ -132,7 +132,6 @@ const AdminCourseApproval = () => {
 
       {/* Courses List */}
       <div className="space-y-4">
-<<<<<<< HEAD
         {filteredCourses.length > 0 ? (
           filteredCourses.map((course) => (
             <div key={course._id} className="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden flex flex-col md:flex-row items-stretch group hover:border-blue-200 transition-colors">
@@ -231,9 +230,6 @@ const AdminCourseApproval = () => {
             <p className="text-slate-400 font-medium">No courses found matching your criteria.</p>
           </div>
         )}
-=======
-       
->>>>>>> d777039 (Implemented instructor dashboard, Razorpay payment integration, enrollment flow, course management, and backend service improvements)
       </div>
     </div>
   );

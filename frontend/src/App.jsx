@@ -81,8 +81,8 @@ function App() {
           <Route path="/" element={<LandingPage />} />
           <Route path="/login" element={<PublicRoute><Login /></PublicRoute>} />
           <Route path="/register" element={<PublicRoute><Register /></PublicRoute>} />
-          <Route path="/instructor/login" element={<InstructorLogin />} />
-          <Route path="/instructor/register" element={<InstructorRegister />} />
+          <Route path="/instructor/login" element={<PublicRoute><InstructorLogin /></PublicRoute>} />
+          <Route path="/instructor/register" element={<PublicRoute><InstructorRegister /></PublicRoute>} />
           <Route path="/admin/login" element={<AdminLogin />} />
           <Route path="/blocked" element={<BlockedPage />} />
           <Route path="/verify/:certificateCode" element={<VerifyCertificate />} />

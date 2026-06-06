@@ -8,9 +8,17 @@ import {
   updateProfile,
 } from "./authThunk";
 
+// Get initial state from localStorage if available
+const userFromStorage = localStorage.getItem("user") 
+  ? JSON.parse(localStorage.getItem("user")) 
+  : null;
+const tokenFromStorage = localStorage.getItem("token") 
+  ? localStorage.getItem("token") 
+  : null;
+
 const initialState = {
-  user: null,
-  isAuthenticated: false,
+  user: userFromStorage,
+  isAuthenticated: !!tokenFromStorage,
   loading: false,
   error: null,
   success: false,

@@ -4,8 +4,8 @@ import './index.css'
 import App from './App.jsx'
 import { BrowserRouter } from 'react-router-dom';
 import { Provider } from "react-redux";
-<<<<<<< HEAD
-import { store } from './features/store.js';
+import { store, persistor } from './features/store.js';
+import { PersistGate } from 'redux-persist/integration/react';
 import { GoogleOAuthProvider } from "@react-oauth/google"
 import { SocketProvider } from './context/SocketContext.jsx';
 
@@ -41,23 +41,11 @@ ReactDOM.createRoot(document.getElementById("root")).render(
     <OnlineGoogleOAuthProvider>
       <BrowserRouter>
         <Provider store={store}>
-          <SocketProvider>
-            <App />
-          </SocketProvider>
-=======
-import { store, persistor } from './features/store.js';
-import { PersistGate } from 'redux-persist/integration/react';
-import { GoogleOAuthProvider } from "@react-oauth/google"
-
-ReactDOM.createRoot(document.getElementById("root")).render(
-  <React.StrictMode>
-    <GoogleOAuthProvider clientId="1056644082255-ioae5gi4v99f6vj0b4jdampbntfrdvkj.apps.googleusercontent.com">
-      <BrowserRouter>
-        <Provider store={store}>
           <PersistGate loading={null} persistor={persistor}>
-            <App />
+            <SocketProvider>
+              <App />
+            </SocketProvider>
           </PersistGate>
->>>>>>> d777039 (Implemented instructor dashboard, Razorpay payment integration, enrollment flow, course management, and backend service improvements)
         </Provider>
       </BrowserRouter>
     </OnlineGoogleOAuthProvider>

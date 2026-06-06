@@ -170,7 +170,7 @@ function InstructorRegister() {
             Create an instructor account and start sharing your knowledge with students from around the globe.
           </p>
           <img
-            src="https://images.unsplash.com/photo-1516321318423-f06f85e504b3?q=80&w=2070&auto=format&fit=crop"
+            src="/instructor_illustration.png"
             alt="Instructor Illustration"
             className="w-full h-auto shadow-2xl rounded-3xl object-cover min-h-[400px]"
           />
