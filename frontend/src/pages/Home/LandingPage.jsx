@@ -221,7 +221,7 @@ const LandingPage = () => {
 
               <div className="flex flex-col sm:flex-row gap-4 justify-center lg:justify-start pt-2">
                 <button
-                  onClick={() => navigate('/register')}
+                  onClick={() => navigate('/login')}
                   className="btn-primary px-8 py-4 text-xs font-black uppercase tracking-wider rounded-xl shadow-lg shadow-primary-600/10"
                 >
                   Start Learning
@@ -405,7 +405,7 @@ const LandingPage = () => {
           </p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center items-center pt-4">
             <button 
-              onClick={() => navigate('/register')}
+              onClick={() => navigate('/login')}
               className="btn-primary px-8 py-3.5 text-xs font-black uppercase tracking-wider rounded-xl shadow-lg shadow-primary-600/10 w-full sm:w-auto"
             >
               Start Learning Now
