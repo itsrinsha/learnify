@@ -143,7 +143,7 @@ const LandingPage = () => {
               </>
            ) : (
               <button 
-                onClick={() => navigate('/login')}
+                onClick={() => navigate('/student/dashboard')}
                 className="btn-primary py-2 px-5 text-xs rounded-xl"
               >
                 Start Learning
@@ -187,7 +187,7 @@ const LandingPage = () => {
                       <button onClick={() => navigate('/register')} className="w-full bg-primary-600 text-white py-2.5 text-sm font-bold rounded-xl shadow-sm hover:bg-primary-700">Join Now</button>
                     </>
                   ) : (
-                    <button onClick={() => navigate('/login')} className="w-full bg-primary-600 text-white py-2.5 text-sm font-bold rounded-xl shadow-sm hover:bg-primary-700">Start Learning</button>
+                    <button onClick={() => navigate('/student/dashboard')} className="w-full bg-primary-600 text-white py-2.5 text-sm font-bold rounded-xl shadow-sm hover:bg-primary-700">Start Learning</button>
                   )}
                 </div>
               </div>
@@ -221,7 +221,7 @@ const LandingPage = () => {
 
               <div className="flex flex-col sm:flex-row gap-4 justify-center lg:justify-start pt-2">
                 <button
-                  onClick={() => navigate('/login')}
+                  onClick={() => navigate(currentUser ? '/student/dashboard' : '/login')}
                   className="btn-primary px-8 py-4 text-xs font-black uppercase tracking-wider rounded-xl shadow-lg shadow-primary-600/10"
                 >
                   Start Learning
@@ -405,7 +405,7 @@ const LandingPage = () => {
           </p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center items-center pt-4">
             <button 
-              onClick={() => navigate('/login')}
+              onClick={() => navigate(currentUser ? '/student/dashboard' : '/login')}
               className="btn-primary px-8 py-3.5 text-xs font-black uppercase tracking-wider rounded-xl shadow-lg shadow-primary-600/10 w-full sm:w-auto"
             >
               Start Learning Now
