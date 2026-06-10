@@ -23,3 +23,5 @@ jobs:
             git pull origin dev
             npm install
             pm2 restart learnify-backend
+
+            
